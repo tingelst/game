@@ -5,6 +5,7 @@
 //
 // Page 68.
 
+#include <fstream>
 #include <iostream>
 
 #include <hep/ga.hpp>
@@ -75,6 +76,45 @@ struct SphereFitCostFunction {
   const double* point_;
 };
 
+class LoggingCallback : public ceres::IterationCallback {
+ public:
+  explicit LoggingCallback(bool log_to_stdout)
+      : log_to_stdout_(log_to_stdout) {}
+
+  ~LoggingCallback() {}
+
+  ceres::CallbackReturnType operator()(const ceres::IterationSummary& summary) {
+    if (log_to_stdout_) {
+      std::cout << summary.iteration << std::endl;
+    }
+    return ceres::SOLVER_CONTINUE;
+  }
+
+ private:
+  const bool log_to_stdout_;
+};
+
+class LoggingCallback2 : public ceres::IterationCallback {
+ public:
+  explicit LoggingCallback2(bool log_to_stdout)
+      : log_to_stdout_(log_to_stdout) {}
+
+  ~LoggingCallback2() {}
+
+  ceres::CallbackReturnType operator()(const ceres::IterationSummary& summary) {
+    if (log_to_stdout_) {
+      std::cout << "Lars" << std::endl;
+    }
+    return ceres::SOLVER_CONTINUE;
+  }
+
+ private:
+  const bool log_to_stdout_;
+};
+
+bool DumpSummaryToFile(const std::string& fname,
+                       const ceres::Solver::Summary& summary);
+
 int main(int argc, char** argv) {
   google::InitGoogleLogging(argv[0]);
 
@@ -88,6 +128,9 @@ int main(int argc, char** argv) {
         SphereFitCostFunction::Create(&points[3 * i]);
     problem.AddResidualBlock(cost_function, NULL /* squared loss */, sphere);
   }
+
+  auto log_cb = std::unique_ptr<LoggingCallback>(new LoggingCallback(true));
+  auto log_cb2 = std::unique_ptr<LoggingCallback2>(new LoggingCallback2(true));
 
   ceres::Solver::Options options;
   options.max_num_iterations = 25;
@@ -114,5 +157,34 @@ int main(int argc, char** argv) {
             << sphere[3] / sphere[4] << "," << sphere[4] / sphere[4] << "}"
             << std::endl;
 
+  std::string filename{"/home/lars/devel/game_ws/dump/sphere_fit/sphere_fit_summary.m"};
+  DumpSummaryToFile(filename, summary);
+
   return 0;
+}
+
+bool DumpSummaryToFile(const std::string& filename,
+                       const ceres::Solver::Summary& summary) {
+  std::ofstream outf(filename);
+  if (outf) {
+    outf << "function summary = load_summary()" << "\n";
+    outf << "summary.brief_report = \'" << summary.BriefReport() << "\'\n";
+    outf << "summary.num_parameter_blocks = " << summary.num_parameter_blocks << "\n";
+    outf << "summary.num_parameters = " << summary.num_parameters << "\n";
+    outf << "summary.num_residual_blocks = " << summary.num_residual_blocks << "\n";
+    outf << "summary.num_residuals = " << summary.num_residuals << "\n";
+    auto its = summary.iterations;
+    for (int i = 0; i < its.size(); ++i)
+    {
+      outf << "summary.iterations(" << i+1 << ").iteration = " << its[i].iteration << "\n";
+      outf << "summary.iterations(" << i+1 << ").cost = " << its[i].cost << "\n";
+      outf << "summary.iterations(" << i+1 << ").cost_change = " << its[i].cost_change << "\n";
+      outf << "summary.iterations(" << i+1 << ").gradient_max_norm = " << its[i].gradient_max_norm << "\n";
+      outf << "summary.iterations(" << i+1 << ").step_norm = " << its[i].step_norm << "\n";
+      outf << "summary.iterations(" << i+1 << ").relative_decrease = " << its[i].relative_decrease << "\n";
+      outf << "summary.iterations(" << i+1 << ").trust_region_radius = " << its[i].trust_region_radius << "\n";
+      outf << "summary.iterations(" << i+1 << ").eta = " << its[i].eta << "\n";
+      outf << "summary.iterations(" << i+1 << ").linear_solver_iterations = " << its[i].linear_solver_iterations << "\n";
+    }
+  }
 }

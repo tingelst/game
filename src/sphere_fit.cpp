@@ -59,6 +59,13 @@ struct SphereFitCostFunction {
                   static_cast<T>(s[2]) * e3 + static_cast<T>(s[3]) * ni +
                   static_cast<T>(s[4]) * no);
 
+
+    std::cout << sphere[0] << " ";
+    std::cout << sphere[1] << " ";
+    std::cout << sphere[2] << " ";
+    std::cout << sphere[3] << " ";
+    std::cout << sphere[4] << std::endl;
+
     // Evaluate distance
     auto distance = hep::eval(hep::inner_prod(point, sphere));
 
@@ -157,6 +164,7 @@ int main(int argc, char** argv) {
             << sphere[3] / sphere[4] << "," << sphere[4] / sphere[4] << "}"
             << std::endl;
 
+
   std::string filename{"/home/lars/devel/game_ws/dump/sphere_fit/sphere_fit_summary.m"};
   DumpSummaryToFile(filename, summary);
 
@@ -168,23 +176,23 @@ bool DumpSummaryToFile(const std::string& filename,
   std::ofstream outf(filename);
   if (outf) {
     outf << "function summary = load_summary()" << "\n";
-    outf << "summary.brief_report = \'" << summary.BriefReport() << "\'\n";
-    outf << "summary.num_parameter_blocks = " << summary.num_parameter_blocks << "\n";
-    outf << "summary.num_parameters = " << summary.num_parameters << "\n";
-    outf << "summary.num_residual_blocks = " << summary.num_residual_blocks << "\n";
-    outf << "summary.num_residuals = " << summary.num_residuals << "\n";
+    outf << "summary.brief_report = \'" << summary.BriefReport() << "\';\n";
+    outf << "summary.num_parameter_blocks = " << summary.num_parameter_blocks << ";\n";
+    outf << "summary.num_parameters = " << summary.num_parameters << ";\n";
+    outf << "summary.num_residual_blocks = " << summary.num_residual_blocks << ";\n";
+    outf << "summary.num_residuals = " << summary.num_residuals << ";\n";
     auto its = summary.iterations;
     for (int i = 0; i < its.size(); ++i)
     {
-      outf << "summary.iterations(" << i+1 << ").iteration = " << its[i].iteration << "\n";
-      outf << "summary.iterations(" << i+1 << ").cost = " << its[i].cost << "\n";
-      outf << "summary.iterations(" << i+1 << ").cost_change = " << its[i].cost_change << "\n";
-      outf << "summary.iterations(" << i+1 << ").gradient_max_norm = " << its[i].gradient_max_norm << "\n";
-      outf << "summary.iterations(" << i+1 << ").step_norm = " << its[i].step_norm << "\n";
-      outf << "summary.iterations(" << i+1 << ").relative_decrease = " << its[i].relative_decrease << "\n";
-      outf << "summary.iterations(" << i+1 << ").trust_region_radius = " << its[i].trust_region_radius << "\n";
-      outf << "summary.iterations(" << i+1 << ").eta = " << its[i].eta << "\n";
-      outf << "summary.iterations(" << i+1 << ").linear_solver_iterations = " << its[i].linear_solver_iterations << "\n";
+      outf << "summary.iterations(" << i+1 << ").iteration = " << its[i].iteration << ";\n";
+      outf << "summary.iterations(" << i+1 << ").cost = " << its[i].cost << ";\n";
+      outf << "summary.iterations(" << i+1 << ").cost_change = " << its[i].cost_change << ";\n";
+      outf << "summary.iterations(" << i+1 << ").gradient_max_norm = " << its[i].gradient_max_norm << ";\n";
+      outf << "summary.iterations(" << i+1 << ").step_norm = " << its[i].step_norm << ";\n";
+      outf << "summary.iterations(" << i+1 << ").relative_decrease = " << its[i].relative_decrease << ";\n";
+      outf << "summary.iterations(" << i+1 << ").trust_region_radius = " << its[i].trust_region_radius << ";\n";
+      outf << "summary.iterations(" << i+1 << ").eta = " << its[i].eta << ";\n";
+      outf << "summary.iterations(" << i+1 << ").linear_solver_iterations = " << its[i].linear_solver_iterations << ";\n";
     }
   }
 }

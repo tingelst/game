@@ -11,6 +11,8 @@
 #include <hep/ga.hpp>
 #include <ceres/ceres.h>
 
+#include "game/types.h"
+
 const int kNumPoints = 5;
 const double points[] = {
     1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, -1.0, 0.0, 1.0,
@@ -24,9 +26,11 @@ struct SphereFitCostFunction {
                   T* residual /* 1 parameter */) const {
     // Types
     using Algebra = hep::algebra<T, 4, 1>;
-    using Scalar = hep::multi_vector<Algebra, hep::list<0>>;
-    using Infty = hep::multi_vector<Algebra, hep::list<8, 16>>;
-    using Orig = hep::multi_vector<Algebra, hep::list<8, 16>>;
+
+    using Scalar = cga::Scalar<T>;
+    using Infty = cga::Infty<T>;
+    using Orig = cga::Orig<T>;
+
     using Point = hep::multi_vector<Algebra, hep::list<1, 2, 4, 8, 16>>;
     using Sphere = hep::multi_vector<Algebra, hep::list<1, 2, 4, 8, 16>>;
     using PointE3 = hep::multi_vector<Algebra, hep::list<1, 2, 4>>;
@@ -58,7 +62,6 @@ struct SphereFitCostFunction {
         hep::eval(static_cast<T>(s[0]) * e1 + static_cast<T>(s[1]) * e2 +
                   static_cast<T>(s[2]) * e3 + static_cast<T>(s[3]) * ni +
                   static_cast<T>(s[4]) * no);
-
 
     std::cout << sphere[0] << " ";
     std::cout << sphere[1] << " ";
@@ -164,8 +167,8 @@ int main(int argc, char** argv) {
             << sphere[3] / sphere[4] << "," << sphere[4] / sphere[4] << "}"
             << std::endl;
 
-
-  std::string filename{"/home/lars/devel/game_ws/dump/sphere_fit/sphere_fit_summary.m"};
+  std::string filename{
+      "/home/lars/devel/game_ws/dump/sphere_fit/sphere_fit_summary.m"};
   DumpSummaryToFile(filename, summary);
 
   return 0;
@@ -175,24 +178,36 @@ bool DumpSummaryToFile(const std::string& filename,
                        const ceres::Solver::Summary& summary) {
   std::ofstream outf(filename);
   if (outf) {
-    outf << "function summary = load_summary()" << "\n";
+    outf << "function summary = load_summary()"
+         << "\n";
     outf << "summary.brief_report = \'" << summary.BriefReport() << "\';\n";
-    outf << "summary.num_parameter_blocks = " << summary.num_parameter_blocks << ";\n";
+    outf << "summary.num_parameter_blocks = " << summary.num_parameter_blocks
+         << ";\n";
     outf << "summary.num_parameters = " << summary.num_parameters << ";\n";
-    outf << "summary.num_residual_blocks = " << summary.num_residual_blocks << ";\n";
+    outf << "summary.num_residual_blocks = " << summary.num_residual_blocks
+         << ";\n";
     outf << "summary.num_residuals = " << summary.num_residuals << ";\n";
     auto its = summary.iterations;
-    for (int i = 0; i < its.size(); ++i)
-    {
-      outf << "summary.iterations(" << i+1 << ").iteration = " << its[i].iteration << ";\n";
-      outf << "summary.iterations(" << i+1 << ").cost = " << its[i].cost << ";\n";
-      outf << "summary.iterations(" << i+1 << ").cost_change = " << its[i].cost_change << ";\n";
-      outf << "summary.iterations(" << i+1 << ").gradient_max_norm = " << its[i].gradient_max_norm << ";\n";
-      outf << "summary.iterations(" << i+1 << ").step_norm = " << its[i].step_norm << ";\n";
-      outf << "summary.iterations(" << i+1 << ").relative_decrease = " << its[i].relative_decrease << ";\n";
-      outf << "summary.iterations(" << i+1 << ").trust_region_radius = " << its[i].trust_region_radius << ";\n";
-      outf << "summary.iterations(" << i+1 << ").eta = " << its[i].eta << ";\n";
-      outf << "summary.iterations(" << i+1 << ").linear_solver_iterations = " << its[i].linear_solver_iterations << ";\n";
+    for (int i = 0; i < its.size(); ++i) {
+      outf << "summary.iterations(" << i + 1
+           << ").iteration = " << its[i].iteration << ";\n";
+      outf << "summary.iterations(" << i + 1 << ").cost = " << its[i].cost
+           << ";\n";
+      outf << "summary.iterations(" << i + 1
+           << ").cost_change = " << its[i].cost_change << ";\n";
+      outf << "summary.iterations(" << i + 1
+           << ").gradient_max_norm = " << its[i].gradient_max_norm << ";\n";
+      outf << "summary.iterations(" << i + 1
+           << ").step_norm = " << its[i].step_norm << ";\n";
+      outf << "summary.iterations(" << i + 1
+           << ").relative_decrease = " << its[i].relative_decrease << ";\n";
+      outf << "summary.iterations(" << i + 1
+           << ").trust_region_radius = " << its[i].trust_region_radius << ";\n";
+      outf << "summary.iterations(" << i + 1 << ").eta = " << its[i].eta
+           << ";\n";
+      outf << "summary.iterations(" << i + 1
+           << ").linear_solver_iterations = " << its[i].linear_solver_iterations
+           << ";\n";
     }
   }
 }

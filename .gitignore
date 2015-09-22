@@ -1,2 +1,4 @@
 build
 .idea
+.ipynb_checkpoints
+*.pyc

@@ -11,7 +11,10 @@ find_package(Boost REQUIRED COMPONENTS python numpy)
 find_package(PythonLibs 2.7 REQUIRED)
 
 find_package(hep-ga REQUIRED)
+
 find_package(Ceres REQUIRED)
+find_package(Armadillo)
+find_package(Mantella)
 
 include_directories(
   include
@@ -20,13 +23,24 @@ include_directories(
   ${HEPGA_INCLUDE_DIR}
   ${CERES_INCLUDE_DIRS}
   ${CATCH_INCLUDE_DIR}
+  ${ARMADILLO_INCLUDE_DIR}
+  ${MANTELLA_INCLUDE_DIR}
   )
 
 add_executable(sphere_fit src/sphere_fit.cpp)
 target_link_libraries(sphere_fit ${CERES_LIBRARIES})
 
+add_executable(rotor_estimation src/rotor_estimation.cpp)
+target_link_libraries(rotor_estimation ${CERES_LIBRARIES})
+
+add_executable(rotor_bivector_generator_estimation src/rotor_bivector_generator_estimation.cpp)
+target_link_libraries(rotor_bivector_generator_estimation ${CERES_LIBRARIES})
+
 add_library(hello_world SHARED src/hello_world.cpp)
 target_link_libraries(hello_world ${CERES_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(mantella_test src/mantella_test.cpp)
+target_link_libraries(mantella_test ${ARMADILLO_LIBRARIES} ${MANTELLA_LIBRARIES})
 
 enable_testing(true)
 file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/*.cpp)

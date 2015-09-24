@@ -30,11 +30,15 @@ include_directories(
 add_executable(sphere_fit src/sphere_fit.cpp)
 target_link_libraries(sphere_fit ${CERES_LIBRARIES})
 
-add_executable(rotor_estimation src/rotor_estimation.cpp)
-target_link_libraries(rotor_estimation ${CERES_LIBRARIES})
-
+#add_executable(rotor_estimation src/rotor_estimation.cpp)
+#target_link_libraries(rotor_estimation ${CERES_LIBRARIES})
+#
 add_executable(rotor_bivector_generator_estimation src/rotor_bivector_generator_estimation.cpp)
 target_link_libraries(rotor_bivector_generator_estimation ${CERES_LIBRARIES})
+
+add_library(rotor_estimation SHARED src/rotor_estimation_wrapper.cpp)
+target_link_libraries(rotor_estimation ${CERES_LIBRARIES} ${Boost_LIBRARIES})
+
 
 add_library(hello_world SHARED src/hello_world.cpp)
 target_link_libraries(hello_world ${CERES_LIBRARIES} ${Boost_LIBRARIES})

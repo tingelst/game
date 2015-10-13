@@ -13,10 +13,23 @@
 
 #include "game/types.h"
 
-const int kNumPoints = 5;
-const double points[] = {
-    1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, -1.0, 0.0, 1.0,
-};
+const int kNumPoints = 10;
+// const double points[] = {
+//    1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, -1.0, 0.0,
+//    1.0,
+//};
+
+
+const double points[] = {2.8923,  -0.3359, -0.7224,
+                         -2.7961, 0.0562,  -1.0856,
+                         0.6967,  0.0988,  2.9163,
+                         2.5464,  0.8957,  1.3091,
+                         1.8707,  2.2867,  -0.5209,
+                         1.4030,  -1.1100, -2.4082,
+                         -2.5885, 0.5646,  1.4074,
+                         -2.6763, -1.0763, 0.8238,
+                         -1.5681, 0.0546,  -2.5569,
+                         1.7788,  0.8070,  -2.2770};
 
 struct SphereFitCostFunction {
   SphereFitCostFunction(const double* point) : point_(point) {}
@@ -50,8 +63,8 @@ struct SphereFitCostFunction {
     Scalar half{static_cast<T>(0.5)};
 
     // Create Euclidean point (vector)
-    PointE3 euc_point{static_cast<T>(point_[0]), static_cast<T>(point_[1]),
-                      static_cast<T>(point_[2])};
+    PointE3 euc_point{static_cast<T>(point_[0] + 3.0), static_cast<T>(point_[1] + 2.0),
+                      static_cast<T>(point_[2] + 1.0)};
 
     // Create conformal point
     Point point =
@@ -63,16 +76,18 @@ struct SphereFitCostFunction {
                   static_cast<T>(s[2]) * e3 + static_cast<T>(s[3]) * ni +
                   static_cast<T>(s[4]) * no);
 
-    std::cout << sphere[0] << " ";
-    std::cout << sphere[1] << " ";
-    std::cout << sphere[2] << " ";
-    std::cout << sphere[3] << " ";
-    std::cout << sphere[4] << std::endl;
+//    std::cout << sphere[0] << " ";
+//    std::cout << sphere[1] << " ";
+//    std::cout << sphere[2] << " ";
+//    std::cout << sphere[3] << " ";
+//    std::cout << sphere[4] << std::endl;
 
     // Evaluate distance
     auto distance = hep::eval(hep::inner_prod(point, sphere));
+    auto rho_squared = hep::eval(hep::inner_prod(sphere, sphere));
 
-    residual[0] = distance[0];
+    residual[0] = distance[0] / sqrt(rho_squared[0]);
+//    residual[0] = distance[0];
 
     return true;
   }
@@ -129,8 +144,8 @@ int main(int argc, char** argv) {
   google::InitGoogleLogging(argv[0]);
 
   // Initial values of spheres in basis {e1, e2, e3, ni, no}
-  //  double sphere[] = {-103.0, 100000.0, 231.0, -939371.0, 541.0};
-  double sphere[] = {1.0, 1.0, 1.0, 1.0, 1.0};
+    double sphere[] = {-103.0, 100000.0, 231.0, -939371.0, 541.0};
+//  double sphere[] = {1.0, 1.0, 1.0, 1.0, 1.0};
 
   ceres::Problem problem;
   for (int i = 0; i < kNumPoints; ++i) {
@@ -143,6 +158,7 @@ int main(int argc, char** argv) {
   auto log_cb2 = std::unique_ptr<LoggingCallback2>(new LoggingCallback2(true));
 
   ceres::Solver::Options options;
+//  options.trust_region_strategy_type = ceres::DOGLEG;
   options.max_num_iterations = 25;
   options.linear_solver_type = ceres::DENSE_QR;
   options.minimizer_progress_to_stdout = true;

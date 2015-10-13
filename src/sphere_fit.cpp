@@ -5,225 +5,172 @@
 //
 // Page 68.
 
-#include <fstream>
 #include <iostream>
-
-#include <hep/ga.hpp>
+#include <string>
+#include <boost/numpy.hpp>
 #include <ceres/ceres.h>
+#include <glog/logging.h>
+#include <hep/ga.hpp>
 
 #include "game/types.h"
+#include "game/ceres_python_utils.h"
 
-const int kNumPoints = 10;
-// const double points[] = {
-//    1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, -1.0, 0.0,
-//    1.0,
-//};
+namespace bp = boost::python;
+namespace np = boost::numpy;
 
+using ceres::AutoDiffCostFunction;
+using ceres::CostFunction;
+using ceres::Problem;
+using ceres::Solver;
 
-const double points[] = {2.8923,  -0.3359, -0.7224,
-                         -2.7961, 0.0562,  -1.0856,
-                         0.6967,  0.0988,  2.9163,
-                         2.5464,  0.8957,  1.3091,
-                         1.8707,  2.2867,  -0.5209,
-                         1.4030,  -1.1100, -2.4082,
-                         -2.5885, 0.5646,  1.4074,
-                         -2.6763, -1.0763, 0.8238,
-                         -1.5681, 0.0546,  -2.5569,
-                         1.7788,  0.8070,  -2.2770};
+namespace game {
 
-struct SphereFitCostFunction {
-  SphereFitCostFunction(const double* point) : point_(point) {}
+struct SphereFit {
+  SphereFit(const SphereFit &sphere_fit) {}
+  SphereFit() {}
 
-  template <typename T>
-  bool operator()(const T* const s /* sphere: 5 parameters */,
-                  T* residual /* 1 parameter */) const {
-    // Types
-    using Algebra = hep::algebra<T, 4, 1>;
-
-    using Scalar = cga::Scalar<T>;
-    using Infty = cga::Infty<T>;
-    using Orig = cga::Orig<T>;
-
-    using Point = hep::multi_vector<Algebra, hep::list<1, 2, 4, 8, 16>>;
-    using Sphere = hep::multi_vector<Algebra, hep::list<1, 2, 4, 8, 16>>;
-    using PointE3 = hep::multi_vector<Algebra, hep::list<1, 2, 4>>;
-    using E1 = hep::multi_vector<Algebra, hep::list<1>>;
-    using E2 = hep::multi_vector<Algebra, hep::list<2>>;
-    using E3 = hep::multi_vector<Algebra, hep::list<4>>;
-
-    // Conformal split
-    Infty ni{static_cast<T>(1.0), static_cast<T>(1.0)};
-    Orig no{static_cast<T>(-0.5), static_cast<T>(0.5)};
-
-    // Euclidean basis
-    E1 e1{static_cast<T>(1.0)};
-    E2 e2{static_cast<T>(1.0)};
-    E3 e3{static_cast<T>(1.0)};
-
-    Scalar half{static_cast<T>(0.5)};
-
-    // Create Euclidean point (vector)
-    PointE3 euc_point{static_cast<T>(point_[0] + 3.0), static_cast<T>(point_[1] + 2.0),
-                      static_cast<T>(point_[2] + 1.0)};
-
-    // Create conformal point
-    Point point =
-        hep::grade<1>(euc_point + half * euc_point * euc_point * ni + no);
-
-    // Create conformal sphere
-    Sphere sphere =
-        hep::eval(static_cast<T>(s[0]) * e1 + static_cast<T>(s[1]) * e2 +
-                  static_cast<T>(s[2]) * e3 + static_cast<T>(s[3]) * ni +
-                  static_cast<T>(s[4]) * no);
-
-//    std::cout << sphere[0] << " ";
-//    std::cout << sphere[1] << " ";
-//    std::cout << sphere[2] << " ";
-//    std::cout << sphere[3] << " ";
-//    std::cout << sphere[4] << std::endl;
-
-    // Evaluate distance
-    auto distance = hep::eval(hep::inner_prod(point, sphere));
-    auto rho_squared = hep::eval(hep::inner_prod(sphere, sphere));
-
-    residual[0] = distance[0] / sqrt(rho_squared[0]);
-//    residual[0] = distance[0];
-
-    return true;
-  }
-
-  static ceres::CostFunction* Create(const double* point) {
-    return (new ceres::AutoDiffCostFunction<SphereFitCostFunction, 1, 5>(
-        new SphereFitCostFunction(point)));
-  }
-
- private:
-  const double* point_;
-};
-
-class LoggingCallback : public ceres::IterationCallback {
- public:
-  explicit LoggingCallback(bool log_to_stdout)
-      : log_to_stdout_(log_to_stdout) {}
-
-  ~LoggingCallback() {}
-
-  ceres::CallbackReturnType operator()(const ceres::IterationSummary& summary) {
-    if (log_to_stdout_) {
-      std::cout << summary.iteration << std::endl;
+  void SetSolverOptions(const bp::dict &solver_options) {
+    bp::extract<std::string> linear_solver_type(
+        solver_options["linear_solver_type"]);
+    if (linear_solver_type.check()) {
+      ceres::StringToLinearSolverType(linear_solver_type(),
+                                      &options_.linear_solver_type);
     }
-    return ceres::SOLVER_CONTINUE;
-  }
 
- private:
-  const bool log_to_stdout_;
-};
-
-class LoggingCallback2 : public ceres::IterationCallback {
- public:
-  explicit LoggingCallback2(bool log_to_stdout)
-      : log_to_stdout_(log_to_stdout) {}
-
-  ~LoggingCallback2() {}
-
-  ceres::CallbackReturnType operator()(const ceres::IterationSummary& summary) {
-    if (log_to_stdout_) {
-      std::cout << "Lars" << std::endl;
+    bp::extract<int> max_num_iterations(solver_options["max_num_iterations"]);
+    if (max_num_iterations.check()) {
+      options_.max_num_iterations = max_num_iterations();
     }
-    return ceres::SOLVER_CONTINUE;
+
+    bp::extract<int> num_threads(solver_options["num_threads"]);
+    if (num_threads.check()) {
+      options_.num_threads = num_threads();
+    }
+
+    bp::extract<int> num_linear_solver_threads(
+        solver_options["num_linear_solver_threads"]);
+    if (num_linear_solver_threads.check()) {
+      options_.num_linear_solver_threads = num_linear_solver_threads();
+    }
+
+    bp::extract<double> parameter_tolerance(
+        solver_options["parameter_tolerance"]);
+    if (parameter_tolerance.check()) {
+      options_.parameter_tolerance = parameter_tolerance();
+    }
+
+    bp::extract<double> function_tolerance(
+        solver_options["function_tolerance"]);
+    if (function_tolerance.check()) {
+      options_.function_tolerance = function_tolerance();
+    }
+
+    bp::extract<std::string> trust_region_strategy_type(
+        solver_options["trust_region_strategy_type"]);
+    if (trust_region_strategy_type.check()) {
+      ceres::StringToTrustRegionStrategyType(
+          trust_region_strategy_type(), &options_.trust_region_strategy_type);
+    }
+
+    bp::extract<bool> minimizer_progress_to_stdout(
+        solver_options["minimizer_progress_to_stdout"]);
+    if (minimizer_progress_to_stdout.check()) {
+      options_.minimizer_progress_to_stdout = minimizer_progress_to_stdout();
+    }
   }
 
- private:
-  const bool log_to_stdout_;
+  struct CostFunctor {
+    CostFunctor(const double *point) : point_(point) {}
+
+    template <typename T>
+    bool operator()(const T *const s /* sphere: 5 parameters */,
+                    T *residual /* 1 parameter */) const {
+      // Conformal split
+      cga::Infty<T> ni{static_cast<T>(-1.0), static_cast<T>(1.0)};
+      cga::Orig<T> no{static_cast<T>(0.5), static_cast<T>(0.5)};
+
+      // Euclidean basis
+      cga::E1<T> e1{static_cast<T>(1.0)};
+      cga::E2<T> e2{static_cast<T>(1.0)};
+      cga::E3<T> e3{static_cast<T>(1.0)};
+
+      cga::Scalar<T> half{static_cast<T>(0.5)};
+
+      // Create Euclidean point (vector)
+      cga::EuclideanPoint<T> euc_point{static_cast<T>(point_[0]),
+                                       static_cast<T>(point_[1]),
+                                       static_cast<T>(point_[2])};
+
+      // Create conformal point
+      cga::Point<T> point =
+          hep::grade<1>(euc_point + half * euc_point * euc_point * ni + no);
+
+      // Create conformal sphere
+      cga::Sphere<T> sphere =
+          hep::eval(static_cast<T>(s[0]) * e1 + static_cast<T>(s[1]) * e2 +
+                    static_cast<T>(s[2]) * e3 + static_cast<T>(s[4]) * ni +
+                    static_cast<T>(s[3]) * no);
+
+      // Evaluate distance
+      auto distance = hep::eval(hep::inner_prod(point, sphere));
+      auto rho_squared = hep::eval(hep::inner_prod(sphere, sphere));
+
+      residual[0] = distance[0] / sqrt(rho_squared[0]);
+      //          residual[0] = distance[0];
+
+      return true;
+    }
+
+   private:
+    const double *point_;
+  };
+
+  static ceres::CostFunction *Create(const double *point) {
+    return (new ceres::AutoDiffCostFunction<SphereFit::CostFunctor, 1, 5>(
+        new SphereFit::CostFunctor(point)));
+  }
+
+  np::ndarray Run(np::ndarray sphere, np::ndarray points) {
+    if (!(points.get_flags() & np::ndarray::C_CONTIGUOUS)) {
+      throw "input array a must be contiguous";
+    }
+
+    auto rows_points = points.shape(0);
+    auto cols_points = points.shape(1);
+    auto rows_sphere = sphere.shape(0);
+    auto cols_sphere = sphere.shape(1);
+
+    if (!((rows_sphere == 5) && (cols_sphere == 1))) {
+      throw "parameter array must have shape (5,1)";
+    }
+
+    double *sphere_data = reinterpret_cast<double *>(sphere.get_data());
+    double *points_data = reinterpret_cast<double *>(points.get_data());
+
+    for (int i = 0; i < rows_points; ++i) {
+      ceres::CostFunction *cost_function =
+          SphereFit::Create(&points_data[cols_points * i]);
+      problem_.AddResidualBlock(cost_function, NULL, sphere_data);
+    }
+
+    Solve(options_, &problem_, &summary_);
+
+    return sphere;
+  }
+
+  auto Summary() -> bp::dict { return game::SummaryToDict(summary_); }
+
+  Problem problem_;
+  Solver::Options options_;
+  Solver::Summary summary_;
 };
-
-bool DumpSummaryToFile(const std::string& fname,
-                       const ceres::Solver::Summary& summary);
-
-int main(int argc, char** argv) {
-  google::InitGoogleLogging(argv[0]);
-
-  // Initial values of spheres in basis {e1, e2, e3, ni, no}
-    double sphere[] = {-103.0, 100000.0, 231.0, -939371.0, 541.0};
-//  double sphere[] = {1.0, 1.0, 1.0, 1.0, 1.0};
-
-  ceres::Problem problem;
-  for (int i = 0; i < kNumPoints; ++i) {
-    ceres::CostFunction* cost_function =
-        SphereFitCostFunction::Create(&points[3 * i]);
-    problem.AddResidualBlock(cost_function, NULL /* squared loss */, sphere);
-  }
-
-  auto log_cb = std::unique_ptr<LoggingCallback>(new LoggingCallback(true));
-  auto log_cb2 = std::unique_ptr<LoggingCallback2>(new LoggingCallback2(true));
-
-  ceres::Solver::Options options;
-//  options.trust_region_strategy_type = ceres::DOGLEG;
-  options.max_num_iterations = 25;
-  options.linear_solver_type = ceres::DENSE_QR;
-  options.minimizer_progress_to_stdout = true;
-  options.trust_region_problem_dump_directory =
-      "/home/lars/devel/game_ws/dump/sphere_fit";
-  options.trust_region_minimizer_iterations_to_dump =
-      std::vector<int>{1, 2, 3, 4};
-
-  ceres::Solver::Summary summary;
-  ceres::Solve(options, &problem, &summary);
-
-  std::cout << summary.FullReport() << "\n";
-
-  std::cout << "Initial sphere: {1.0,1.0,1.0,1.0,1.0}" << std::endl;
-
-  std::cout << "Final sphere: {" << sphere[0] << "," << sphere[1] << ","
-            << sphere[2] << "," << sphere[3] << "," << sphere[4] << "}"
-            << std::endl;
-
-  std::cout << "Scaled final sphere: {" << sphere[0] / sphere[4] << ","
-            << sphere[1] / sphere[4] << "," << sphere[2] / sphere[4] << ","
-            << sphere[3] / sphere[4] << "," << sphere[4] / sphere[4] << "}"
-            << std::endl;
-
-  std::string filename{
-      "/home/lars/devel/game_ws/dump/sphere_fit/sphere_fit_summary.m"};
-  DumpSummaryToFile(filename, summary);
-
-  return 0;
 }
 
-bool DumpSummaryToFile(const std::string& filename,
-                       const ceres::Solver::Summary& summary) {
-  std::ofstream outf(filename);
-  if (outf) {
-    outf << "function summary = load_summary()"
-         << "\n";
-    outf << "summary.brief_report = \'" << summary.BriefReport() << "\';\n";
-    outf << "summary.num_parameter_blocks = " << summary.num_parameter_blocks
-         << ";\n";
-    outf << "summary.num_parameters = " << summary.num_parameters << ";\n";
-    outf << "summary.num_residual_blocks = " << summary.num_residual_blocks
-         << ";\n";
-    outf << "summary.num_residuals = " << summary.num_residuals << ";\n";
-    auto its = summary.iterations;
-    for (int i = 0; i < its.size(); ++i) {
-      outf << "summary.iterations(" << i + 1
-           << ").iteration = " << its[i].iteration << ";\n";
-      outf << "summary.iterations(" << i + 1 << ").cost = " << its[i].cost
-           << ";\n";
-      outf << "summary.iterations(" << i + 1
-           << ").cost_change = " << its[i].cost_change << ";\n";
-      outf << "summary.iterations(" << i + 1
-           << ").gradient_max_norm = " << its[i].gradient_max_norm << ";\n";
-      outf << "summary.iterations(" << i + 1
-           << ").step_norm = " << its[i].step_norm << ";\n";
-      outf << "summary.iterations(" << i + 1
-           << ").relative_decrease = " << its[i].relative_decrease << ";\n";
-      outf << "summary.iterations(" << i + 1
-           << ").trust_region_radius = " << its[i].trust_region_radius << ";\n";
-      outf << "summary.iterations(" << i + 1 << ").eta = " << its[i].eta
-           << ";\n";
-      outf << "summary.iterations(" << i + 1
-           << ").linear_solver_iterations = " << its[i].linear_solver_iterations
-           << ";\n";
-    }
-  }
+BOOST_PYTHON_MODULE(libsphere_fit) {
+  np::initialize();
+
+  bp::class_<game::SphereFit>("SphereFit")
+      .def("run", &game::SphereFit::Run)
+      .def("summary", &game::SphereFit::Summary)
+      .def("set_solver_options", &game::SphereFit::SetSolverOptions);
 }

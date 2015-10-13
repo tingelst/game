@@ -27,8 +27,8 @@ include_directories(
   ${MANTELLA_INCLUDE_DIR}
   )
 
-add_executable(sphere_fit src/sphere_fit.cpp)
-target_link_libraries(sphere_fit ${CERES_LIBRARIES})
+add_library(sphere_fit SHARED src/sphere_fit.cpp)
+target_link_libraries(sphere_fit ${CERES_LIBRARIES} ${Boost_LIBRARIES})
 
 #add_executable(rotor_estimation src/rotor_estimation.cpp)
 #target_link_libraries(rotor_estimation ${CERES_LIBRARIES})

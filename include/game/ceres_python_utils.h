@@ -9,12 +9,15 @@ namespace bp = boost::python;
 namespace game {
 auto SummaryToDict(const ceres::Solver::Summary& summary) -> bp::dict {
   bp::dict summary_dict;
-  summary_dict["linear_solver_type_used"] =
-      std::string(ceres::LinearSolverTypeToString(summary.linear_solver_type_used));
+  summary_dict["linear_solver_type_used"] = std::string(
+      ceres::LinearSolverTypeToString(summary.linear_solver_type_used));
   summary_dict["num_parameter_blocks"] = summary.num_parameter_blocks;
   summary_dict["num_parameters"] = summary.num_parameters;
   summary_dict["num_residual_blocks"] = summary.num_residual_blocks;
   summary_dict["num_residuals"] = summary.num_residuals;
+  summary_dict["trust_region_strategy_type"] =
+      std::string(ceres::TrustRegionStrategyTypeToString(
+          summary.trust_region_strategy_type));
 
   bp::list iterations;
   auto its = summary.iterations;

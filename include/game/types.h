@@ -1,6 +1,8 @@
 #ifndef GAME_GAME_TYPES_H_
 #define GAME_GAME_TYPES_H_
 
+namespace game {
+
 namespace cga {
 template <typename T, int... components>
 using Multivector =
@@ -39,6 +41,8 @@ using Orig = Multivector<T, 8, 16>;
 
 template <typename T>
 using Point = Multivector<T, 1, 2, 4, 8, 16>;
+template <typename T>
+using Sphere = Point<T>;
 
 template <typename T>
 using Rotor = Multivector<T, 0, 3, 5, 6>;
@@ -47,7 +51,7 @@ using Translator = Multivector<T, 0, 9, 10, 12, 17, 18, 20>;
 template <typename T>
 using GeneralRotor = Multivector<T, 0, 3, 5, 6, 9, 10, 12, 17, 18, 20>;
 template <typename T>
-using Motor = Multivector<T,0,3,5,6,9,10,12,15,17,18,20,23>;
+using Motor = Multivector<T, 0, 3, 5, 6, 9, 10, 12, 15, 17, 18, 20, 23>;
 
 template <typename T>
 using Vector = Multivector<T, 1, 2, 4>;
@@ -55,6 +59,7 @@ template <typename T>
 using EuclideanVector = Vector<T>;
 template <typename T>
 using EuclideanPoint = EuclideanVector<T>;
+}
 }
 
 #endif  // GAME_GAME_TYPES_H_

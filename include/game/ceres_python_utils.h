@@ -18,6 +18,7 @@ auto SummaryToDict(const ceres::Solver::Summary& summary) -> bp::dict {
   summary_dict["trust_region_strategy_type"] =
       std::string(ceres::TrustRegionStrategyTypeToString(
           summary.trust_region_strategy_type));
+  summary_dict["minimizer_type"] = std::string(ceres::MinimizerTypeToString(summary.minimizer_type));
 
   bp::list iterations;
   auto its = summary.iterations;

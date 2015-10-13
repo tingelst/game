@@ -77,6 +77,29 @@ struct SphereFit {
     if (minimizer_progress_to_stdout.check()) {
       options_.minimizer_progress_to_stdout = minimizer_progress_to_stdout();
     }
+
+    bp::extract<std::string> minimizer_type(solver_options["minimizer_type"]);
+    if (minimizer_type.check()) {
+      ceres::StringToMinimizerType(minimizer_type(), &options_.minimizer_type);
+    }
+
+    bp::extract<bp::list> trust_region_minimizer_iterations_to_dump(
+        solver_options["trust_region_minimizer_iterations_to_dump"]);
+    if (trust_region_minimizer_iterations_to_dump.check()) {
+      std::vector<int> iterations_to_dump{};
+      bp::list list = trust_region_minimizer_iterations_to_dump();
+      for (int i = 0; i < bp::len(list); ++i) {
+        iterations_to_dump.push_back(bp::extract<int>(list[i])());
+      }
+      options_.trust_region_minimizer_iterations_to_dump = iterations_to_dump;
+    }
+
+    bp::extract<std::string> trust_region_problem_dump_directory(
+        solver_options["trust_region_problem_dump_directory"]);
+    if (trust_region_problem_dump_directory.check()) {
+      options_.trust_region_problem_dump_directory =
+          trust_region_problem_dump_directory();
+    }
   }
 
   struct CostFunctor {

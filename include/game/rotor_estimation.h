@@ -31,9 +31,9 @@ struct RotorPlus {
       T norm_delta = sqrt(squared_norm_delta);
       const T sin_delta_by_delta = sin(norm_delta) / norm_delta;
       q_delta[0] = cos(norm_delta);
-      q_delta[1] = -sin_delta_by_delta * delta[0];
-      q_delta[2] = -sin_delta_by_delta * delta[1];
-      q_delta[3] = -sin_delta_by_delta * delta[2];
+      q_delta[1] = sin_delta_by_delta * delta[0];
+      q_delta[2] = sin_delta_by_delta * delta[1];
+      q_delta[3] = sin_delta_by_delta * delta[2];
     } else {
       // We do not just use q_delta = [1,0,0,0] here because that is a
       // constant and when used for automatic differentiation will
@@ -46,13 +46,20 @@ struct RotorPlus {
     }
 
     cga::Rotor<T> r =
-        cga::Rotor<T>{q_delta[0], q_delta[1], q_delta[2], q_delta[3]} *
+        cga::Rotor<T>{q_delta[0], -q_delta[1], -q_delta[2], -q_delta[3]} *
         cga::Rotor<T>{x[0], x[1], x[2], x[3]};
+
+    //    std::cout << r[0] << std::endl;
+    //    std::cout << r[1] << std::endl;
+    //    std::cout << r[2] << std::endl;
+    //    std::cout << r[3] << std::endl;
 
     x_plus_delta[0] = r[0];
     x_plus_delta[1] = r[1];
     x_plus_delta[2] = r[2];
     x_plus_delta[3] = r[3];
+
+//    ceres::QuaternionProduct(q_delta, x, x_plus_delta);
 
     return true;
   }
@@ -142,14 +149,15 @@ struct RotorEstimation {
           RotorEstimation::Create(&a_data[cols_a * i], &b_data[cols_b * i]);
       problem_.AddResidualBlock(cost_function, NULL, parameters_data);
     }
-    problem_.SetParameterization(
-        parameters_data,
-        new ceres::AutoDiffLocalParameterization<RotorPlus, 4, 3>);
+
+    ceres::LocalParameterization* local_parameterization =
+        new ceres::AutoDiffLocalParameterization<RotorPlus, 4, 3>;
+    problem_.SetParameterization(parameters_data, local_parameterization);
 
     options_.max_num_iterations = 10;
     options_.linear_solver_type = ceres::DENSE_QR;
-//    options_.function_tolerance = 10e-12;
-//    options_.parameter_tolerance = 10e-12;
+    //    options_.function_tolerance = 10e-12;
+    //    options_.parameter_tolerance = 10e-12;
     options_.num_threads = 12;
     options_.num_linear_solver_threads = 12;
 

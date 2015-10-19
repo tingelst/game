@@ -37,6 +37,7 @@ auto SummaryToDict(const ceres::Solver::Summary& summary) -> bp::dict {
   }
   summary_dict["iterations"] = iterations;
   summary_dict["brief_report"] = summary.BriefReport();
+  summary_dict["full_report"] = summary.FullReport();
   return summary_dict;
 }
 }

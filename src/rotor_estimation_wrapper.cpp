@@ -2,6 +2,8 @@
 #include <boost/numpy.hpp>
 
 #include "game/rotor_estimation.h"
+#include "game/quaternion_estimation.h"
+#include "game/rotor_estimation.h"
 #include "game/rotor_bivector_generator_estimation.h"
 
 namespace bp = boost::python;
@@ -16,4 +18,8 @@ BOOST_PYTHON_MODULE(librotor_estimation) {
       "RotorBivectorGeneratorEstimation")
       .def("run", &game::RotorBivectorGeneratorEstimation::Run)
       .def("summary", &game::RotorBivectorGeneratorEstimation::Summary);
+  bp::class_<game::QuaternionEstimation>(
+      "QuaternionEstimation")
+      .def("run", &game::QuaternionEstimation::Run)
+      .def("summary", &game::QuaternionEstimation::Summary);
 }

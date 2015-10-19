@@ -11,3 +11,4 @@ def plot_xy_projection(a, b):
     plt.scatter(x,y,c = c)
     plt.show()
 
+

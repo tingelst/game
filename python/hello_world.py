@@ -10,4 +10,3 @@ op.run(x)
 
 summary = op.summary()
 print(summary['iterations'])
-

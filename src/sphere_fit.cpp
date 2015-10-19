@@ -102,6 +102,13 @@ struct SphereFit {
     }
   }
 
+  template <typename T, typename MultivectorT>
+  static auto Inverse(const MultivectorT &multivector) -> MultivectorT {
+    return cga::Scalar<T>{static_cast<T>(1.0) /
+                          hep::eval((multivector * ~multivector))[0]} *
+           ~multivector;
+  }
+
   struct CostFunctor {
     CostFunctor(const double *point) : point_(point) {}
 
@@ -129,17 +136,28 @@ struct SphereFit {
           hep::grade<1>(euc_point + half * euc_point * euc_point * ni + no);
 
       // Create conformal sphere
+      //      cga::Sphere<T> sphere = hep::eval(
+      //          static_cast<T>(s[0] / s[3]) * e1 + static_cast<T>(s[1] / s[3])
+      //          * e2 +
+      //          static_cast<T>(s[2] / s[3]) * e3 + static_cast<T>(s[4] / s[3])
+      //          * ni +
+      //          static_cast<T>(s[3] / s[3]) * no);
+
       cga::Sphere<T> sphere =
           hep::eval(static_cast<T>(s[0]) * e1 + static_cast<T>(s[1]) * e2 +
                     static_cast<T>(s[2]) * e3 + static_cast<T>(s[4]) * ni +
                     static_cast<T>(s[3]) * no);
 
       // Evaluate distance
+      //      auto distance = hep::eval(hep::inner_prod(point, sphere) *
+      //                                hep::inner_prod(point,
+      //                                Inverse<T>(sphere)));
+
       auto distance = hep::eval(hep::inner_prod(point, sphere));
       auto rho_squared = hep::eval(hep::inner_prod(sphere, sphere));
 
       residual[0] = distance[0] / sqrt(rho_squared[0]);
-      //          residual[0] = distance[0];
+      //      residual[0] = distance[0];
 
       return true;
     }

@@ -9,7 +9,7 @@ namespace np = boost::numpy;
 BOOST_PYTHON_MODULE(librigid_body_motion_estimation) {
   np::initialize();
 
-  bp::class_<game::RotorTranslationVectorEstimation>("RotorTranslationVectorEstimation")
+  bp::class_<game::RotorTranslationVectorEstimation>("RotorTranslationVectorEstimation", bp::init<const bp::dict&>())
       .def("run", &game::RotorTranslationVectorEstimation::Run)
       .def("summary", &game::RotorTranslationVectorEstimation::Summary);
 

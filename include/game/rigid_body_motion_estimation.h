@@ -175,6 +175,11 @@ struct RotorTranslationVectorEstimation {
                                        rotor_translation_vector_estimation) {}
   RotorTranslationVectorEstimation() {}
 
+
+  RotorTranslationVectorEstimation(const bp::dict& solver_options) {
+    SetSolverOptions(solver_options, options_);
+  }
+
   struct CostFunctor {
     CostFunctor(const double* a, const double* b) : a_(a), b_(b) {}
 
@@ -272,12 +277,7 @@ struct RotorTranslationVectorEstimation {
                                 translation_data);
     }
 
-    options_.max_num_iterations = 10;
-    options_.linear_solver_type = ceres::DENSE_QR;
-    options_.function_tolerance = 10e-12;
-    options_.parameter_tolerance = 10e-12;
-    options_.num_threads = 12;
-    options_.num_linear_solver_threads = 12;
+
 
     Solve(options_, &problem_, &summary_);
 

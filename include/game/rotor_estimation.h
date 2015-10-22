@@ -66,8 +66,85 @@ struct RotorPlus {
 };
 
 struct RotorEstimation {
+  RotorEstimation(bp::dict options) {
+    SetSolverOptions(options);
+  }
   RotorEstimation(const RotorEstimation& rotor_estimation) {}
   RotorEstimation() {}
+
+
+  void SetSolverOptions(const bp::dict &solver_options) {
+    bp::extract<std::string> linear_solver_type(
+        solver_options["linear_solver_type"]);
+    if (linear_solver_type.check()) {
+      ceres::StringToLinearSolverType(linear_solver_type(),
+                                      &options_.linear_solver_type);
+    }
+
+    bp::extract<int> max_num_iterations(solver_options["max_num_iterations"]);
+    if (max_num_iterations.check()) {
+      options_.max_num_iterations = max_num_iterations();
+    }
+
+    bp::extract<int> num_threads(solver_options["num_threads"]);
+    if (num_threads.check()) {
+      options_.num_threads = num_threads();
+    }
+
+    bp::extract<int> num_linear_solver_threads(
+        solver_options["num_linear_solver_threads"]);
+    if (num_linear_solver_threads.check()) {
+      options_.num_linear_solver_threads = num_linear_solver_threads();
+    }
+
+    bp::extract<double> parameter_tolerance(
+        solver_options["parameter_tolerance"]);
+    if (parameter_tolerance.check()) {
+      options_.parameter_tolerance = parameter_tolerance();
+    }
+
+    bp::extract<double> function_tolerance(
+        solver_options["function_tolerance"]);
+    if (function_tolerance.check()) {
+      options_.function_tolerance = function_tolerance();
+    }
+
+    bp::extract<std::string> trust_region_strategy_type(
+        solver_options["trust_region_strategy_type"]);
+    if (trust_region_strategy_type.check()) {
+      ceres::StringToTrustRegionStrategyType(
+          trust_region_strategy_type(), &options_.trust_region_strategy_type);
+    }
+
+    bp::extract<bool> minimizer_progress_to_stdout(
+        solver_options["minimizer_progress_to_stdout"]);
+    if (minimizer_progress_to_stdout.check()) {
+      options_.minimizer_progress_to_stdout = minimizer_progress_to_stdout();
+    }
+
+    bp::extract<std::string> minimizer_type(solver_options["minimizer_type"]);
+    if (minimizer_type.check()) {
+      ceres::StringToMinimizerType(minimizer_type(), &options_.minimizer_type);
+    }
+
+    bp::extract<bp::list> trust_region_minimizer_iterations_to_dump(
+        solver_options["trust_region_minimizer_iterations_to_dump"]);
+    if (trust_region_minimizer_iterations_to_dump.check()) {
+      std::vector<int> iterations_to_dump{};
+      bp::list list = trust_region_minimizer_iterations_to_dump();
+      for (int i = 0; i < bp::len(list); ++i) {
+        iterations_to_dump.push_back(bp::extract<int>(list[i])());
+      }
+      options_.trust_region_minimizer_iterations_to_dump = iterations_to_dump;
+    }
+
+    bp::extract<std::string> trust_region_problem_dump_directory(
+        solver_options["trust_region_problem_dump_directory"]);
+    if (trust_region_problem_dump_directory.check()) {
+      options_.trust_region_problem_dump_directory =
+          trust_region_problem_dump_directory();
+    }
+  }
 
   template <typename T>
   static void NormalizeRotor(T* array) {
@@ -154,16 +231,8 @@ struct RotorEstimation {
         new ceres::AutoDiffLocalParameterization<RotorPlus, 4, 3>;
     problem_.SetParameterization(parameters_data, local_parameterization);
 
-    options_.max_num_iterations = 10;
-    options_.linear_solver_type = ceres::DENSE_QR;
-    //    options_.function_tolerance = 10e-12;
-    //    options_.parameter_tolerance = 10e-12;
-    options_.num_threads = 12;
-    options_.num_linear_solver_threads = 12;
-
     Solve(options_, &problem_, &summary_);
 
-    //    NormalizeRotor(parameters_data);
 
     return parameters;
   }

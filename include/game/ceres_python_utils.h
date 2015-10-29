@@ -5,8 +5,50 @@
 #include <ceres/ceres.h>
 
 namespace bp = boost::python;
+namespace np = boost::numpy;
 
 namespace game {
+
+void CheckContiguousArray(const np::ndarray& m, const std::string& name) {
+  if (!(m.get_flags() & np::ndarray::C_CONTIGUOUS)) {
+    std::stringstream ss;
+    ss << name << ": Array is not c contiguous";
+    PyErr_SetString(PyExc_RuntimeError, ss.str().c_str());
+    bp::throw_error_already_set();
+  }
+}
+
+void CheckCols(const np::ndarray& m, const std::string& name, int cols) {
+  int cols_actual = m.shape(1);
+  if (!(cols_actual == cols)) {
+    std::stringstream ss;
+    ss << name << ": Array must have shape (N," << cols << ")";
+    PyErr_SetString(PyExc_RuntimeError, ss.str().c_str());
+    bp::throw_error_already_set();
+  }
+}
+void CheckRows(const np::ndarray& m, const std::string& name, int rows) {
+  int rows_actual = m.shape(0);
+  if (!(rows_actual == rows)) {
+    std::stringstream ss;
+    ss << name << ": Array must have shape (" << rows << ", n)";
+    PyErr_SetString(PyExc_RuntimeError, ss.str().c_str());
+    bp::throw_error_already_set();
+  }
+}
+
+void CheckArrayShape(const np::ndarray& m, const std::string& name, int rows,
+                     int cols) {
+  int rows_actual = m.shape(0);
+  int cols_actual = m.shape(1);
+  if (!((rows_actual == rows) && (cols_actual == cols))) {
+    std::stringstream ss;
+    ss << name << ": Array must have shape (" << rows << "," << cols << ")";
+    PyErr_SetString(PyExc_RuntimeError, ss.str().c_str());
+    bp::throw_error_already_set();
+  }
+}
+
 auto SummaryToDict(const ceres::Solver::Summary& summary) -> bp::dict {
   bp::dict summary_dict;
   summary_dict["linear_solver_type_used"] = std::string(
@@ -18,7 +60,8 @@ auto SummaryToDict(const ceres::Solver::Summary& summary) -> bp::dict {
   summary_dict["trust_region_strategy_type"] =
       std::string(ceres::TrustRegionStrategyTypeToString(
           summary.trust_region_strategy_type));
-  summary_dict["minimizer_type"] = std::string(ceres::MinimizerTypeToString(summary.minimizer_type));
+  summary_dict["minimizer_type"] =
+      std::string(ceres::MinimizerTypeToString(summary.minimizer_type));
 
   bp::list iterations;
   auto its = summary.iterations;
@@ -41,7 +84,8 @@ auto SummaryToDict(const ceres::Solver::Summary& summary) -> bp::dict {
   return summary_dict;
 }
 
-void SetSolverOptions(const bp::dict &solver_options, ceres::Solver::Options& options) {
+void SetSolverOptions(const bp::dict& solver_options,
+                      ceres::Solver::Options& options) {
   bp::extract<std::string> linear_solver_type(
       solver_options["linear_solver_type"]);
   if (linear_solver_type.check()) {
@@ -71,14 +115,12 @@ void SetSolverOptions(const bp::dict &solver_options, ceres::Solver::Options& op
     options.parameter_tolerance = parameter_tolerance();
   }
 
-  bp::extract<double> function_tolerance(
-      solver_options["function_tolerance"]);
+  bp::extract<double> function_tolerance(solver_options["function_tolerance"]);
   if (function_tolerance.check()) {
     options.function_tolerance = function_tolerance();
   }
 
-  bp::extract<double> gradient_tolerance(
-      solver_options["gradient_tolerance"]);
+  bp::extract<double> gradient_tolerance(solver_options["gradient_tolerance"]);
   if (gradient_tolerance.check()) {
     options.gradient_tolerance = gradient_tolerance();
   }
@@ -86,8 +128,8 @@ void SetSolverOptions(const bp::dict &solver_options, ceres::Solver::Options& op
   bp::extract<std::string> trust_region_strategy_type(
       solver_options["trust_region_strategy_type"]);
   if (trust_region_strategy_type.check()) {
-    ceres::StringToTrustRegionStrategyType(
-        trust_region_strategy_type(), &options.trust_region_strategy_type);
+    ceres::StringToTrustRegionStrategyType(trust_region_strategy_type(),
+                                           &options.trust_region_strategy_type);
   }
 
   bp::extract<bool> minimizer_progress_to_stdout(
@@ -119,6 +161,5 @@ void SetSolverOptions(const bp::dict &solver_options, ceres::Solver::Options& op
         trust_region_problem_dump_directory();
   }
 }
-
 }
 #endif  // GAME_GAME_CERES_PYTHON_UTILS_H_

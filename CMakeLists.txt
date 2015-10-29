@@ -3,7 +3,7 @@ project(game)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O1 ")
 
 find_package(Boost REQUIRED COMPONENTS python numpy)
 find_package(PythonLibs 2.7 REQUIRED)
@@ -59,6 +59,8 @@ target_link_libraries(mantella_test ${ARMADILLO_LIBRARIES} ${MANTELLA_LIBRARIES}
 enable_testing(true)
 file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/*.cpp)
 
+add_executable(test_speed_no_ceres test/test_speed.cpp)
+
 #Run through each source
 foreach(TEST_SRC ${TEST_SRCS})
   #Extract the filename without an extension (NAME_WE)
@@ -67,6 +69,8 @@ foreach(TEST_SRC ${TEST_SRCS})
   #Add compile target
   add_executable(${TEST} ${TEST_SRC})
       target_link_libraries(${TEST} ${CERES_LIBRARIES})
+
+
 
   #Finally add it to test execution -
   add_test(NAME ${TEST}

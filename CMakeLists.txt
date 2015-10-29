@@ -17,15 +17,16 @@ find_package(Armadillo)
 find_package(Mantella)
 
 include_directories(
-  include
-  ${Boost_INCLUDE_DIRS}
-  ${PYTHON_INCLUDE_DIRS}
-  ${HEPGA_INCLUDE_DIR}
-  ${CERES_INCLUDE_DIRS}
-  ${CATCH_INCLUDE_DIR}
-  ${ARMADILLO_INCLUDE_DIR}
-  ${MANTELLA_INCLUDE_DIR}
-  )
+        include
+        third_party/Adept/include
+        ${Boost_INCLUDE_DIRS}
+        ${PYTHON_INCLUDE_DIRS}
+        ${HEPGA_INCLUDE_DIR}
+        ${CERES_INCLUDE_DIRS}
+        ${CATCH_INCLUDE_DIR}
+        ${ARMADILLO_INCLUDE_DIR}
+        ${MANTELLA_INCLUDE_DIR}
+)
 
 add_library(sphere_fit SHARED src/sphere_fit.cpp)
 target_link_libraries(sphere_fit ${CERES_LIBRARIES} ${Boost_LIBRARIES})
@@ -59,6 +60,7 @@ foreach(TEST_SRC ${TEST_SRCS})
 
   #Add compile target
   add_executable(${TEST} ${TEST_SRC})
+      target_link_libraries(${TEST} ${CERES_LIBRARIES})
 
   #Finally add it to test execution -
   add_test(NAME ${TEST}

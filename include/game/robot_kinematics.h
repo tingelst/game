@@ -1,15 +1,13 @@
-//
-// Created by lars on 26.10.15.
-//
+#ifndef GAME_GAME_ROBOT_KINEMATICS_H_
+#define GAME_GAME_ROBOT_KINEMATICS_H_
 
-#ifndef GAME_ROBOT_KINEMATICS_H
-#define GAME_ROBOT_KINEMATICS_H
+#include "game/types.h"
 
-
-class robot_kinematics
-{
-
-};
+//class ForwardKinematics
 
 
-#endif //GAME_ROBOT_KINEMATICS_H
+
+
+
+
+#endif  // GAME_GAME_ROBOT_KINEMATICS_H_

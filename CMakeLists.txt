@@ -5,8 +5,6 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-
-find_package(Catch)
 find_package(Boost REQUIRED COMPONENTS python numpy)
 find_package(PythonLibs 2.7 REQUIRED)
 
@@ -41,6 +39,14 @@ target_link_libraries(rotor_estimation ${CERES_LIBRARIES} ${Boost_LIBRARIES})
 
 add_library(rigid_body_motion_estimation SHARED src/rigid_body_motion_estimation_wrapper.cpp)
 target_link_libraries(rigid_body_motion_estimation ${CERES_LIBRARIES} ${Boost_LIBRARIES})
+
+add_library(kinematic_calibration SHARED
+        src/kinematic_calibration_wrapper.cpp)
+target_link_libraries(kinematic_calibration
+        ${CERES_LIBRARIES}
+        ${Boost_LIBRARIES})
+
+
 
 
 add_library(hello_world SHARED src/hello_world.cpp)

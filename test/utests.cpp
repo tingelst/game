@@ -65,7 +65,6 @@ struct MotorCostFunctor {
   template <typename T>
       bool operator()(const T* const m, T* residuals) const {
 
-    Motor<T> m = CreateMotorFromArray()
 
     return true;
   }

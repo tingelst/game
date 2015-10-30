@@ -141,54 +141,21 @@ auto KinematicCalibration::Summary() -> bp::dict {
 }
 
 ceres::CostFunction* KinematicCalibration::Create(const double* q) {
-  return (
-      new ceres::AutoDiffCostFunction<KinematicCalibration::CostFunctor, 3, 8, 8, 8, 8, 8, 8, 8>(
-          new KinematicCalibration::CostFunctor(q)));
+  return (new ceres::AutoDiffCostFunction<KinematicCalibration::CostFunctor, 3,
+                                          8, 8, 8, 8, 8, 8, 8>(
+      new KinematicCalibration::CostFunctor(q)));
 }
 
 template <typename T>
-cga::Motor<T> CreateMotorFromArray(T* motor) {
-  cga::Infty<T> ni{static_cast<T>(1.0), static_cast<T>(1.0)};
-  cga::E1<T> e1{static_cast<T>(1.0)};
-  cga::E2<T> e2{static_cast<T>(1.0)};
-  cga::E3<T> e3{static_cast<T>(1.0)};
-  return hep::eval(
-      hep::eval(cga::Rotor<T>{motor[0], motor[1], motor[2], motor[3]}) +
-      hep::eval(cga::Scalar<T>{motor[4]} * e1 * ni) +
-      hep::eval(cga::Scalar<T>{motor[5]} * e2 * ni) +
-      hep::eval(cga::Scalar<T>{motor[6]} * e3 * ni) +
-      hep::eval(cga::Scalar<T>{motor[7]} * e1 * e2 * e3 * ni));
+versor::Motor<T> CreateMotorFromArray(const T* m) {
+  return versor::Motor<T>{m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7]};
 }
-
-template <typename T>
-cga::Translator<T> CreateTranslatorFromArray(T* translation) {
-  return hep::eval(
-      cga::Scalar<T>{T(1.0)} -
-      cga::Scalar<T>{T(0.5)} *
-          cga::Vector<T>{translation[0], translation[1], translation[2]} *
-          cga::ni<T>());
-}
-
-template <typename T>
-cga::Rotor<T> CreateRotorFromArray(T* rotor) {
-  return cga::Rotor<T>{rotor[0], rotor[1], rotor[2], rotor[3]};
-}
-
-int COUNT = 0;
 
 template <typename T>
 bool KinematicCalibration::CostFunctor::operator()(
     const T* const m0, const T* const m1, const T* const m2, const T* const m3,
     const T* const m4, const T* const m5, const T* const m6,
     T* residual) const {
-  cga::Infty<T> ni{static_cast<T>(-1.0), static_cast<T>(1.0)};
-  cga::Orig<T> no{static_cast<T>(0.5), static_cast<T>(0.5)};
-  cga::E1<T> e1{static_cast<T>(1.0)};
-  cga::E2<T> e2{static_cast<T>(1.0)};
-  cga::E3<T> e3{static_cast<T>(1.0)};
-  cga::Scalar<T> half{static_cast<T>(0.5)};
-  cga::Scalar<T> one{static_cast<T>(1.0)};
-
   T t0m[3] = {T(1.0), T(0.0), T{1.0}};
   T t1m[3] = {T(1.0), T(0.0), T{1.0}};
   T t2m[3] = {T(1.0), T(0.0), T{1.0}};
@@ -205,102 +172,47 @@ bool KinematicCalibration::CostFunctor::operator()(
   T r5m[4] = {cos(T(q_[5] / 2.0)), T(0.0), -sin(T(q_[5]) / 2.0), T(0.0)};
   T r6m[4] = {cos(T(q_[6] / 2.0)), T(0.0), -sin(T(q_[6]) / 2.0), T(0.0)};
 
+  versor::Motor<T> m0m{r0m[0],r0m[1],r0m[2],r0m[3]};
+  versor::Motor<T> m1m;
+  m1m[0] = T(1.0);
+  versor::Motor<T> m2m;
+  m2m[0] = T(1.0);
+  versor::Motor<T> m3m;
+  m3m[0] = T(1.0);
+  versor::Motor<T> m4m;
+  m4m[0] = T(1.0);
+  versor::Motor<T> m5m;
+  m5m[0] = T(1.0);
+  versor::Motor<T> m6m;
+  m6m[0] = T(1.0);
+
+  versor::Motor<T> m0c = CreateMotorFromArray(const_cast<T*>(m0));
+  versor::Motor<T> m1c = CreateMotorFromArray(const_cast<T*>(m1));
+  versor::Motor<T> m2c = CreateMotorFromArray(const_cast<T*>(m2));
+  versor::Motor<T> m3c = CreateMotorFromArray(const_cast<T*>(m3));
+  versor::Motor<T> m4c = CreateMotorFromArray(const_cast<T*>(m4));
+  versor::Motor<T> m5c = CreateMotorFromArray(const_cast<T*>(m5));
+  versor::Motor<T> m6c = CreateMotorFromArray(const_cast<T*>(m6));
+
   // Error Motor
 
-  T r_error[4] = {cos(T(kPi / 6.0)), T(0.0), -sin(T(kPi / 6.0)), T(0.0)};
-  T t_error[3] = {T(0.1), T(0.1), T{1.0}};
-  cga::Motor<T> m_error = hep::eval(CreateTranslatorFromArray(t_error) *
-                                    CreateRotorFromArray(r_error));
+  T r_error[4] = {cos(T(kPi / 4.0)), T(0.0), -sin(T(kPi / 4.0)), T(0.0)};
+  versor::Translator<T> trs_error{T(1.0), T(-0.0), T(-1.0), T(-0.0)};
+  versor::Rotor<T> rot_error{r_error[0], r_error[1], r_error[2], r_error[3]};
+  versor::Motor<T> m_error = (trs_error * rot_error);
 
-//  cga::Motor<T> m0m =
-//      hep::eval(CreateTranslatorFromArray(t0m) * CreateRotorFromArray(r0m));
-  cga::Motor<T> m1m =
-      hep::eval(CreateTranslatorFromArray(t1m) * CreateRotorFromArray(r1m));
-//  cga::Motor<T> m2m =
-//      hep::eval(CreateTranslatorFromArray(t2m) * CreateRotorFromArray(r2m));
-//  cga::Motor<T> m3m =
-//      hep::eval(CreateTranslatorFromArray(t3m) * CreateRotorFromArray(r3m));
-//  cga::Motor<T> m4m =
-//      hep::eval(CreateTranslatorFromArray(t4m) * CreateRotorFromArray(r4m));
-//  cga::Motor<T> m5m =
-//      hep::eval(CreateTranslatorFromArray(t5m) * CreateRotorFromArray(r5m));
-//  cga::Motor<T> m6m =
-//      hep::eval(CreateTranslatorFromArray(t6m) * CreateRotorFromArray(r6m));
-//  //
-  //  // robot model
-  //  T m0_tmp[8] = {m0[0], m0[1], m0[2], m0[3], m0[4], m0[5], m0[6], m0[7]};
-  //  cga::Motor<T> m0c = CreateMotorFromArray(m0_tmp);
-//  cga::Motor<T> m0c = CreateMotorFromArray(const_cast<T*>(m0));
-  cga::Motor<T> m1c = CreateMotorFromArray(const_cast<T*>(m1));
-//  cga::Motor<T> m2c = CreateMotorFromArray(const_cast<T*>(m2));
-//  cga::Motor<T> m3c = CreateMotorFromArray(const_cast<T*>(m3));
-//  cga::Motor<T> m4c = CreateMotorFromArray(const_cast<T*>(m4));
-//  cga::Motor<T> m5c = CreateMotorFromArray(const_cast<T*>(m5));
-//  cga::Motor<T> m6c = CreateMotorFromArray(const_cast<T*>(m6));
+  versor::Vector<T> a{T(1.0), T(0.0), T(0.0)};
+  versor::Point<T> pm =
+      a + versor::Scalar<T>{T(0.5)} * a * a * versor::Inf<T>{T(1.0)} + versor::Ori<T>{T(1.0)};
+  versor::Point<T> pc =
+      a + versor::Scalar<T>{T(0.5)} * a * a * versor::Inf<T>{T(1.0)} + versor::Ori<T>{T(1.0)};
 
-//  cga::Motor<T> m0cal = hep::eval(
-//      hep::select<0, 3, 5, 6, 9, 10, 12, 15, 17, 18, 20, 23>(m0c * m0m * ~m0c));
-  cga::Motor<T> m1cal = hep::eval(
-      hep::select<0, 3, 5, 6, 9, 10, 12, 15, 17, 18, 20, 23>(m1c * m1m * ~m1c));
-//  cga::Motor<T> m2cal = hep::eval(
-//      hep::select<0, 3, 5, 6, 9, 10, 12, 15, 17, 18, 20, 23>(m2c * m2m * ~m2c));
-//  cga::Motor<T> m3cal = hep::eval(
-//      hep::select<0, 3, 5, 6, 9, 10, 12, 15, 17, 18, 20, 23>(m3c * m3m * ~m3c));
-//  cga::Motor<T> m4cal = hep::eval(
-//      hep::select<0, 3, 5, 6, 9, 10, 12, 15, 17, 18, 20, 23>(m4c * m4m * ~m4c));
-//  cga::Motor<T> m5cal = hep::eval(
-//      hep::select<0, 3, 5, 6, 9, 10, 12, 15, 17, 18, 20, 23>(m5c * m5m * ~m5c));
-//  cga::Motor<T> m6cal = hep::eval(
-//      hep::select<0, 3, 5, 6, 9, 10, 12, 15, 17, 18, 20, 23>(m6c * m6m * ~m6c));
+  versor::Point<T> pm_error = pm.sp(m0m.sp(m_error));
+  versor::Point<T> pc_error = pc.sp(m0c).sp(m1c).sp(m2c).sp(m3c).sp(m4c).sp(m5c).sp(m6c);
 
-//  cga::Motor<T> mm = hep::select<0, 3, 5, 6, 9, 10, 12, 15, 17, 18, 20, 23>(
-//      m0m * m1m * m_error * m2m * ~m_error
-//  );
-//  * m3m * m4m * m5m * m6m);
-//
-//  cga::Motor<T> mc = hep::select<0, 3, 5, 6, 9, 10, 12, 15, 17, 18, 20, 23>(
-//      m0cal * m1cal * m2cal
-//  );
-
-//      * m3cal * m4cal * m5cal * m6cal);
-
-  cga::Point<T> pm{T(0.0), T(0.0), T(0.0), T(0.5), T(0.5)};  // no
-  cga::Point<T> pc{T(0.0), T(0.0), T(0.0), T(0.5), T(0.5)};  // no
-
-
-//  cga::Point<T> pm6 = hep::grade<1>(m6m * pm  * ~m6m);
-//  cga::Point<T> pm5 = hep::grade<1>(m5m * pm6 * ~m5m);
-//  cga::Point<T> pm4 = hep::grade<1>(m4m * pm5 * ~m4m);
-//  cga::Point<T> pm3 = hep::grade<1>(m3m * pm4 * ~m3m);
-//  cga::Point<T> pm2 = hep::grade<1>(m2m * pm3 * ~m2m);
-//  cga::Point<T> pm1 = hep::grade<1>(m_error * m1m * ~m_error * pm * m_error * ~m1m * ~m_error);
-//  cga::Point<T> pm0 = hep::grade<1>(m0m * pm1 * ~m0m);
-
-//  cga::Point<T> pc6 = hep::grade<1>(m6cal * pc  * ~m6cal);
-//  cga::Point<T> pc5 = hep::grade<1>(m5cal * pc6 * ~m5cal);
-//  cga::Point<T> pc4 = hep::grade<1>(m4cal * pc5 * ~m4cal);
-//  cga::Point<T> pc3 = hep::grade<1>(m3cal * pc4 * ~m3cal);
-//  cga::Point<T> pc2 = hep::grade<1>(m2cal * pc3 * ~m2cal);
-//  cga::Point<T> pc1 = hep::grade<1>(m1cal * pc * ~m1cal);
-//  cga::Point<T> pc0 = hep::grade<1>(m0cal * pc1 * ~m0cal);
-
-  cga::Motor<T> m0t;
-  cga::Motor<T> m1t;
-  cga::Motor<T> m2t;
-  cga::Motor<T> m3t;
-  cga::Motor<T> m4t;
-  cga::Motor<T> m5t;
-
-  auto mtest = m0t;// * m1t * m2t * m3t * m4t * m5t;
-
-  cga::Point<T> ptest = hep::grade<1>(mtest * pm * ~mtest);
-
-  cga::Point<T> pme;
-  cga::Point<T> pce;
-
-  residual[0] = pc[0] - ptest[0];
-  residual[1] = pc[1] - ptest[1];
-  residual[2] = pc[2] - ptest[2];
+  residual[0] = pc_error[0] - pm_error[0];
+  residual[1] = pc_error[1] - pm_error[1];
+  residual[2] = pc_error[2] - pm_error[2];
 
   return true;
 }

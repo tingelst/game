@@ -2,8 +2,42 @@
 #define GAME_GAME_TYPES_H_
 
 #include <hep/ga.hpp>
+#include <vsr/vsr.h>
 
 namespace game {
+
+namespace versor {
+
+template <typename T>
+using cga = vsr::algebra<vsr::metric<4, 1, true>, T>;
+
+template <typename T>
+using Scalar = vsr::GASca<cga<T>>;
+template <typename T>
+using Vector = vsr::GAVec<cga<T>>;
+template <typename T>
+using Bivector = vsr::GABiv<cga<T>>;
+template <typename T>
+using Rotor = vsr::GARot<cga<T>>;
+template <typename T>
+using Point = vsr::GAPnt<cga<T>>;
+template <typename T>
+using Ori = vsr::GAOri<cga<T>>;
+template <typename T>
+using Inf = vsr::GAInf<cga<T>>;
+template <typename T>
+using Motor = vsr::GAMot<cga<T>>;
+template <typename T>
+using Translator = vsr::GATrs<cga<T>>;
+template <typename T>
+using DirectionVector = vsr::GADrv<cga<T>>;
+
+using Scalard = Scalar<double>;
+using Vectord = Vector<double>;
+using Bivectord = Bivector<double>;
+using Rotord = Rotor<double>;
+using Motord = Motor<double>;
+}
 
 namespace cga {
 template <typename T, int... components>
@@ -67,7 +101,6 @@ template <typename T>
 Infty<T> ni() {
   return Infty<T>{T(-1.0), T(1.0)};
 }
-
 }
 }
 

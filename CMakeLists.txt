@@ -3,7 +3,7 @@ project(game)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O1 ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O0 -ftemplate-depth-1200 -Wno-switch -Wno-deprecated-declarations -Wno-int-to-pointer-cast")
 
 find_package(Boost REQUIRED COMPONENTS python numpy)
 find_package(PythonLibs 2.7 REQUIRED)
@@ -16,6 +16,7 @@ find_package(Mantella)
 
 include_directories(
         include
+        third_party/versor/include/
         third_party/Adept/include
         ${Boost_INCLUDE_DIRS}
         ${PYTHON_INCLUDE_DIRS}
@@ -42,13 +43,14 @@ add_library(rigid_body_motion_estimation SHARED src/rigid_body_motion_estimation
 target_link_libraries(rigid_body_motion_estimation ${CERES_LIBRARIES} ${Boost_LIBRARIES})
 
 add_library(kinematic_calibration SHARED
-        src/kinematic_calibration_wrapper.cpp)
+        src/versor_kinematic_calibration_wrapper.cpp)
+set_target_properties(kinematic_calibration PROPERTIES COMPILE_FLAGS "-save-temps ")
 target_link_libraries(kinematic_calibration
         ${CERES_LIBRARIES}
         ${Boost_LIBRARIES})
 
-
-
+add_executable(test_versor src/versor_rotor_estimation.cpp)
+target_link_libraries(test_versor ${CERES_LIBRARIES})
 
 add_library(hello_world SHARED src/hello_world.cpp)
 target_link_libraries(hello_world ${CERES_LIBRARIES} ${Boost_LIBRARIES})

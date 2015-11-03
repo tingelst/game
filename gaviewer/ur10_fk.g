@@ -69,9 +69,11 @@ dynamic{M03: M03 = M0 M1 M2 M3;}
 dynamic{M04: M04 = M0 M1 M2 M3 M4;};
 dynamic{M05: M05 = M0 M1 M2 M3 M4 M5;}
 
-cog0 = vp(M0, c3ga_point(0.021, 0.000, 0.027))
-cog1 = vp(M01, c3ga_point( 0.38, 0.000, 0.158))
-cog2 = vp(M02, c3ga_point( 0.24, 0.000, 0.068))
+dynamic{cog0: cog0 = vp(M0, c3ga_point(0.021, 0.000, 0.027)),};
+dynamic{cog1: cog1 = vp(M01, c3ga_point( 0.38, 0.000, 0.158)),};
+dynamic{cog2: cog2 = vp(M02, c3ga_point( 0.24, 0.000, 0.068)),};
+dynamic{cog3: cog2 = vp(M02, c3ga_point( 0.24, 0.000, 0.068)),};
+dynamic{cog4: cog2 = vp(M02, c3ga_point( 0.24, 0.000, 0.068)),};
 
 // Tangents at each joint
 dynamic{t: t = yellow(weight(          no^e3)),},

@@ -29,6 +29,12 @@ function rLog(V) {
 	return(grade( - ((t^I)/I) ni/2 + (1/(1-R R))(t.I) ni phih - I phih, 2));
 }
 
+function cp(a,b) {
+return 0.5 * (a b - b a);
+}
+
+
+
 batch reset_th() {
 for (i=0;i<6;i=i+1) {
   th[i] = 0.0;
@@ -37,19 +43,24 @@ for (i=0;i<6;i=i+1) {
 
 batch ur10_fk() {
 
+add_const(I3 = e1 ^ e2 ^ e3);
+add_const(E = no ^ ni);
+
 e1_ = red(e1), e2_ = green(e2), e3_ = blue(e3),
 
 for (i=0;i<6;i=i+1) {
   th[i] = 0.0;
   ctrl_range(th[i], -2 pi, 2 pi);
 };
-th[1] = -pi/2;
-th[3] = -pi/2;
+// th[0] = 0.5;
+// th[1] = -pi/2;
+// th[3] = -pi/2;
 
+g = -9.81 e3 ni;
 
-a[0]=0;          a[1]=-0.6127; a[2]=-0.5716; a[3]=0;       a[4]=0;        a[5]=0;
+a[0]=0;          a[1]=-0.612; a[2]=-0.5723; a[3]=0;       a[4]=0;        a[5]=0;
 alph[0]=pi/2; alph[1]=0;    alph[2]=0;    alph[3]=pi/2; alph[4]=-pi/2; alph[5]=0;
-d[0]=0.118;      d[1]=0;       d[2]=0;       d[3]=0.1639;  d[4]=0.1157;   d[5]=0.0922;
+d[0]=0.1273;      d[1]=0;       d[2]=0;       d[3]=0.163941;  d[4]=0.1157;   d[5]=0.0922;
 
 // base plane
 plane = e3 + 0 ni,
@@ -69,11 +80,35 @@ dynamic{M03: M03 = M0 M1 M2 M3;}
 dynamic{M04: M04 = M0 M1 M2 M3 M4;};
 dynamic{M05: M05 = M0 M1 M2 M3 M4 M5;}
 
-dynamic{cog0: cog0 = vp(M0, c3ga_point(0.021, 0.000, 0.027)),};
+
+m0 = 7.1;
+m1 = 12.7;
+m2 = 4.27; 
+m3 = 2.0;
+m4 = 2.0; 
+m5 = 0.365;
+
+mL1 =  m1 + m2 +m3 + m4 + m5;
+mL2 =  m2 +m3 + m4 + m5;
+
+dynamic{cog0: cog0 = vp(M0,  c3ga_point(0.021, 0.000, 0.027)),};
 dynamic{cog1: cog1 = vp(M01, c3ga_point( 0.38, 0.000, 0.158)),};
 dynamic{cog2: cog2 = vp(M02, c3ga_point( 0.24, 0.000, 0.068)),};
-dynamic{cog3: cog2 = vp(M02, c3ga_point( 0.24, 0.000, 0.068)),};
-dynamic{cog4: cog2 = vp(M02, c3ga_point( 0.24, 0.000, 0.068)),};
+dynamic{cog3: cog3 = vp(M02, c3ga_point( 0.0, 0.007, 0.018)),};
+dynamic{cog4: cog4 = vp(M02, c3ga_point( 0.0, 0.007, 0.018)),};
+dynamic{cog5: cog5 = vp(M02, c3ga_point( 0.0, 0.000, -0.026)),};
+
+dynamic{cogmL1 : cogML1 = green((1 / mL1) (m1 cog1 + m2 cog2 + m3 cog3 + m4 cog4 + m5 cog5)),};
+dynamic{cogmL2 : cogML2 = blue((1 / mL2) (m2 cog2 + m3 cog3 + m4 cog4 + m5 cog5)),};
+
+
+L = dual(no ^ e3 ^ ni),
+dynamic{L0 : L0 = vp(M0, L),};
+dynamic{L1 : L1 = vp(M01, L),};
+dynamic{L2 : L2 = vp(M02, L),};
+dynamic{L3 : L3 = vp(M03, L),};
+dynamic{L4 : L4 = vp(M04, L),};
+dynamic{L5 : L5 = vp(M05, L),};
 
 // Tangents at each joint
 dynamic{t: t = yellow(weight(          no^e3)),},
@@ -120,5 +155,8 @@ dynamic{xerr05: xerr05 = red(vp(Merr05, no^e1)),};
 dynamic{yerr05: yerr05 = green(vp(Merr05, no^e2)),};
 dynamic{zerr05: zerr05 = blue(vp(Merr05, no^e3)),};
 
+// Torque
+dynamic{tau: tau = yellow((p5 . L0)),};
+// dynamic{print(tau);};
 
 }

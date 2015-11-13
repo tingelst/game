@@ -3,6 +3,7 @@
 
 #include <boost/python.hpp>
 #include <ceres/ceres.h>
+#include <glog/logging.h>
 
 namespace bp = boost::python;
 namespace np = boost::numpy;
@@ -47,6 +48,13 @@ void CheckArrayShape(const np::ndarray& m, const std::string& name, int rows,
     PyErr_SetString(PyExc_RuntimeError, ss.str().c_str());
     bp::throw_error_already_set();
   }
+}
+
+void CheckContiguousArrayAndArrayShape(const np::ndarray& m,
+                                       const std::string& name, int rows,
+                                       int cols) {
+  CheckContiguousArray(m, name);
+  CheckArrayShape(m, name, rows, cols);
 }
 
 auto SummaryToDict(const ceres::Solver::Summary& summary) -> bp::dict {

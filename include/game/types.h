@@ -30,13 +30,23 @@ using Motor = vsr::GAMot<cga<T>>;
 template <typename T>
 using Translator = vsr::GATrs<cga<T>>;
 template <typename T>
+using GeneralRotor = decltype(Translator<T>() * Rotor<T>() * ~Translator<T>());
+template <typename T>
 using DirectionVector = vsr::GADrv<cga<T>>;
+template <typename T>
+using DualLine = vsr::GADll<cga<T>>;
 
 using Scalard = Scalar<double>;
 using Vectord = Vector<double>;
 using Bivectord = Bivector<double>;
+using Pointd = Point<double>;
 using Rotord = Rotor<double>;
+using Translatord = Translator<double>;
+using GeneralRotord = GeneralRotor<double>;
 using Motord = Motor<double>;
+using DualLined = DualLine<double>;
+using Infd = Inf<double>;
+
 }
 
 namespace cga {

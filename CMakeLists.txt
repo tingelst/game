@@ -49,6 +49,12 @@ target_link_libraries(kinematic_calibration
         ${CERES_LIBRARIES}
         ${Boost_LIBRARIES})
 
+add_library(pso SHARED src/pso_rbm_estimation.cpp)
+target_link_libraries(pso ${CERES_LIBRARIES} ${Boost_LIBRARIES})
+
+add_library(versor SHARED src/versor_wrapper.cpp)
+target_link_libraries(versor ${CERES_LIBRARIES} ${Boost_LIBRARIES})
+
 add_executable(test_versor src/versor_rotor_estimation.cpp)
 target_link_libraries(test_versor ${CERES_LIBRARIES})
 

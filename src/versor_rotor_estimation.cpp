@@ -3,8 +3,6 @@
 //
 
 #include <ceres/ceres.h>
-#include "glog/logging.h"
-
 #include "vsr/vsr.h"
 
 template <typename T>

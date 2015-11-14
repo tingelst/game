@@ -35,6 +35,8 @@ template <typename T>
 using DirectionVector = vsr::GADrv<cga<T>>;
 template <typename T>
 using DualLine = vsr::GADll<cga<T>>;
+template <typename T>
+using Euc = vsr::GAEucPss<cga<T>>;
 
 using Scalard = Scalar<double>;
 using Vectord = Vector<double>;
@@ -45,7 +47,10 @@ using Translatord = Translator<double>;
 using GeneralRotord = GeneralRotor<double>;
 using Motord = Motor<double>;
 using DualLined = DualLine<double>;
+using Eucd = Euc<double>;
+using VecEucd = decltype(Vectord() + Eucd());
 using Infd = Inf<double>;
+using RotorPoint = decltype(Rotord() * Pointd());
 
 }
 

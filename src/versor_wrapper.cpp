@@ -14,15 +14,12 @@
 namespace bp = boost::python;
 namespace np = boost::numpy;
 
-namespace game
-{
-struct Versor
-{
+namespace game {
+struct Versor {
   Versor() {}
   Versor(const Versor& versor) {}
 
-  np::ndarray Translator(const np::ndarray& translation)
-  {
+  np::ndarray Translator(const np::ndarray& translation) {
     CheckContiguousArrayAndArrayShape(translation, "translation", 3, 1);
 
     double* translation_data =
@@ -40,8 +37,7 @@ struct Versor
     return result;
   }
 
-  np::ndarray DualLine(const np::ndarray& point, const np::ndarray& direction)
-  {
+  np::ndarray DualLine(const np::ndarray& point, const np::ndarray& direction) {
     CheckContiguousArray(point, "point");
     CheckArrayShape(point, "point", 3, 1);
     CheckContiguousArray(direction, "direction");
@@ -65,8 +61,7 @@ struct Versor
   }
 
   np::ndarray MotorTransformLine(const np::ndarray& motor,
-                                 const np::ndarray& line)
-  {
+                                 const np::ndarray& line) {
     CheckContiguousArrayAndArrayShape(motor, "motor", 8, 1);
     CheckContiguousArrayAndArrayShape(line, "line", 6, 1);
 
@@ -91,8 +86,11 @@ struct Versor
 };
 }
 
-BOOST_PYTHON_MODULE(libversor)
-{
+
+  game::versor::Vectord(game::versor::Vectord::*spin1)(const game::versor::Rotord&) const =
+      &game::versor::Vectord::spin;
+
+BOOST_PYTHON_MODULE(libversor) {
   np::initialize();
   bp::class_<game::Versor>("Versor")
       .def("translator", &game::Versor::Translator)
@@ -108,6 +106,7 @@ BOOST_PYTHON_MODULE(libversor)
       .def(bp::other<game::versor::Rotord>() * bp::self)
       .def(bp::self | bp::other<game::versor::Rotord>())
       .def(bp::self | bp::other<game::versor::Motord>())
+      .add_property("num", &game::versor::Pointd::get_num_bases)
       //.def("spin", &game::versor::Pointd::spin2)
       ;
 
@@ -117,8 +116,8 @@ BOOST_PYTHON_MODULE(libversor)
       .def(bp::self | bp::other<game::versor::Rotord>())
       .def(bp::self | bp::other<game::versor::Motord>())
       .def("__str__", &game::versor::DualLined::to_string);
-      //.def("spin", &game::versor::Pointd::spin2)
-      ;
+  //.def("spin", &game::versor::Pointd::spin2)
+  ;
 
   bp::class_<game::versor::Bivectord>("Bivector",
                                       bp::init<double, double, double>())
@@ -131,9 +130,10 @@ BOOST_PYTHON_MODULE(libversor)
       //.def("spin", &game::versor::Bivectord::spin)
       .def(bp::self + bp::self);
 
+
   bp::class_<game::versor::Vectord>("Vector",
                                     bp::init<double, double, double>())
-      .def(bp::init<game::versor::VecEucd>())
+      .def(bp::init<game::versor::Vectord>())
       .def("__getitem__", &game::versor::Vectord::at)
       .def("unit", &game::versor::Vectord::unit)
       .def("norm", &game::versor::Vectord::norm)
@@ -142,6 +142,8 @@ BOOST_PYTHON_MODULE(libversor)
       .def("inverse", &game::versor::Vectord::inverse)
       .def("dual", &game::versor::Vectord::duale)
       .def("null", &game::versor::Vectord::null)
+      .def("spin", spin1)
+      .add_property("num", &game::versor::Vectord::get_num_bases)
       .def(bp::self | bp::other<game::versor::Rotord>())
       .def(bp::self <= bp::self)
       .def(bp::self + bp::self)
@@ -169,6 +171,7 @@ BOOST_PYTHON_MODULE(libversor)
       .def("norm", &game::versor::Rotord::norm)
       .def("print", &game::versor::Rotord::print)
       .def("reverse", &game::versor::Rotord::reverse)
+      .add_property("num", &game::versor::Rotord::get_num_bases)
       .def(bp::self * bp::other<game::versor::Vectord>())
       .def(bp::other<game::versor::Vectord>() * bp::self);
 }

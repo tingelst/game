@@ -1,5 +1,5 @@
-#ifndef VERSOR_VSR_DETAIL_ALGEBRA_H_
-#define VERSOR_VSR_DETAIL_ALGEBRA_H_
+#ifndef GAME_VSR_DETAIL_ALGEBRA_H_
+#define GAME_VSR_DETAIL_ALGEBRA_H_
 
 #include "vsr/detail/xlists.h"
 #include "vsr/detail/products.h"
@@ -507,4 +507,4 @@ struct named_types<algebra_impl<alg, false, true>> {
 
 }  // vsr::
 
-#endif  // VERSOR_VSR_DETAIL_ALGEBRA_H_
+#endif  // GAME_VSR_DETAIL_ALGEBRA_H_

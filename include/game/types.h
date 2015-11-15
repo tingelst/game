@@ -2,7 +2,8 @@
 #define GAME_GAME_TYPES_H_
 
 #include <hep/ga.hpp>
-#include <vsr/vsr.h>
+//#include <vsr/vsr.h>
+#include "game/vsr/generic_op.h"
 
 namespace game {
 

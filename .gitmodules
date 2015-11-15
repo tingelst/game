@@ -1,0 +1,6 @@
+[submodule "third_party/Adept"]
+	path = third_party/Adept
+	url = git@github.com:tingelst/Adept.git
+[submodule "third_party/versor"]
+	path = third_party/versor
+	url = git@github.com:tingelst/versor.git

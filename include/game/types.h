@@ -1,7 +1,58 @@
 #ifndef GAME_GAME_TYPES_H_
 #define GAME_GAME_TYPES_H_
 
+#include <hep/ga.hpp>
+#include <vsr/vsr.h>
+
 namespace game {
+
+namespace versor {
+
+template <typename T>
+using cga = vsr::algebra<vsr::metric<4, 1, true>, T>;
+
+template <typename T>
+using Scalar = vsr::GASca<cga<T>>;
+template <typename T>
+using Vector = vsr::GAVec<cga<T>>;
+template <typename T>
+using Bivector = vsr::GABiv<cga<T>>;
+template <typename T>
+using Rotor = vsr::GARot<cga<T>>;
+template <typename T>
+using Point = vsr::GAPnt<cga<T>>;
+template <typename T>
+using Ori = vsr::GAOri<cga<T>>;
+template <typename T>
+using Inf = vsr::GAInf<cga<T>>;
+template <typename T>
+using Motor = vsr::GAMot<cga<T>>;
+template <typename T>
+using Translator = vsr::GATrs<cga<T>>;
+template <typename T>
+using GeneralRotor = decltype(Translator<T>() * Rotor<T>() * ~Translator<T>());
+template <typename T>
+using DirectionVector = vsr::GADrv<cga<T>>;
+template <typename T>
+using DualLine = vsr::GADll<cga<T>>;
+template <typename T>
+using Euc = vsr::GAEucPss<cga<T>>;
+
+using Scalard = Scalar<double>;
+using Vectord = Vector<double>;
+using Bivectord = Bivector<double>;
+using Pointd = Point<double>;
+using Rotord = Rotor<double>;
+using Translatord = Translator<double>;
+using GeneralRotord = GeneralRotor<double>;
+using Motord = Motor<double>;
+using DualLined = DualLine<double>;
+using Eucd = Euc<double>;
+using VecEucd = decltype(Vectord() + Eucd());
+using Infd = Inf<double>;
+using RotorPoint = decltype(Rotord() * Pointd());
+
+}
 
 namespace cga {
 template <typename T, int... components>
@@ -50,6 +101,7 @@ template <typename T>
 using Translator = Multivector<T, 0, 9, 10, 12, 17, 18, 20>;
 template <typename T>
 using GeneralRotor = Multivector<T, 0, 3, 5, 6, 9, 10, 12, 17, 18, 20>;
+
 template <typename T>
 using Motor = Multivector<T, 0, 3, 5, 6, 9, 10, 12, 15, 17, 18, 20, 23>;
 
@@ -59,6 +111,11 @@ template <typename T>
 using EuclideanVector = Vector<T>;
 template <typename T>
 using EuclideanPoint = EuclideanVector<T>;
+
+template <typename T>
+Infty<T> ni() {
+  return Infty<T>{T(-1.0), T(1.0)};
+}
 }
 }
 

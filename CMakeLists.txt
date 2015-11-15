@@ -3,10 +3,8 @@ project(game)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O0 -ftemplate-depth-1200 -Wno-switch -Wno-deprecated-declarations -Wno-int-to-pointer-cast")
 
-
-find_package(Catch)
 find_package(Boost REQUIRED COMPONENTS python numpy)
 find_package(PythonLibs 2.7 REQUIRED)
 
@@ -17,15 +15,17 @@ find_package(Armadillo)
 find_package(Mantella)
 
 include_directories(
-  include
-  ${Boost_INCLUDE_DIRS}
-  ${PYTHON_INCLUDE_DIRS}
-  ${HEPGA_INCLUDE_DIR}
-  ${CERES_INCLUDE_DIRS}
-  ${CATCH_INCLUDE_DIR}
-  ${ARMADILLO_INCLUDE_DIR}
-  ${MANTELLA_INCLUDE_DIR}
-  )
+        include
+        third_party/versor/include/
+        third_party/Adept/include
+        ${Boost_INCLUDE_DIRS}
+        ${PYTHON_INCLUDE_DIRS}
+        ${HEPGA_INCLUDE_DIR}
+        ${CERES_INCLUDE_DIRS}
+        ${CATCH_INCLUDE_DIR}
+        ${ARMADILLO_INCLUDE_DIR}
+        ${MANTELLA_INCLUDE_DIR}
+)
 
 add_library(sphere_fit SHARED src/sphere_fit.cpp)
 target_link_libraries(sphere_fit ${CERES_LIBRARIES} ${Boost_LIBRARIES})
@@ -42,6 +42,21 @@ target_link_libraries(rotor_estimation ${CERES_LIBRARIES} ${Boost_LIBRARIES})
 add_library(rigid_body_motion_estimation SHARED src/rigid_body_motion_estimation_wrapper.cpp)
 target_link_libraries(rigid_body_motion_estimation ${CERES_LIBRARIES} ${Boost_LIBRARIES})
 
+add_library(kinematic_calibration SHARED
+        src/versor_kinematic_calibration_wrapper.cpp)
+set_target_properties(kinematic_calibration PROPERTIES COMPILE_FLAGS "-save-temps ")
+target_link_libraries(kinematic_calibration
+        ${CERES_LIBRARIES}
+        ${Boost_LIBRARIES})
+
+add_library(pso SHARED src/pso_rbm_estimation.cpp)
+target_link_libraries(pso ${CERES_LIBRARIES} ${Boost_LIBRARIES})
+
+add_library(versor SHARED src/versor_wrapper.cpp)
+target_link_libraries(versor ${CERES_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(test_versor src/versor_rotor_estimation.cpp)
+target_link_libraries(test_versor ${CERES_LIBRARIES})
 
 add_library(hello_world SHARED src/hello_world.cpp)
 target_link_libraries(hello_world ${CERES_LIBRARIES} ${Boost_LIBRARIES})
@@ -52,6 +67,8 @@ target_link_libraries(mantella_test ${ARMADILLO_LIBRARIES} ${MANTELLA_LIBRARIES}
 enable_testing(true)
 file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/*.cpp)
 
+add_executable(test_speed_no_ceres test/test_speed.cpp)
+
 #Run through each source
 foreach(TEST_SRC ${TEST_SRCS})
   #Extract the filename without an extension (NAME_WE)
@@ -59,6 +76,9 @@ foreach(TEST_SRC ${TEST_SRCS})
 
   #Add compile target
   add_executable(${TEST} ${TEST_SRC})
+      target_link_libraries(${TEST} ${CERES_LIBRARIES})
+
+
 
   #Finally add it to test execution -
   add_test(NAME ${TEST}

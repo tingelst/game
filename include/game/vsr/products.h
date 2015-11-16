@@ -1,8 +1,8 @@
 #ifndef VERSOR_VSR_DETAIL_PRODUCTS_H_
 #define VERSOR_VSR_DETAIL_PRODUCTS_H_
 
-#include "vsr/detail/xlists.h"
-#include "vsr/detail/split_metric.h"
+#include "game/vsr/xlists.h"
+#include "game/vsr/split_metric.h"
 
 namespace vsr {
 

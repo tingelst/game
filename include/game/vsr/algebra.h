@@ -1,8 +1,8 @@
 #ifndef GAME_VSR_DETAIL_ALGEBRA_H_
 #define GAME_VSR_DETAIL_ALGEBRA_H_
 
-#include "vsr/detail/xlists.h"
-#include "vsr/detail/products.h"
+#include "game/vsr/xlists.h"
+#include "game/vsr/products.h"
 
 namespace vsr {
 
@@ -397,6 +397,7 @@ struct named_types<algebra_impl<alg, false, true>> {
   using dil = typename algebra::template sum_basis_t<mnk, sca>;  // 1 );
   using tsd = typename algebra::template sum_basis_t<flp, sca>;  // 1 );
   using mot = typename algebra::template gp_basis_t<rot, trs>;
+  using grt = typename algebra::template sum_basis_t<rot, drv>;
   using bst = typename algebra::template sum_basis_t<par, sca>;
   using con = typename algebra::template gp_basis_t<par, par>;
   using dls = pnt;

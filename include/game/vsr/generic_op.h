@@ -97,28 +97,29 @@ constexpr VSR_PRECISION dot(X x, XS... xs) {
 */
 struct Op {
   template <class A>
-  static auto dual(const A& a) RETURNS(a.dual())
+  static auto dual(const A& a) RETURNS(a.dual());
 
-      template <class A>
-      static auto undual(const A& a) RETURNS(a.undual())
+  template <class A>
+  static auto undual(const A& a) RETURNS(a.undual());
 
-          template <class A>
-          static auto duale(const A& a) RETURNS(a.duale())
+  template <class A>
+  static auto duale(const A& a) RETURNS(a.duale());
 
-              template <class A>
-              static auto unduale(const A& a) RETURNS(a.unduale())
+  template <class A>
+  static auto unduale(const A& a) RETURNS(a.unduale());
 
-                  template <class T>
-                  static auto dl(const T& t) RETURNS(dual(t)) template <class T>
-                  static auto udl(const T& t)
-                      RETURNS(udual(t)) template <class T>
-                      static auto dle(const T& t)
-                          RETURNS(duale(t)) template <class T>
-                          static auto udle(const T& t) RETURNS(unduale(t))
+  template <class T>
+  static auto dl(const T& t) RETURNS(dual(t));
+  template <class T>
+  static auto udl(const T& t) RETURNS(udual(t));
+  template <class T>
+  static auto dle(const T& t) RETURNS(duale(t));
+  template <class T>
+  static auto udle(const T& t) RETURNS(unduale(t));
 
-      /// Sign of A with Respect to B
-      template <class A>
-      static constexpr bool sign(const A& a, const A& b) {
+  /// Sign of A with Respect to B
+  template <class A>
+  static constexpr bool sign(const A& a, const A& b) {
     return (a / b)[0] > 0 ? 1 : 0;
   }
 
@@ -130,17 +131,17 @@ struct Op {
 
   /// Projection of A onto B
   template <class A, class B>
-  static constexpr auto project(const A& a, const B& b) RETURNS((a <= b) / b)
+  static constexpr auto project(const A& a, const B& b) RETURNS((a <= b) / b);
 
-      /// Rejection of A from B
-      template <class A, class B>
-      static constexpr auto reject(const A& a, const B& b) RETURNS((a ^ b) / b)
+  /// Rejection of A from B
+  template <class A, class B>
+  static constexpr auto reject(const A& a, const B& b) RETURNS((a ^ b) / b);
 
-      /// Shorthand Proj and Rejection
-      template <class A, class B>
-      static constexpr auto pj(const A& a, const B& b)
-          RETURNS(project(a, b)) template <class A, class B>
-          static constexpr auto rj(const A& a, const B& b) RETURNS(reject(a, b))
+  /// Shorthand Proj and Rejection
+  template <class A, class B>
+  static constexpr auto pj(const A& a, const B& b) RETURNS(project(a, b));
+  template <class A, class B>
+  static constexpr auto rj(const A& a, const B& b) RETURNS(reject(a, b));
 };
 
 /*!
@@ -260,7 +261,7 @@ struct Gen {
     VSR_PRECISION n;
 
     TPar p;
-    p = r;  // extract 2-blade part
+    p = r;                      // extract 2-blade part
     VSR_PRECISION td = p.wt();  // get scalar
 
     if (td > 0) {
@@ -1150,4 +1151,4 @@ Multivector<Algebra, B> Multivector<Algebra, B>::boost(
 
 }  // vsr::
 
-#endif // VERSOR_VSR_DETAIL_GENERIC_OP_H_
+#endif  // VERSOR_VSR_DETAIL_GENERIC_OP_H_

@@ -90,6 +90,8 @@ struct Versor {
   game::versor::Vectord(game::versor::Vectord::*spin1)(const game::versor::Rotord&) const =
       &game::versor::Vectord::spin;
 
+
+
 BOOST_PYTHON_MODULE(libversor) {
   np::initialize();
   bp::class_<game::Versor>("Versor")

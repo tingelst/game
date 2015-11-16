@@ -350,6 +350,14 @@ struct Multivector {
     return tmp;
   }
 
+  Multivector negate() const {
+    Multivector tmp = *this;
+    for (int i = 0; i < Num; ++i) {
+      tmp[i] = -tmp[i];
+    }
+    return tmp;
+  }
+
   Multivector operator-() const {
     Multivector tmp = *this;
     for (int i = 0; i < Num; ++i) {
@@ -405,7 +413,7 @@ struct Multivector {
   std::string to_string() {
     std::stringstream ss;
     for (int i = 0; i < Num; ++i) {
-      ss << (*this)[i] << "\t";  // std::endl;
+      ss << (*this)[i] << "  ";  // std::endl;
     }
     return ss.str();
   }
@@ -548,6 +556,8 @@ template <typename algebra>
 using GADil = Multivector<algebra, typename algebra::types::dil>;
 template <typename algebra>
 using GAMot = Multivector<algebra, typename algebra::types::mot>;
+template <typename algebra>
+using GAGrt = Multivector<algebra, typename algebra::types::grt>;
 template <typename algebra>
 using GABst = Multivector<algebra, typename algebra::types::bst>;
 template <typename algebra>

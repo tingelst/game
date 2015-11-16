@@ -60,8 +60,8 @@ using namespace vsr::cga;
       .def("inv", &MULTIVECTOR::inverse)                                   \
       .def("duale", &MULTIVECTOR::duale)                                   \
       .def("unduale", &MULTIVECTOR::unduale)                               \
-      .def("dual", &MULTIVECTOR::duale)                                    \
-      .def("undual", &MULTIVECTOR::unduale)                                \
+      .def("dual", &MULTIVECTOR::dual)                                     \
+      .def("undual", &MULTIVECTOR::undual)                                 \
       .def("spin", MULTIVECTOR##SpinByRotor)                               \
       .def("spin", MULTIVECTOR##SpinByMotor)                               \
       .def("spin", MULTIVECTOR##SpinByGeneralRotor)                        \

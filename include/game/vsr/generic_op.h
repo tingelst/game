@@ -42,18 +42,15 @@ struct Proj {
   typedef NEVec<DIM - 1> OneDown;  ///< Next Projection Down
 
   static auto Call(VSR_PRECISION dist, const TVec& v)
-      RETURNS((Proj<DIM - 1>::Call(dist, v.template cast<OneDown>() *
-                                             (dist / (dist - v[DIM - 1])))))
+      RETURNS((Proj<DIM - 1>::Call(dist, v.template cast<OneDown>() *k
+                                             (dist / (dist - v[DIM - 1])))));
 
-          template <int DIM2>
-          static auto Ortho(const TVec& v)
-              RETURNS((v.template cast<NEVec<DIM2>>()))
+  template <int DIM2>
+  static auto Ortho(const TVec& v) RETURNS((v.template cast<NEVec<DIM2>>()));
 
-                  static auto Ortho3(const TVec& v)
-                      RETURNS((v.template cast<NEVec<3>>()))
+  static auto Ortho3(const TVec& v) RETURNS((v.template cast<NEVec<3>>()));
 
-                          static VSR_PRECISION
-      Val(VSR_PRECISION dist, const TVec& v) {
+  static VSR_PRECISION Val(VSR_PRECISION dist, const TVec& v) {
     return dist / (dist - v[DIM - 1]) * Proj<DIM - 1>::Val(dist, OneDown(v));
   }
   // static VSR_PRECISION Val( VSR_PRECISION dist, const Vec& v) {

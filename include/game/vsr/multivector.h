@@ -78,6 +78,11 @@ struct Multivector {
   constexpr Multivector(const Multivector<alg, B>& b)
       : Multivector(b.template cast<Multivector<algebra, basis>>()) {}
 
+  explicit Multivector(const value_t* const v) {
+
+    for (int i = 0; i < Num; ++i) (*this)[i] = v[i];
+  }
+
   /// Immutable get value of blade type IDX (\todo make blades user-defined
   /// literals?)
   template <bits::type IDX>
@@ -425,6 +430,7 @@ struct Multivector {
     return os;
   }
 };
+
 
 /*-----------------------------------------------------------------------------
  *  CONVERSIONS (CASTING, COPYING)

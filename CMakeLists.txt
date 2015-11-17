@@ -39,6 +39,10 @@ target_link_libraries(rotor_bivector_generator_estimation ${CERES_LIBRARIES})
 add_library(rotor_estimation SHARED src/rotor_estimation_wrapper.cpp)
 target_link_libraries(rotor_estimation ${CERES_LIBRARIES} ${Boost_LIBRARIES})
 
+
+add_library(motor_estimation SHARED src/motor_estimation.cpp)
+target_link_libraries(motor_estimation ${CERES_LIBRARIES} ${Boost_LIBRARIES})
+
 add_library(rigid_body_motion_estimation SHARED src/rigid_body_motion_estimation_wrapper.cpp)
 target_link_libraries(rigid_body_motion_estimation ${CERES_LIBRARIES} ${Boost_LIBRARIES})
 

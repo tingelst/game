@@ -103,6 +103,14 @@ Mot Gen::mot(const Dll& dll) {
              ts[3] * sc);
 }
 
+template<typename T>
+Motor<T> Gen::mot(const DualLine<T> dll) {
+
+  std::cout << "new mot" << std::endl;
+  return Motor<T>();
+
+}
+
 Mot Gen::motor(const Dll& dll) { return mot(dll); }
 
 // Dual Line Generator from a Motor
@@ -143,6 +151,10 @@ Dll Gen::log(const Mot& m) {
 
   return rq;
 }
+
+
+
+
 
 /*! Dual Line Generator of Motor That Twists Dual Line a to Dual Line b;
 

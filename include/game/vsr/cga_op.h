@@ -165,6 +165,10 @@ struct Gen {
   */
   static Mot mot(const Dll& dll);
 
+
+  template <typename T>
+    static Motor<T> mot(const DualLine<T>* dll);
+
   /*! Generate a vsr::cga::Motor from a vsr::cga::DualLine Axis
        @param dll a vsr::cga::DualLine generator axis of rotation
   */

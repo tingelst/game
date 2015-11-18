@@ -18,15 +18,148 @@ namespace game {
     return true;     \
   }
 
-
 enum MotorParameterizationType {
   NORMALIZE,
 };
 
+template <typename T>
+void ProjectVectorOntoBivector(const T* a, const T* b, T* out) {
+  T den = b[0] * b[0] + b[1] * b[1] + b[2] * b[2];
+  out[0] = (b[0] * b[0] * a[0] - b[0] * b[2] * a[2] + b[1] * b[1] * a[0] +
+            b[1] * b[2] * a[1]) /
+           den;
+  out[1] = (b[0] * b[0] * a[1] + b[0] * b[1] * a[2] + b[1] * b[2] * a[0] +
+            b[2] * b[2] * a[1]) /
+           den;
+  out[2] = (b[0] * b[1] * a[1] - b[0] * b[2] * a[0] + b[1] * b[1] * a[2] +
+            b[2] * b[2] * a[2]) /
+           den;
+}
+
+template <typename T>
+void RejectVectorFromBivector(const T* a, const T* b, T* out) {
+  T den = b[0] * b[0] + b[1] * b[1] + b[2] * b[2];
+  out[0] = b[2] * (b[0] * a[2] - b[1] * a[1] + b[2] * a[0]) / den;
+  out[1] = b[1] * (-b[0] * a[2] + b[1] * a[1] - b[2] * a[0]) / den;
+  out[2] = b[0] * (b[0] * a[2] - b[1] * a[1] + b[2] * a[0]) / den;
+}
+
+template <typename T>
+static T SquaredNorm3(const T* array) {
+  return array[0] * array[0] + array[1] * array[1] + array[2] * array[2];
+}
+
+template <typename T>
+static T Norm3(const T* array) {
+  return sqrt(SquaredNorm3(array));
+}
+
+template <typename T>
+static void Normalize3(const T* in, T* out) {
+  auto scale = static_cast<T>(1.0) / Norm3(in);
+  out[0] = in[0] / scale;
+  out[1] = in[1] / scale;
+  out[2] = in[2] / scale;
+}
+
+/*
+struct MotorFromBivectorGeneratorNotWorking {
+  template <typename T>
+  bool operator()(const T* x, const T* delta, T* x_plus_delta) const {
+    using vsr::cga::Motor;
+
+    Motor<T> M1;
+    if (SquaredNorm3(delta) > T(0.0)) {
+      T theta = Norm3(delta);
+      T sin_theta = sin(theta);
+      T sinc_theta = sin(theta) / theta;
+      T cos_theta = cos(theta);
+
+      T B[3];
+      T v[3];
+      T w[3];
+      Normalize3(delta, B);
+      ProjectVectorOntoBivector(&delta[3], B, v);
+      RejectVectorFromBivector(&delta[3], B, w);
+
+      T t[3];
+      t[0] = cos_theta * v[0] + sinc_theta * w[0];
+      t[1] = cos_theta * v[1] + sinc_theta * w[1];
+      t[2] = cos_theta * v[2] + sinc_theta * w[2];
+
+      T s = B[0] * w[2] - B[1] * w[1] + B[2] * w[0];
+
+      M1 = Motor<T>(cos_theta, sin_theta * B[0], sin_theta * B[1],
+                    sin_theta * B[2], t[0], t[1], t[2], sin_theta * s);
+    } else {
+      M1 = Motor<T>(T(1.0), delta[0], delta[1], delta[2], delta[3], delta[4],
+                    delta[5], T(0.0));
+    }
+
+    Motor<T> M0{x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7]};
+    Motor<T> M2 = M1 * M0;
+    for (int i = 0; i < 8; ++i) {
+      x_plus_delta[i] = M2[i];
+    }
+
+    return true;
+  }
+};
+*/
+
+struct MotorFromBivectorGenerator {
+  template <typename T>
+  bool operator()(const T* x, const T* delta, T* x_plus_delta) const {
+    using vsr::cga::Scalar;
+    using vsr::cga::Vector;
+    using vsr::cga::Bivector;
+    using vsr::cga::DualLine;
+    using vsr::cga::Motor;
+    using vsr::nga::Op;
+    using vsr::nga::Op;
+
+    Motor<T> M1;
+    if (SquaredNorm3(delta) > T(0.0)) {
+      Bivector<T> B{delta[0], delta[1], delta[2]};
+      T theta = B.norm();
+
+      Scalar<T> sin_theta{sin(theta)};
+      Scalar<T> sinc_theta{sin(theta) / theta};
+      Scalar<T> cos_theta{cos(theta)};
+
+      B = B.unit();
+
+      Vector<T> t{delta[3], delta[4], delta[5]};
+      Vector<T> tv = Op::project(t, B);
+      Vector<T> tw = Op::reject(t, B);
+
+      Vector<T> tt = cos_theta * tw + sinc_theta * tv;
+
+      auto ts = B * tw;
+
+      M1 = Motor<T>(cos_theta[0], sin_theta[0] * B[0], sin_theta[0] * B[1],
+                    sin_theta[0] * B[2], tt[0], tt[1], tt[2],
+                    sin_theta[0] * ts[3]);
+
+    } else {
+      M1 = Motor<T>(T(1.0), delta[0], delta[1], delta[2], delta[3], delta[4],
+                    delta[5], T(0.0));
+    }
+
+    Motor<T> M0{x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7]};
+    Motor<T> M2 = M1 * M0;
+    for (int i = 0; i < 8; ++i) {
+      x_plus_delta[i] = M2[i];
+    }
+
+    return true;
+  }
+};
+
+
 struct MotorPolarDecomposition {
   template <typename T>
   bool operator()(const T* x, const T* delta, T* x_plus_delta) const {
-
     using vsr::cga::Scalar;
     using vsr::cga::Motor;
 

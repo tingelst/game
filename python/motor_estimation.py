@@ -39,12 +39,13 @@ options['function_tolerance'] = 1e-12
 mes = MotorEstimationSolver(initial_mot, options)
 
 # for a, b in zip(lines_a, lines_b):
-#     mes.add_line_correspondences_residual_block(a, b)
+    # mes.add_line_correspondences_residual_block(a, b)
 
 for a, b in zip(points_a, points_b):
     mes.add_point_correspondences_residual_block(a,b)
 
-mes.set_parameterization('POLAR_DECOMPOSITION')
+# mes.set_parameterization('POLAR_DECOMPOSITION')
+mes.set_parameterization('BIVECTOR_GENERATOR')
 final_motor, summary = mes.solve()
 print(motor)
 print(final_motor)
@@ -55,4 +56,5 @@ total_distance = np.sum([ np.linalg.norm(a.to_array()[:3] - b.to_array()[:3])
                           for a, b in zip(points_b, points_b_estimated)]) / np.sqrt(n)
 print(total_distance)
 
+print(summary['brief_report'])
 

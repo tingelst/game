@@ -112,6 +112,11 @@ public:
       problem_.SetParameterization(
           &motor_[0],
           new ceres::AutoDiffLocalParameterization<MotorPolarDecomposition, 8, 8>);
+    } else if (type == "BIVECTOR_GENERATOR") {
+      std::cout << "game:: Using bivector generator, hand written" << std::endl;
+      problem_.SetParameterization(
+          &motor_[0],
+          new ceres::AutoDiffLocalParameterization<MotorFromBivectorGenerator, 8, 6>);
     } else {
       std::cout << "Unknown motor parameterization type" << std::endl;
     }

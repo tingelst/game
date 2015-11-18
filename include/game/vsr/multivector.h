@@ -21,7 +21,6 @@ namespace vsr {
 
 template <typename algebra_type, typename basis_type>
 struct Multivector {
-
   using algebra = algebra_type;  ///< \ref algebra (a metric and field)
   using basis = basis_type;  ///< basis is an algebraic data type created with
   /// compile-time list processing
@@ -79,7 +78,6 @@ struct Multivector {
       : Multivector(b.template cast<Multivector<algebra, basis>>()) {}
 
   explicit Multivector(const value_t* const v) {
-
     for (int i = 0; i < Num; ++i) (*this)[i] = v[i];
   }
 
@@ -215,7 +213,14 @@ struct Multivector {
   Multivector operator!() const {
     Multivector tmp = ~(*this);
     value_t v = ((*this) * tmp)[0];
-    return (v == 0) ? tmp : tmp / v;
+    if (v == static_cast<value_t>(0.0)) {
+      return tmp;
+    } else {
+      for (int i = 0; i < Num; ++i) {
+        tmp[i] = tmp[i] / v;
+      }
+      return tmp;
+    }
   }
 
   Multivector inverse() const {
@@ -320,10 +325,13 @@ struct Multivector {
   }
 
   Multivector unit() const {
-    value_t t = sqrt(fabs((*this <= *this)[0]));
-    if (t == 0) return Multivector();
-    return *this / t;
+    value_t t = sqrt(abs((*this <= *this)[0]));
+    if (t == static_cast<value_t>(0.0)) return Multivector();
+    Multivector tmp;
+    for (int i = 0; i < Num; ++i) tmp[i] = (*this)[i] / t;
+    return tmp;
   }
+
   Multivector runit() const {
     value_t t = rnorm();
     if (t == 0) return Multivector();
@@ -430,7 +438,6 @@ struct Multivector {
     return os;
   }
 };
-
 
 /*-----------------------------------------------------------------------------
  *  CONVERSIONS (CASTING, COPYING)
@@ -756,4 +763,4 @@ using conformal_Con = GACon<conformal<N, T>>;
 
 }  // vsr::
 
-#endif // VERSOR_VSR_DETAIL_MULTIVECTOR_H_
+#endif  // VERSOR_VSR_DETAIL_MULTIVECTOR_H_

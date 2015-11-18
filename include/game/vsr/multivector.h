@@ -310,7 +310,7 @@ struct Multivector {
   value_t rwt() const { return (*this <= ~(*this))[0]; }
   value_t norm() const {
     value_t a = rwt();
-    if (a < 0) return 0;
+    if (a < static_cast<value_t>(0)) return static_cast<value_t>(0);
     return sqrt(a);
   }
   value_t rnorm() const {

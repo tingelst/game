@@ -25,7 +25,7 @@ using vsr::cga::Mot;
 namespace game {
 
 class MotorEstimationSolver {
- public:
+public:
   MotorEstimationSolver() {}
   MotorEstimationSolver(const MotorEstimationSolver& motor_estimation_solver) {}
   MotorEstimationSolver(const Mot& motor, const bp::dict& solver_options)
@@ -54,7 +54,7 @@ class MotorEstimationSolver {
       return true;
     }
 
-   private:
+  private:
     const Dll a_;
     const Dll b_;
   };
@@ -77,7 +77,7 @@ class MotorEstimationSolver {
       return true;
     }
 
-   private:
+  private:
     const Pnt a_;
     const Pnt b_;
   };
@@ -105,12 +105,14 @@ class MotorEstimationSolver {
     if (type == "NORMALIZE") {
       problem_.SetParameterization(
           &motor_[0],
-          new ceres::AutoDiffLocalParameterization<MotorNormalizeRotorPlus, 8, 8>);
-    } else if (type == "NONE") {
-      problem_.SetParameterization(&motor_[0],
-          new ceres::AutoDiffLocalParameterization<MotorPlus, 8, 8>);
-    }
-    else {
+          new ceres::AutoDiffLocalParameterization<MotorNormalizeRotorPlus, 8,
+                                                   8>);
+    } else if (type == "POLAR_DECOMPOSITION") {
+      std::cout << "game:: Using polar decomposition" << std::endl;
+      problem_.SetParameterization(
+          &motor_[0],
+          new ceres::AutoDiffLocalParameterization<MotorPolarDecomposition, 8, 8>);
+    } else {
       std::cout << "Unknown motor parameterization type" << std::endl;
     }
   }
@@ -120,7 +122,7 @@ class MotorEstimationSolver {
     return bp::make_tuple(motor_, Summary());
   }
 
- private:
+private:
   Mot motor_;
 
   ceres::Problem problem_;

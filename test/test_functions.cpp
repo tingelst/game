@@ -81,7 +81,7 @@ void QuaternionParameterizationTestHelper(const double* x, const double* delta,
                                                        x_plus_delta,
                                                        jacobian_array);
   adept::Stack stack;
-
+template <typename T>
   adept::adouble ax[kGlobalSize];
   adept::adouble adelta[kLocalSize];
 

@@ -5,13 +5,52 @@
 #ifndef GAME_GAME_MOTOR_PARAMETERIZATION_H_
 #define GAME_GAME_MOTOR_PARAMETERIZATION_H_
 
+#include "game/vsr/cga_types.h"
+
 namespace game {
 
-#define CASESTR(x) case x: return #x
-#define STRENUM(x) if (value == #x) { *type = x; return true;}
+#define CASESTR(x) \
+  case x:          \
+    return #x
+#define STRENUM(x)   \
+  if (value == #x) { \
+    *type = x;       \
+    return true;     \
+  }
+
 
 enum MotorParameterizationType {
   NORMALIZE,
+};
+
+struct MotorPolarDecomposition {
+  template <typename T>
+  bool operator()(const T* x, const T* delta, T* x_plus_delta) const {
+
+    using vsr::cga::Scalar;
+    using vsr::cga::Motor;
+
+    T a[8];
+    for (int i = 0; i < 8; ++i) {
+      a[i] = x[i] + delta[i];
+    }
+
+    Motor<T> X{a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7]};
+
+    T norm = X.norm();
+
+    Motor<T> b = X * ~X;
+
+    T s0 = b[0];
+    T s4 = b[7];
+
+    Motor<T> M = X * Scalar<T>{(T(1.0) - (s4 / (T(2.0) * s0))) / norm};
+    for (int i = 0; i < 8; ++i) {
+      x_plus_delta[i] = M[i];
+    }
+
+    return true;
+  }
 };
 
 template <typename T>
@@ -28,7 +67,6 @@ static void NormalizeRotor(T* array) {
 struct MotorNormalizeRotorPlus {
   template <typename T>
   bool operator()(const T* x, const T* delta, T* x_plus_delta) const {
-
     std::cout << "normalization parameterization" << std::endl;
 
     x_plus_delta[0] = x[0] + delta[0];
@@ -49,7 +87,6 @@ struct MotorNormalizeRotorPlus {
 struct MotorPlus {
   template <typename T>
   bool operator()(const T* x, const T* delta, T* x_plus_delta) const {
-
     std::cout << "no parameterization" << std::endl;
 
     x_plus_delta[0] = x[0] + delta[0];
@@ -65,6 +102,6 @@ struct MotorPlus {
   }
 };
 
-} // namespace game
+}  // namespace game
 
 #endif  // GAME_GAME_MOTOR_PARAMETERIZATION_H_

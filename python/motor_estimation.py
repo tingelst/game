@@ -23,6 +23,12 @@ n = 10
 points_a = [vsr.Vec(*np.random.normal(0.0, 0.8, 3)).null() for i in range(n)]
 points_b = [point.spin(motor) for point in points_a]
 
+mu = 0.0
+sigma = 0.0
+add_noise_to_point = lambda p : (point.to_array()[:3] + sigma *  np.random.randn(1,3) + mu)[0]
+points_b_noisy = [vsr.Vec(*add_noise_to_point(point)).null()
+                   for point in points_b ]
+
 lines_a = [(vsr.Vec(*np.random.normal(0.0, 0.8, 3)).null() ^
             (vsr.Vec(*np.random.normal(0.0, 0.8, 3)).unit() ^ vsr.ni)).dual()
            for i in range(n)]
@@ -35,17 +41,27 @@ options = solver_options()
 # options['minimizer_progress_to_stdout'] = True
 options['parameter_tolerance'] = 1e-12
 options['function_tolerance'] = 1e-12
+options['max_num_iterations'] = 100
 
 mes = MotorEstimationSolver(initial_mot, options)
 
+for a, b in zip(lines_a, lines_b):
+    mes.add_line_correspondences_residual_block(a, b)
+
 # for a, b in zip(lines_a, lines_b):
-    # mes.add_line_correspondences_residual_block(a, b)
+    # mes.add_line_angle_distance_residual_block(a, b)
 
-for a, b in zip(points_a, points_b):
-    mes.add_point_correspondences_residual_block(a,b)
+# for a, b in zip(lines_a, lines_b):
+    # mes.add_line_angle_distance_norm_residual_block(a, b)
 
-# mes.set_parameterization('POLAR_DECOMPOSITION')
-mes.set_parameterization('BIVECTOR_GENERATOR')
+# for a, b in zip(points_a, points_b_noisy):
+    # mes.add_point_distance_residual_block(a,b)
+
+# for a, b in zip(points_a, points_b_noisy):
+    # mes.add_point_correspondences_residual_block(a,b)
+
+mes.set_parameterization('POLAR_DECOMPOSITION')
+# mes.set_parameterization('BIVECTOR_GENERATOR')
 final_motor, summary = mes.solve()
 print(motor)
 print(final_motor)

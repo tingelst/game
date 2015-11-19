@@ -116,7 +116,6 @@ struct MotorFromBivectorGenerator {
     using vsr::cga::DualLine;
     using vsr::cga::Motor;
     using vsr::nga::Op;
-    using vsr::nga::Op;
 
     Motor<T> M1;
     if (SquaredNorm3(delta) > T(0.0)) {
@@ -156,12 +155,12 @@ struct MotorFromBivectorGenerator {
   }
 };
 
-
 struct MotorPolarDecomposition {
   template <typename T>
   bool operator()(const T* x, const T* delta, T* x_plus_delta) const {
     using vsr::cga::Scalar;
     using vsr::cga::Motor;
+    using vsr::cga::DirectionTrivector;
 
     T a[8];
     for (int i = 0; i < 8; ++i) {
@@ -177,7 +176,11 @@ struct MotorPolarDecomposition {
     T s0 = b[0];
     T s4 = b[7];
 
-    Motor<T> M = X * Scalar<T>{(T(1.0) - (s4 / (T(2.0) * s0))) / norm};
+    auto Sinv =
+        Scalar<T>{T(1.0) / norm} *
+        (Scalar<T>{T(1.0)} + DirectionTrivector<T>{-(s4 / (T(2.0) * s0))});
+    Motor<T> M = X * Sinv;
+
     for (int i = 0; i < 8; ++i) {
       x_plus_delta[i] = M[i];
     }
@@ -197,7 +200,7 @@ static void NormalizeRotor(T* array) {
   array[3] *= scale;
 }
 
-struct MotorNormalizeRotorPlus {
+struct MotorNormalizeRotor {
   template <typename T>
   bool operator()(const T* x, const T* delta, T* x_plus_delta) const {
     std::cout << "normalization parameterization" << std::endl;

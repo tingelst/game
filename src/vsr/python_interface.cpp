@@ -12,32 +12,7 @@ namespace python {
 namespace bp = boost::python;
 using namespace vsr::cga;
 
-// Sca s;
-//
-//  game::versor::Vectord(game::versor::Vectord::*spin1)(const
-//  game::versor::Rotord&) const =
-//      &game::versor::Vectord::spin;
-//
-//  bp::class_<game::versor::Vectord>("Vector",
-//                                    bp::init<double, double, double>())
-//      .def(bp::init<game::versor::Vectord>())
-//      .def("__getitem__", &game::versor::Vectord::at)
-//      .def("unit", &game::versor::Vectord::unit)
-//      .def("norm", &game::versor::Vectord::norm)
-//      .def("print", &game::versor::Vectord::print)
-//      .def("reverse", &game::versor::Vectord::reverse)
-//      .def("inverse", &game::versor::Vectord::inverse)
-//      .def("dual", &game::versor::Vectord::duale)
-//      .def("null", &game::versor::Vectord::null)
-//      .def("spin", spin1)
-//      .add_property("num", &game::versor::Vectord::get_num_bases)
-//      .def(bp::self | bp::other<game::versor::Rotord>())
-//      .def(bp::self <= bp::self)
-//      .def(bp::self + bp::self)
-//      .def(bp::self ^ bp::self)
-//      .def(bp::self * bp::self)
-//      .def(bp::self / bp::self)
-//      .def("__str__", &game::versor::Vectord::to_string);
+using ScaDrt = decltype(Sca{1.0} + Drt{1.0});
 
 #define GAME_VSR_WRAP_MULTIVECTOR(MULTIVECTOR, ...)                        \
   MULTIVECTOR (MULTIVECTOR::*MULTIVECTOR##SpinByRotor)(const Rot&) const = \
@@ -104,6 +79,7 @@ using namespace vsr::cga;
       .def(bp::self <= bp::other<Con>())                                   \
       .def(bp::self <= bp::other<Dil>())                                   \
       .def(bp::self <= bp::other<Tsd>())                                   \
+      .def(bp::self <= bp::other<ScaDrt>())                                \
       .def(bp::self - bp::self)                                            \
       .def(bp::self - bp::other<Sca>())                                    \
       .def(bp::self - bp::other<Vec>())                                    \
@@ -138,6 +114,7 @@ using namespace vsr::cga;
       .def(bp::self - bp::other<Con>())                                    \
       .def(bp::self - bp::other<Dil>())                                    \
       .def(bp::self - bp::other<Tsd>())                                    \
+      .def(bp::self - bp::other<ScaDrt>())                                 \
       .def(bp::self + bp::self)                                            \
       .def(bp::self + bp::other<Sca>())                                    \
       .def(bp::self + bp::other<Vec>())                                    \
@@ -172,6 +149,7 @@ using namespace vsr::cga;
       .def(bp::self + bp::other<Con>())                                    \
       .def(bp::self + bp::other<Dil>())                                    \
       .def(bp::self + bp::other<Tsd>())                                    \
+      .def(bp::self + bp::other<ScaDrt>())                                 \
       .def(bp::self ^ bp::self)                                            \
       .def(bp::self ^ bp::other<Sca>())                                    \
       .def(bp::self ^ bp::other<Vec>())                                    \
@@ -206,6 +184,7 @@ using namespace vsr::cga;
       .def(bp::self ^ bp::other<Con>())                                    \
       .def(bp::self ^ bp::other<Dil>())                                    \
       .def(bp::self ^ bp::other<Tsd>())                                    \
+      .def(bp::self ^ bp::other<ScaDrt>())                                 \
       .def(bp::self* bp::self)                                             \
       .def(bp::self* bp::other<Sca>())                                     \
       .def(bp::self* bp::other<Vec>())                                     \
@@ -240,6 +219,7 @@ using namespace vsr::cga;
       .def(bp::self* bp::other<Con>())                                     \
       .def(bp::self* bp::other<Dil>())                                     \
       .def(bp::self* bp::other<Tsd>())                                     \
+      .def(bp::self* bp::other<ScaDrt>())                                  \
       .def(bp::self / bp::self)                                            \
       .def(bp::self / bp::other<Sca>())                                    \
       .def(bp::self / bp::other<Vec>())                                    \
@@ -274,6 +254,7 @@ using namespace vsr::cga;
       .def(bp::self / bp::other<Con>())                                    \
       .def(bp::self / bp::other<Dil>())                                    \
       .def(bp::self / bp::other<Tsd>())                                    \
+      .def(bp::self / bp::other<ScaDrt>())                                 \
       .add_property("num", &MULTIVECTOR::get_num_bases)                    \
       .def("__str__", &MULTIVECTOR::to_string) __VA_ARGS__
 
@@ -331,6 +312,7 @@ BOOST_PYTHON_MODULE(libversor) {
   GAME_VSR_WRAP_MULTIVECTOR(Con);
   GAME_VSR_WRAP_MULTIVECTOR(Dil);
   GAME_VSR_WRAP_MULTIVECTOR(Tsd);
+  GAME_VSR_WRAP_MULTIVECTOR(ScaDrt, .def(bp::init<double, double>()));
 }
 
 #undef GAME_VSR_WRAP_MULTIVECTOR

@@ -16,6 +16,8 @@ options = solver_options()
 options['parameter_tolerance'] = 1e-12
 options['function_tolerance'] = 1e-12
 options['max_num_iterations'] = 25
+options['num_threads'] = 1
+options['num_linear_solver_threads'] = 1
 
 # motor = vsr.Mot.from_dir_ang_trs(vsr.Vec(0,1,0).unit(), np.pi/3, vsr.Vec(1,0,1))
 def estimate_motor(cost_function_num, parameterization_num, num_elements):

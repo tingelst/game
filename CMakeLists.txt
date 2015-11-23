@@ -41,7 +41,7 @@ target_link_libraries(rotor_estimation ${CERES_LIBRARIES} ${Boost_LIBRARIES})
 
 
 add_library(motor_estimation SHARED src/motor_estimation.cpp)
-target_link_libraries(motor_estimation ${CERES_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(motor_estimation ${PYTHON_LIBRARIES} ${CERES_LIBRARIES} ${Boost_LIBRARIES})
 
 add_library(rigid_body_motion_estimation SHARED src/rigid_body_motion_estimation_wrapper.cpp)
 target_link_libraries(rigid_body_motion_estimation ${CERES_LIBRARIES} ${Boost_LIBRARIES})

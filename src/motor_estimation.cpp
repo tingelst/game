@@ -9,6 +9,8 @@
 #include <glog/logging.h>
 
 #include "game/vsr/vsr.h"
+#include "game/adept_autodiff_cost_function.h"
+#include "game/adept_autodiff_local_parameterization.h"
 #include "game/motor_parameterization.h"
 #include "game/ceres_python_utils.h"
 
@@ -227,6 +229,15 @@ class MotorEstimationSolver {
     return true;
   }
 
+  auto AddAdeptPointCorrespondencesResidualBlock(const Pnt& a, const Pnt& b)
+      -> bool {
+    ceres::CostFunction* cost_function =
+        new AdeptAutoDiffCostFunction<PointCorrespondencesCostFunctor, 3, 8>(
+            new PointCorrespondencesCostFunctor(a, b));
+    problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
+    return true;
+  }
+
   auto AddPointDistanceResidualBlock(const Pnt& a, const Pnt& b) -> bool {
     ceres::CostFunction* cost_function =
         new ceres::AutoDiffCostFunction<PointDistanceCostFunctor, 1, 8>(
@@ -252,6 +263,12 @@ class MotorEstimationSolver {
       problem_.SetParameterization(
           &motor_[0],
           new ceres::AutoDiffLocalParameterization<MotorFromBivectorGenerator,
+                                                   8, 6>);
+    } else if (type == "BIVECTOR_GENERATOR_ADEPT") {
+      std::cout << "game:: ADEPT Using bivector generator (Versor)." << std::endl;
+      problem_.SetParameterization(
+          &motor_[0],
+          new AdeptAutoDiffLocalParameterization<MotorFromBivectorGenerator,
                                                    8, 6>);
     } else {
       std::cout << "Unknown motor parameterization type" << std::endl;
@@ -284,6 +301,8 @@ BOOST_PYTHON_MODULE_INIT(libmotor_estimation) {
            &MotorEstimationSolver::AddLineAngleDistanceNormResidualBlock)
       .def("add_point_correspondences_residual_block",
            &MotorEstimationSolver::AddPointCorrespondencesResidualBlock)
+      .def("add_adept_point_correspondences_residual_block",
+           &MotorEstimationSolver::AddAdeptPointCorrespondencesResidualBlock)
       .def("add_point_distance_residual_block",
            &MotorEstimationSolver::AddPointDistanceResidualBlock)
       .def("set_parameterization",

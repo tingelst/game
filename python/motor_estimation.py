@@ -72,6 +72,11 @@ def estimate_motor(cost_function_num, parameterization_num, num_elements):
             mes.add_point_correspondences_residual_block(a,b)
 
     elif cost_function_num == 6:
+        print("game:: ADEPT Point vector. 3 residuals")
+        for a, b in zip(points_a, points_b_noisy):
+            mes.add_adept_point_correspondences_residual_block(a,b)
+
+    elif cost_function_num == 7:
         print("game::Point vector. 3 residuals")
         for a, b in zip(points_a, points_b_noisy):
             mes.add_point_correspondences_residual_block(a,b)
@@ -83,6 +88,8 @@ def estimate_motor(cost_function_num, parameterization_num, num_elements):
         mes.set_parameterization('POLAR_DECOMPOSITION')
     elif parameterization_num == 2:
         mes.set_parameterization('BIVECTOR_GENERATOR')
+    elif parameterization_num == 3:
+        mes.set_parameterization('BIVECTOR_GENERATOR_ADEPT')
     elif parameterization_num == -1:
         pass
 
@@ -99,6 +106,9 @@ def estimate_motor(cost_function_num, parameterization_num, num_elements):
     print("game:: Total RMS distance")
     print(total_distance)
 
-    print(summary['brief_report'])
+    print(summary['full_report'])
 
     return summary
+
+if __name__ == "__main__":
+    estimate_motor(6,3,10)

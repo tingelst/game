@@ -14,12 +14,9 @@ find_package(PythonLibs 2.7 REQUIRED)
 find_package(hep-ga REQUIRED)
 
 find_package(Ceres REQUIRED)
-find_package(Armadillo)
-find_package(Mantella)
 
 include_directories(
         include
-        third_party/versor/include/
         third_party/Adept/include
         ${Boost_INCLUDE_DIRS}
         ${PYTHON_INCLUDE_DIRS}
@@ -63,7 +60,7 @@ add_library(pso SHARED src/pso_rbm_estimation.cpp)
 target_link_libraries(pso ${CERES_LIBRARIES} ${Boost_LIBRARIES})
 
 add_library(versor SHARED src/vsr/python_interface.cpp)
-target_link_libraries(versor ${Boost_LIBRARIES})
+target_link_libraries(versor ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
 
 #add_executable(test_versor src/versor_rotor_estimation.cpp)
 #target_link_libraries(test_versor ${CERES_LIBRARIES})
@@ -71,8 +68,6 @@ target_link_libraries(versor ${Boost_LIBRARIES})
 add_library(hello_world SHARED src/hello_world.cpp)
 target_link_libraries(hello_world ${CERES_LIBRARIES} ${Boost_LIBRARIES})
 
-add_executable(mantella_test src/mantella_test.cpp)
-target_link_libraries(mantella_test ${ARMADILLO_LIBRARIES} ${MANTELLA_LIBRARIES})
 
 enable_testing(true)
 file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/*.cpp)

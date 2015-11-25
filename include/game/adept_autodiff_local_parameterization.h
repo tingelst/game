@@ -36,6 +36,10 @@ public:
     }
 
     adept::Stack stack;
+
+
+
+
     adept::adouble ax[kGlobalSize];
     adept::adouble adelta[kLocalSize];
     adept::set_values(&ax[0], kGlobalSize, x);
@@ -52,6 +56,7 @@ public:
     stack.jacobian(jacobian, true);
     //stack.jacobian_reverse(jacobian, true);
 
+    //std::cout << stack << std::endl;
     return true;
   }
 

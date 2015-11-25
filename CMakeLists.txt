@@ -15,6 +15,14 @@ find_package(hep-ga REQUIRED)
 
 find_package(Ceres REQUIRED)
 
+find_package(OpenMP QUIET)
+if(OPENMP_FOUND)
+  MESSAGE("-- Building with OpenMP.")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
+
 include_directories(
         include
         third_party/Adept/include
@@ -42,9 +50,14 @@ target_link_libraries(rotor_estimation ${CERES_LIBRARIES} ${Boost_LIBRARIES})
 
 add_library(motor_estimation SHARED 
   src/motor_estimation.cpp
-  third_party/Adept/adept/adept.cpp )
+  third_party/Adept/adept/adept.cpp 
+  third_party/Adept/adept/adept_openmp.cpp
+  )
 
-target_link_libraries(motor_estimation ${CERES_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(motor_estimation 
+  ${PYTHON_LIBRARIES}
+  ${CERES_LIBRARIES}
+  ${Boost_LIBRARIES})
 
 add_library(rigid_body_motion_estimation SHARED src/rigid_body_motion_estimation_wrapper.cpp)
 target_link_libraries(rigid_body_motion_estimation ${CERES_LIBRARIES} ${Boost_LIBRARIES})

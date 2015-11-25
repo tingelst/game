@@ -75,9 +75,10 @@ public:
     stack.independent(&ax[0], N0);
     stack.dependent(&aresiduals[0], kNumResiduals);
 
-    //stack.jacobian(jacobians[0], true);
-    stack.jacobian_reverse(jacobians[0], true);
+    stack.jacobian(jacobians[0], true);
+    //stack.jacobian_reverse(jacobians[0], true);
     //stack.jacobian_forward(jacobians[0], true);
+
 
     return true;
   }

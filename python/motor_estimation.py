@@ -4,7 +4,7 @@ import numpy as np
 np.set_printoptions(precision=6, suppress=True)
 
 import sys
-sys.path.append('../build/')
+sys.path.append('../build_gcc/')
 
 from libmotor_estimation import MotorEstimationSolver
 
@@ -16,8 +16,8 @@ options = solver_options()
 options['parameter_tolerance'] = 1e-12
 options['function_tolerance'] = 1e-12
 options['max_num_iterations'] = 25
-options['num_threads'] = 1
-options['num_linear_solver_threads'] = 1
+options['num_threads'] = 100
+options['num_linear_solver_threads'] = 100
 
 # motor = vsr.Mot.from_dir_ang_trs(vsr.Vec(0,1,0).unit(), np.pi/3, vsr.Vec(1,0,1))
 def estimate_motor(cost_function_num, parameterization_num, num_elements, points_a, points_b_noisy):
@@ -74,6 +74,11 @@ def estimate_motor(cost_function_num, parameterization_num, num_elements, points
             mes.add_point_correspondences_residual_block(a,b)
 
     elif cost_function_num == 6:
+        print("game:: ADEPT Point vector. 3 residuals")
+        for a, b in zip(points_a, points_b_noisy):
+            mes.add_adept_point_correspondences_residual_block(a,b)
+
+    elif cost_function_num == 7:
         print("game::Point vector. 3 residuals")
         for a, b in zip(points_a, points_b_noisy):
             mes.add_point_correspondences_residual_block(a,b)
@@ -85,6 +90,8 @@ def estimate_motor(cost_function_num, parameterization_num, num_elements, points
         mes.set_parameterization('POLAR_DECOMPOSITION')
     elif parameterization_num == 2:
         mes.set_parameterization('BIVECTOR_GENERATOR')
+    elif parameterization_num == 3:
+        mes.set_parameterization('BIVECTOR_GENERATOR_ADEPT')
     elif parameterization_num == -1:
         pass
 
@@ -101,6 +108,9 @@ def estimate_motor(cost_function_num, parameterization_num, num_elements, points
     #print("game:: Total RMS distance")
     #print(total_distance)
 
-    print(summary['brief_report'])
+    print(summary['full_report'])
 
     return summary, final_motor
+
+if __name__ == "__main__":
+    estimate_motor(6,3,10)

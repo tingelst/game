@@ -20,7 +20,7 @@ options['num_threads'] = 100
 options['num_linear_solver_threads'] = 100
 
 # motor = vsr.Mot.from_dir_ang_trs(vsr.Vec(0,1,0).unit(), np.pi/3, vsr.Vec(1,0,1))
-def estimate_motor(cost_function_num, parameterization_num, num_elements):
+def estimate_motor(cost_function_num, parameterization_num, num_elements, points_a, points_b_noisy):
 
     motor = vsr.Trs.from_vector(vsr.Vec(1,1,1)) * vsr.Rot.from_bivector(vsr.Biv(0,1,0) * np.pi/6.0)
 
@@ -29,14 +29,14 @@ def estimate_motor(cost_function_num, parameterization_num, num_elements):
 
     n = num_elements
     # Generate initial point sets
-    points_a = [vsr.Vec(*np.random.normal(0.0, 0.8, 3)).null() for i in range(n)]
-    points_b = [point.spin(motor) for point in points_a]
+    #points_a = [vsr.Vec(*np.random.normal(0.0, 0.8, 3)).null() for i in range(n)]
+    #points_b = [point.spin(motor) for point in points_a]
 
-    mu = 0.0
-    sigma = 0.0
-    add_noise_to_point = lambda p : (point.to_array()[:3] + sigma *  np.random.randn(1,3) + mu)[0]
-    points_b_noisy = [vsr.Vec(*add_noise_to_point(point)).null()
-                    for point in points_b ]
+    #mu = 0.0
+    #sigma = 0.01
+    #add_noise_to_point = lambda p : (point.to_array()[:3] + sigma *  np.random.randn(1,3) + mu)[0]
+    #points_b_noisy = [vsr.Vec(*add_noise_to_point(point)).null()
+    #               for point in points_b ]
 
     lines_a = [(vsr.Vec(*np.random.normal(0.0, 0.8, 3)).null() ^
                 (vsr.Vec(*np.random.normal(0.0, 0.8, 3)).unit() ^ vsr.ni)).dual()
@@ -101,16 +101,16 @@ def estimate_motor(cost_function_num, parameterization_num, num_elements):
     print("game:: Estimated motor")
     print(final_motor)
 
-    points_b_estimated = [point.spin(final_motor) for point in points_a]
-    total_distance = np.sum([ np.linalg.norm(a.to_array()[:3] - b.to_array()[:3])
-                            for a, b in zip(points_b, points_b_estimated)]) / np.sqrt(n)
+    #points_b_estimated = [point.spin(final_motor) for point in points_a]
+    #total_distance = np.sum([ np.linalg.norm(a.to_array()[:3] - b.to_array()[:3])
+    #                        for a, b in zip(points_b, points_b_estimated)]) / np.sqrt(n)
 
-    print("game:: Total RMS distance")
-    print(total_distance)
+    #print("game:: Total RMS distance")
+    #print(total_distance)
 
     print(summary['full_report'])
 
-    return summary
+    return summary, final_motor
 
 if __name__ == "__main__":
     estimate_motor(6,3,10)

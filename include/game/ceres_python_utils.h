@@ -1,6 +1,7 @@
 #ifndef GAME_GAME_CERES_PYTHON_UTILS_H_
 #define GAME_GAME_CERES_PYTHON_UTILS_H_
 
+#include <boost/numpy.hpp>
 #include <boost/python.hpp>
 #include <ceres/ceres.h>
 #include <glog/logging.h>

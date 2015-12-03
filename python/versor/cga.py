@@ -5,7 +5,7 @@ from libversor import (Biv, Bst, Cir, Con, Dil, Dll, Dlp, Dls, Drb, Drt, Drv,
                        Flp, Grt, Inf, Lin, Mnk, Mot, Ori, Par, Pln, Pnt, Pss, Rot,
                        Sca, Sph, Tnb, Tnt, Tnv, Tri, Trs, Trv, Tsd, Vec)
 
-_types = [Biv, Bst, Cir, Con, Dil, Dll, Dlp, Dls, Drb, Drt, Flp,
+_types = [Biv, Bst, Cir, Con, Dil, Dll, Dlp, Dls, Drb, Drt, Drv, Flp,
           Grt, Inf, Lin, Mnk, Mot, Ori, Par, Pln, Pnt, Pss, Rot,
           Sca, Sph, Tnb, Tnt, Tnv, Tri, Trs, Trv, Tsd, Vec]
 

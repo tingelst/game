@@ -14,6 +14,7 @@ using namespace vsr::cga;
 
 using ScaDrt = decltype(Sca{1.0} + Drt{1.0});
 using TrfTnv = decltype(Tnv{1.0, 1.0, 1.0}.spin(Mot()));
+using VecTri = decltype(Vec()+ Tri());
 
 #define GAME_VSR_WRAP_MULTIVECTOR(MULTIVECTOR, ...)                        \
   MULTIVECTOR (MULTIVECTOR::*MULTIVECTOR##SpinByRotor)(const Rot&) const = \
@@ -315,6 +316,7 @@ BOOST_PYTHON_MODULE(libversor) {
   GAME_VSR_WRAP_MULTIVECTOR(Tsd);
   GAME_VSR_WRAP_MULTIVECTOR(ScaDrt, .def(bp::init<double, double>()));
   GAME_VSR_WRAP_MULTIVECTOR(TrfTnv);
+  GAME_VSR_WRAP_MULTIVECTOR(VecTri);
 }
 
 #undef GAME_VSR_WRAP_MULTIVECTOR

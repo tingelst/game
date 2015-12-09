@@ -6,7 +6,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O0 -ftemplate-depth-1200 -Wno-switch -Wno-deprecated-declarations -Wno-int-to-pointer-cast")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -ftemplate-depth-1200 -Wno-switch -Wno-deprecated-declarations -Wno-int-to-pointer-cast")
 
 find_package(Boost REQUIRED COMPONENTS python numpy)
 find_package(PythonLibs 2.7 REQUIRED)
@@ -82,6 +82,9 @@ target_link_libraries(kinematic_calibration
 
 add_library(pso SHARED src/pso_rbm_estimation.cpp)
 target_link_libraries(pso ${CERES_LIBRARIES} ${Boost_LIBRARIES})
+
+add_library(versor_cga_op SHARED src/vsr/cga_op.cpp src/vsr/cga_round.cpp src/vsr/python_interface_cga_op.cpp)
+target_link_libraries(versor_cga_op ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
 
 add_library(versor SHARED src/vsr/python_interface.cpp)
 target_link_libraries(versor ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})

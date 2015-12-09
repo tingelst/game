@@ -42,8 +42,8 @@ struct Proj {
   typedef NEVec<DIM - 1> OneDown;  ///< Next Projection Down
 
   static auto Call(VSR_PRECISION dist, const TVec& v)
-      RETURNS((Proj<DIM - 1>::Call(dist, v.template cast<OneDown>() *
-                                             k(dist / (dist - v[DIM - 1])))));
+      RETURNS((Proj<DIM - 1>::Call(dist, v.template cast<OneDown>() *k
+                                             (dist / (dist - v[DIM - 1])))));
 
   template <int DIM2>
   static auto Ortho(const TVec& v) RETURNS((v.template cast<NEVec<DIM2>>()));
@@ -692,11 +692,10 @@ struct Round {
   /*! Squared distance between two points
   */
   template <class A>
-  static constexpr typename A::value_type squaredDistance(const GAPnt<A>& a,
-                                                          const GAPnt<A> b) {
-    return ((a <= b)[0]) * static_cast<typename A::value_type>(-2.0);
+  static constexpr VSR_PRECISION squaredDistance(const GAPnt<A>& a,
+                                                 const GAPnt<A> b) {
+    return ((a <= b)[0]) * -2.0;
   }
-
   template <class A>
   static constexpr VSR_PRECISION sqd(const A& a, const A& b) {
     return squaredDistance(a, b);
@@ -704,9 +703,8 @@ struct Round {
 
   /*! Distance between points a and b */
   template <class A>
-  static constexpr typename A::value_type distance(const GAPnt<A>& a,
-                                                   const GAPnt<A> b) {
-    return sqrt(abs(squaredDistance(a, b)));
+  static constexpr VSR_PRECISION distance(const GAPnt<A>& a, const GAPnt<A> b) {
+    return sqrt(fabs(sqd(a, b)));
   }
   template <class A>
   static constexpr VSR_PRECISION dist(const A& a, const A& b) {

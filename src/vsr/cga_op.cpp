@@ -1,4 +1,4 @@
-#include "space/vsr_cga3D_op.h"
+#include "game/vsr/cga_op.h"
 
 namespace vsr {
 namespace cga {
@@ -38,8 +38,8 @@ Pnt Op::Pos(const Cir& s) { return Round::loc(s); }
 Rot Gen::rot(const Biv& b) { return nga::Gen::rot(b); }
 Rot Gen::rotor(const Biv& b) { return nga::Gen::rot(b); }
 
-Bst Gen::bst(const Pair& p) { return nga::Gen::bst(p); }
-Bst Gen::boost(const Pair& p) { return nga::Gen::bst(p); }
+Bst Gen::bst(const Par& p) { return nga::Gen::bst(p); }
+Bst Gen::boost(const Par& p) { return nga::Gen::bst(p); }
 
 Tsd Gen::dil(const Pnt& p, VSR_PRECISION t) { return nga::Gen::dil(p, t); }
 Tsd Gen::dilator(const Pnt& p, VSR_PRECISION t) { return nga::Gen::dil(p, t); }
@@ -48,7 +48,7 @@ Rot Gen::ratio(const Vec& v, const Vec& v2) { return nga::Gen::ratio(v, v2); }
 
 Biv Gen::log(const Rot& r) { return nga::Gen::log(r); }
 
-/*! Generate a Rotor (i.e quaternion) from spherical coordinates
+/*! Generate a Rot (i.e quaternion) from spherical coordinates
      @param[in] theta in xz plane from (1,0,0) in range [0,PI]
      @param[in] phi in rotated xy plane in range []
  */
@@ -68,8 +68,8 @@ Rot Gen::rot(double y, double p, double r) {
   return roll * tmp;
 }
 
-/*! Generate a Motor from a Dual Line Axis
-    @param Dual Line Generator (the axis of rotation, including pitch and
+/*! Generate a Mot from a Dual Lin Axis
+    @param Dual Lin Generator (the axis of rotation, including pitch and
    period)
 */
 Mot Gen::mot(const Dll& dll) {
@@ -103,17 +103,9 @@ Mot Gen::mot(const Dll& dll) {
              ts[3] * sc);
 }
 
-template<typename T>
-Motor<T> Gen::mot(const DualLine<T> dll) {
-
-  std::cout << "new mot" << std::endl;
-  return Motor<T>();
-
-}
-
 Mot Gen::motor(const Dll& dll) { return mot(dll); }
 
-// Dual Line Generator from a Motor
+// Dual Lin Generator from a Mot
 // An implementation of J.Lasenby et al "Applications of Conformal Geometric
 // Algebra in Computer Vision and Graphics"
 
@@ -152,11 +144,9 @@ Dll Gen::log(const Mot& m) {
   return rq;
 }
 
+Dll Gen::logMotor(const Mot& m) { return Gen::log(m); }
 
-
-
-
-/*! Dual Line Generator of Motor That Twists Dual Line a to Dual Line b;
+/*! Dual Lin Generator of Mot That Twists Dual Lin a to Dual Lin b;
 
 */
 Dll Gen::log(const Dll& a, const Dll& b, VSR_PRECISION t) {
@@ -166,7 +156,7 @@ Dll Gen::log(const Dll& a, const Dll& b, VSR_PRECISION t) {
   return Gen::log(m) * (t / 2.0);
 }
 
-/*! Generate Motor That Twists Dual Line a to Dual Line b;
+/*! Generate Mot That Twists Dual Lin a to Dual Lin b;
 
 */
 Mot Gen::ratio(const Dll& a, const Dll& b, VSR_PRECISION t) {
@@ -175,7 +165,7 @@ Mot Gen::ratio(const Dll& a, const Dll& b, VSR_PRECISION t) {
   return Gen::mot(log(a, b, t));  // Gen::log( m ) * (t/2.0) );
 }
 
-/*! Generate Motor That Twists Motor a to motor b by amt t;
+/*! Generate Mot That Twists Mot a to motor b by amt t;
 */
 Mot Gen::ratio(const Mot& a, const Mot& b, VSR_PRECISION t) {
   return Gen::mot(Gen::log(b / a) * t);
@@ -187,7 +177,7 @@ Mot Gen::ratio(const Mot& a, const Mot& b, VSR_PRECISION t) {
 
 /*! Generate Simple Boost rotor from ratio of two dual spheres
 */
-Bst Gen::ratio(const DualSphere& a, const DualSphere& b, bool bFlip) {
+Bst Gen::ratio(const Dls& a, const Dls& b, bool bFlip) {
   Bst tbst = (b / a).runit();
   // if (tbst[0]<0)
   if (bFlip) tbst = -tbst;  // restrict to positive <R>
@@ -197,7 +187,7 @@ Bst Gen::ratio(const DualSphere& a, const DualSphere& b, bool bFlip) {
 }
 
 /*! atanh2 function for logarithm of general rotors*/
-Pair Gen::atanh2(const Pair& p, VSR_PRECISION cs, bool bCW) {
+Par Gen::atanh2(const Par& p, VSR_PRECISION cs, bool bCW) {
   VSR_PRECISION norm = 1;
 
   auto tp = p.wt();
@@ -215,12 +205,12 @@ Pair Gen::atanh2(const Pair& p, VSR_PRECISION cs, bool bCW) {
 
 /*! Log of a simple rotor (uses atanh2, passes in boolean for direction of
  * interpolation) */
-Pair Gen::log(const Bst& b, bool bCW) { return atanh2(Pair(b), b[0], bCW); }
+Par Gen::log(const Bst& b, bool bCW) { return atanh2(Par(b), b[0], bCW); }
 
 /*!  Generate Conformal Transformation from circle a to circle b
      uses square root method of Dorst et Valkenburg, 2011
 */
-Con Gen::ratio(const Circle& a, const Circle& b, bool bFlip, float theta) {
+Con Gen::ratio(const Cir& a, const Cir& b, bool bFlip, float theta) {
   Con trot = (b / a).runit();
   // planar?
   //  float planarity = (Round::carrier(a).dual().unit() ^
@@ -234,7 +224,7 @@ Con Gen::ratio(const Circle& a, const Circle& b, bool bFlip, float theta) {
   VSR_PRECISION sca = 1 + trot[0];
   VSR_PRECISION sca2 = sca * sca;
 
-  Sphere sph(trot);
+  Sph sph(trot);
   auto sph2 = sph.wt();
 
   if (FERROR(sca2 - sph2)) {
@@ -251,7 +241,7 @@ Con Gen::ratio(const Circle& a, const Circle& b, bool bFlip, float theta) {
 
     auto dls = sph.dual();
 
-    auto biv = (Pair(vec.copy<Tnv>()).trs(Round::location(a)) ^ dls)
+    auto biv = (Par(vec.copy<Tnv>()).trs(Round::location(a)) ^ dls)
                    .undual();  //.trs(1,0,0);
 
     biv = biv.runit();
@@ -277,10 +267,10 @@ Con Gen::ratio(const Circle& a, const Circle& b, bool bFlip, float theta) {
   return rotone * v1 * v2;
 }
 
-/*!  Generate Conformal Transformation from Pair a to Pair b
+/*!  Generate Conformal Transformation from Par a to Par b
      uses square root method of Dorst et Valkenburg, 2011
 */
-Con Gen::ratio(const Pair& a, const Pair& b, bool bFlip, float theta) {
+Con Gen::ratio(const Par& a, const Par& b, bool bFlip, float theta) {
   return ratio(a.dual(), b.dual(), bFlip, theta);
 }
 
@@ -290,14 +280,14 @@ Con Gen::ratio(const Pair& a, const Pair& b, bool bFlip, float theta) {
          inverse method for ipar below was given by dorst in personal
    correspondance
 */
-vector<Pair> Gen::split(const Pair& par) {
-  typedef decltype(Sphere() + 1) SqDeriv;
+vector<Par> Gen::split(const Par& par) {
+  typedef decltype(Sph() + 1) SqDeriv;
 
-  vector<Pair> res;
+  vector<Par> res;
 
   SqDeriv h2 = par * par;
-  auto hh2 = Sphere(h2).wt();
-  auto ipar = (-Sphere(h2) + h2[0]) / (h2[0] * h2[0] - hh2);
+  auto hh2 = Sph(h2).wt();
+  auto ipar = (-Sph(h2) + h2[0]) / (h2[0] * h2[0] - hh2);
 
   // scalar ||f||^2
   auto tmp2 = ((h2 * h2) - (h2 * 2 * h2[0]))[0];
@@ -316,8 +306,8 @@ vector<Pair> Gen::split(const Pair& par) {
       return res;
     } else {
       //  printf("(adding random value and retrying)");
-      static Pair dp(.0001, .0006, .0004, .0002, .0008, .0006, .0003, .0007,
-                     .0001, .0001);
+      static Par dp(.0001, .0006, .0004, .0002, .0008, .0006, .0003, .0007,
+                    .0001, .0001);
       return split(par + dp);
     }
   }
@@ -326,8 +316,8 @@ vector<Pair> Gen::split(const Pair& par) {
   auto fplus = iha + 1;
   auto fminus = -iha + 1;
 
-  Pair pa = par * fplus * .5;
-  Pair pb = par * fminus * .5;
+  Par pa = par * fplus * .5;
+  Par pb = par * fminus * .5;
 
   res.push_back(pa);
   res.push_back(pb);
@@ -335,33 +325,33 @@ vector<Pair> Gen::split(const Pair& par) {
   return res;
 }
 
-vector<Pair> Gen::split(const Con& rot) {
+vector<Par> Gen::split(const Con& rot) {
   // 1. Get Exterior Derivative
-  Sphere quad(rot);  // grade 4 part
+  Sph quad(rot);  // grade 4 part
 
   auto tmp = quad + (-rot[0]);  // scalar + quadvector
   // half the exterior deriv is sinh(B+/-)
-  auto deriv = Pair(tmp * Pair(rot)) * 2;  // quad parts are zero here.
+  auto deriv = Par(tmp * Par(rot)) * 2;  // quad parts are zero here.
   // find commuting split of that
   return split(deriv);
 }
 
-/*! Split Log of General Conformal Rotor */
-vector<Pair> Gen::log(const Con& rot) {
-  vector<Pair> res;
+/*! Split Log of General Conformal Rot */
+vector<Par> Gen::log(const Con& rot) {
+  vector<Par> res;
 
   // 0. Some Terms for later on
   // R^2
   auto sqrot = rot * rot;
   //<R>2
-  Pair rot2(sqrot);
+  Par rot2(sqrot);
 
   // 1. Get Exterior Derivative
-  Sphere quad(rot);  // grade 4 part
+  Sph quad(rot);  // grade 4 part
 
   auto tmp = quad + (-rot[0]);  // scalar + quadvector
   // half the exterior deriv is sinh(B+/-)
-  auto deriv = Pair(tmp * Pair(rot)) * 2;  // quad parts are zero here.
+  auto deriv = Par(tmp * Par(rot)) * 2;  // quad parts are zero here.
   // find commuting split of that
   auto v = split(deriv);
 
@@ -379,19 +369,19 @@ vector<Pair> Gen::log(const Con& rot) {
   return res;
 }
 
-/*! Split Log from a ratio of two Circles */
-vector<Pair> Gen::log(const Circle& ca, const Circle& cb, bool bFlip,
-                      VSR_PRECISION theta) {
+/*! Split Log from a ratio of two Cirs */
+vector<Par> Gen::log(const Cir& ca, const Cir& cb, bool bFlip,
+                     VSR_PRECISION theta) {
   return log(ratio(ca, cb, bFlip, theta));
 }
-/*! Split Log from a ratio of two Circles */
-vector<Pair> Gen::log(const Pair& ca, const Pair& cb, bool bFlip,
-                      VSR_PRECISION theta) {
+/*! Split Log from a ratio of two Cirs */
+vector<Par> Gen::log(const Par& ca, const Par& cb, bool bFlip,
+                     VSR_PRECISION theta) {
   return log(ratio(ca, cb, bFlip, theta));
 }
 
 /*! General Conformal Transformation from a split log*/
-Con Gen::con(const vector<Pair>& log, VSR_PRECISION amt) {
+Con Gen::con(const vector<Par>& log, VSR_PRECISION amt) {
   Con con(1);
   for (auto& i : log) {
     con *= Gen::bst(i * -amt);
@@ -400,19 +390,19 @@ Con Gen::con(const vector<Pair>& log, VSR_PRECISION amt) {
 }
 
 /*! General Conformal Transformation from a split log*/
-Con Gen::con(const vector<Pair>& log, VSR_PRECISION amtA, VSR_PRECISION amtB) {
+Con Gen::con(const vector<Par>& log, VSR_PRECISION amtA, VSR_PRECISION amtB) {
   Con tmp = Gen::bst(log[0] * -amtA);
   if (log.size() > 1) tmp *= Gen::bst(log[1] * -amtB);
   return tmp;
 }
 
 /*! General Conformal Transformation from two circles */
-Con Gen::con(const Circle& ca, const Circle& cb, VSR_PRECISION amt) {
+Con Gen::con(const Cir& ca, const Cir& cb, VSR_PRECISION amt) {
   return con(log(ca, cb), amt);
 }
 
 /* General Conformal Transformation from two circles and two weights */
-Con Gen::con(const Circle& ca, const Circle& cb, VSR_PRECISION amtA,
+Con Gen::con(const Cir& ca, const Cir& cb, VSR_PRECISION amtA,
              VSR_PRECISION amtB) {
   return con(log(ca, cb), amtA, amtB);
 }
@@ -423,35 +413,33 @@ Con Gen::con(const Circle& ca, const Circle& cb, VSR_PRECISION amtA,
 /*!
 * \brief  generate a rotor transformation from a euclidean bivector
 */
-Rotor Gen::xf(const Biv& b) { return Gen::rot(b); }
+Rot Gen::xf(const Biv& b) { return Gen::rot(b); }
 /*!
  *  \brief  generate a motor transformation from a dual line
  */
-Motor Gen::xf(const DualLine& dll) { return Gen::mot(dll); }
+Mot Gen::xf(const Dll& dll) { return Gen::mot(dll); }
 /*!
  *  \brief  generate a dilation transformation from a flat point
  */
-Dilator Gen::xf(const FlatPoint& flp) { return Gen::dil(Pnt(flp), flp[3]); }
+Dil Gen::xf(const Flp& flp) { return Gen::dil(Pnt(flp), flp[3]); }
 
 /*!
  *  \brief  generate a boost transformation from a point pair
  */
-Bst Gen::xf(const Pair& p) { return Gen::bst(p); }
+Bst Gen::xf(const Par& p) { return Gen::bst(p); }
 
 /*-----------------------------------------------------------------------------
  *  PAIRS
  *-----------------------------------------------------------------------------*/
-/// Pair on Sphere in v direction
-Pair Construct::pair(const DualSphere& s, const Vec& v) {
-  return Round::produce(s, v);
-}
+/// Par on Sph in v direction
+Par Construct::pair(const Dls& s, const Vec& v) { return Round::produce(s, v); }
 
 /*!
- *  \brief Point Pair at x,y,z with direction vec (default Y) and radius r
+ *  \brief Pnt Par at x,y,z with direction vec (default Y) and radius r
  * (default 1)
  */
-Pair Construct::pair(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z, Vec vec,
-                     VSR_PRECISION r) {
+Par Construct::pair(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z, Vec vec,
+                    VSR_PRECISION r) {
   return Round::produce(Round::dls(r * -1, x, y, z), vec);  // a ^ b ^ c;
 }
 
@@ -461,39 +449,39 @@ Pair Construct::pair(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z, Vec vec,
 /*!
  *  \brief  First point of point pair pp
  */
-Point Construct::pointA(const Pair& pp) {
+Pnt Construct::pointA(const Par& pp) {
   return Round::location(Round::split(pp, true));
 }
 
 /*!
  *  \brief  Second point of point pair pp
  */
-Point Construct::pointB(const Pair& pp) {
+Pnt Construct::pointB(const Par& pp) {
   return Round::location(Round::split(pp, false));
 }
 
-/// Point on Circle at theta t
-Point Construct::point(const Circle& c, VSR_PRECISION t) {
+/// Pnt on Cir at theta t
+Pnt Construct::point(const Cir& c, VSR_PRECISION t) {
   return Round::point(c, t);
 }
-/// Point on Sphere in v direction
-Point Construct::point(const DualSphere& s, const Vec& v) {
+/// Pnt on Sph in v direction
+Pnt Construct::point(const Dls& s, const Vec& v) {
   return pointA(pair(s, v)).null();
 }
 
-/// Point from x,y,z
-Point Construct::point(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z) {
+/// Pnt from x,y,z
+Pnt Construct::point(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z) {
   return Round::null(x, y, z);
 }
-/// Point from vec
-Point Construct::point(const Vec& v) { return v.null(); }
+/// Pnt from vec
+Pnt Construct::point(const Vec& v) { return v.null(); }
 
-/// Point on line l closest to p
-Point Construct::point(const Line& line, const Point& p) {
+/// Pnt on line l closest to p
+Pnt Construct::point(const Lin& line, const Pnt& p) {
   return Round::null(Flat::location(line, p, false));
 }
-/// Point on dualline l closest to p
-Point Construct::point(const DualLine& dll, const Point& p) {
+/// Pnt on dualline l closest to p
+Pnt Construct::point(const Dll& dll, const Pnt& p) {
   return Round::null(Flat::location(dll, p, true));
 }
 
@@ -501,46 +489,46 @@ Point Construct::point(const DualLine& dll, const Point& p) {
  *  CIRCLES
  *-----------------------------------------------------------------------------*/
 /*!
- *  \brief  Circle at origin in plane of bivector B
+ *  \brief  Cir at origin in plane of bivector B
  */
-Circle Construct::circle(const Biv& B) {
+Cir Construct::circle(const Biv& B) {
   return Round::produce(Round::dls(1, 0, 0, 0), B);  // a ^ b ^ c;
 }
 
 /*!
- *  \brief  Circle at point p with radius r, facing direction biv
+ *  \brief  Cir at point p with radius r, facing direction biv
 */
-Circle Construct::circle(const Point& p, VSR_PRECISION r, const Biv& biv) {
+Cir Construct::circle(const Pnt& p, VSR_PRECISION r, const Biv& biv) {
   return Round::produce(Round::dls(p, r * -1), biv);
 }
 
-/// Circle at origin with normal v and radius r (default r=1.0)
-Circle Construct::circle(const Vec& v, VSR_PRECISION r) {
+/// Cir at origin with normal v and radius r (default r=1.0)
+Cir Construct::circle(const Vec& v, VSR_PRECISION r) {
   return Round::produce(Round::dls(r * -1, 0, 0, 0), Op::dle(v));  // a ^ b ^ c;
 }
-/// Circle at x,y,z facing in biv direction
-Circle Construct::circle(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z,
-                         Biv biv, VSR_PRECISION r) {
+/// Cir at x,y,z facing in biv direction
+Cir Construct::circle(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z,
+                      Biv biv, VSR_PRECISION r) {
   return Round::produce(Round::dls(r * -1, x, y, z), biv);  // a ^ b ^ c;
 }
 /*-----------------------------------------------------------------------------
  *  HYPERBOLIC AND SPHERICAL LINES
  *-----------------------------------------------------------------------------*/
 /// Hyperbolic line through two points
-Circle Construct::hline(const Point& a, const Point& b) { return a ^ b ^ EP; }
+Cir Construct::hline(const Pnt& a, const Pnt& b) { return a ^ b ^ EP; }
 /// Spherical line through two points
-Circle Construct::sline(const Point& a, const Point& b) { return a ^ b ^ EM; }
+Cir Construct::sline(const Pnt& a, const Pnt& b) { return a ^ b ^ EM; }
 
 /*-----------------------------------------------------------------------------
  *  SPHERES
  *-----------------------------------------------------------------------------*/
-/// Sphere at x,y,z with radius r (default r=1.0)
-DualSphere Construct::sphere(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z,
-                             VSR_PRECISION r) {
+/// Sph at x,y,z with radius r (default r=1.0)
+Dls Construct::sphere(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z,
+                      VSR_PRECISION r) {
   return Round::dls(r, x, y, z);
 }
-/// Sphere at point p with radius r (default r=1.0)
-DualSphere Construct::sphere(const Point& p, VSR_PRECISION r) {
+/// Sph at point p with radius r (default r=1.0)
+Dls Construct::sphere(const Pnt& p, VSR_PRECISION r) {
   return Round::dls(p, r);
 }
 
@@ -549,14 +537,14 @@ DualSphere Construct::sphere(const Point& p, VSR_PRECISION r) {
  *-----------------------------------------------------------------------------*/
 
 /// Dual plane with normal and distance from center
-DualPlane Construct::plane(VSR_PRECISION a, VSR_PRECISION b, VSR_PRECISION c,
-                           VSR_PRECISION d) {
+Dlp Construct::plane(VSR_PRECISION a, VSR_PRECISION b, VSR_PRECISION c,
+                     VSR_PRECISION d) {
   return Dlp(a, b, c, d);
 }
 /// Dual plane from vec and distance from center
-DualPlane Construct::plane(const Vec& v, VSR_PRECISION d) { return v + Inf(d); }
+Dlp Construct::plane(const Vec& v, VSR_PRECISION d) { return v + Inf(d); }
 /// Direct plane through three points
-Plane Construct::plane(const Pnt& a, const Pnt& b, const Pnt& c) {
+Pln Construct::plane(const Pnt& a, const Pnt& b, const Pnt& c) {
   return a ^ b ^ c ^ Inf(1);
 }
 
@@ -564,75 +552,75 @@ Plane Construct::plane(const Pnt& a, const Pnt& b, const Pnt& c) {
  *  LINES
  *-----------------------------------------------------------------------------*/
 /*!
- *  \brief  DualLine axis of circle c
+ *  \brief  Dll axis of circle c
  */
-DualLine Construct::axis(const Cir& c) { return (Inf(-1) <= c).runit(); }
+Dll Construct::axis(const Cir& c) { return (Inf(-1) <= c).runit(); }
 
-/// Line from two Vecs
-Line Construct::line(const Vec& a, const Vec& b) {
+/// Lin from two Vecs
+Lin Construct::line(const Vec& a, const Vec& b) {
   return point(a[0], a[1], a[2]) ^ Vec(b[0], b[1], b[2]) ^ Inf(1);
 }
 
 /// Direct line through origin
-Line Construct::line(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z) {
+Lin Construct::line(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z) {
   return Ori(1) ^ Vec(x, y, z) ^ Inf(1);
 }
 /// Direct line through origin
-Line Construct::dualLine(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z) {
+Lin Construct::dualLin(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z) {
   return line(x, y, z).dual();
 }
 
 /// Direct line through two points
-Line Construct::line(const Point& a, const Point& b) { return a ^ b ^ Inf(1); }
+Lin Construct::line(const Pnt& a, const Pnt& b) { return a ^ b ^ Inf(1); }
 /// Direct line through point a in direction b
-Line Construct::line(const Point& a, const Vec& b) { return a ^ b ^ Inf(1); }
+Lin Construct::line(const Pnt& a, const Vec& b) { return a ^ b ^ Inf(1); }
 
 /// Squared Distance between a line and a point
 VSR_PRECISION Construct::distance(const Lin& lin, const Pnt& pnt) {
   return (pnt <= lin.dual())[0] * -2.0;
 }
 
-/* Line line(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z){ */
+/* Lin line(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z){ */
 /*   return point(a[0], a[1], a[2]) ^ Vec(b[0], b[1], b[2]) ^ Inf(1); */
 /* } */
 
 #pragma mark COINCIDENCE_FUNCTIONS
 
 /// circle intersection of dual spheres
-Circle Construct::meet(const Dls& s, const Dls& d) { return (s ^ d).dual(); }
+Cir Construct::meet(const Dls& s, const Dls& d) { return (s ^ d).dual(); }
 
 /// circle intersection of dual sphere and direct plane
-Circle Construct::meet(const Dls& s, const Dlp& d) { return (s ^ d).dual(); }
+Cir Construct::meet(const Dls& s, const Dlp& d) { return (s ^ d).dual(); }
 /// circle intersection of dual spehre and direct plane
-Circle Construct::meet(const Dls& s, const Pln& d) {
+Cir Construct::meet(const Dls& s, const Pln& d) {
   return (s ^ d.dual()).dual();
 }
 // circle intersection of direct sphere and dual plane
-Circle Construct::meet(const Sphere& s, const DualPlane& d) {
+Cir Construct::meet(const Sph& s, const Dlp& d) {
   return (s.dual() ^ d).dual();
 }
 // circle intersection of direct sphere and direct plane
-Circle Construct::meet(const Sphere& s, const Plane& d) {
+Cir Construct::meet(const Sph& s, const Pln& d) {
   return (s.dual() ^ d.dual()).dual();
 }
 
 // normalized and nulled point intersection of line and dual plane
-Point Construct::meet(const Line& lin, const DualPlane& dlp) {
+Pnt Construct::meet(const Lin& lin, const Dlp& dlp) {
   Flp flp = ((lin).dual() ^ dlp).dual();
   return (flp / flp[3]).null();
 }
 // normalized and nulled point intersection of dualline and dual plane
-Point Construct::meet(const Dll& dll, const DualPlane& dlp) {
+Pnt Construct::meet(const Dll& dll, const Dlp& dlp) {
   auto flp = (dll ^ dlp).dual();
   return flp.null();
 }
 
-// Point intersection of two lines
-Point Construct::meet(const Line& la, const Line& lb) {
-  Line r = la.reflect(lb);
-  Line r2 = (la - r.unit()).unit();
-  Point pori = Flat::loc(r2, Ori(1), false);
-  Point tp = pori.re(lb);
+// Pnt intersection of two lines
+Pnt Construct::meet(const Lin& la, const Lin& lb) {
+  Lin r = la.reflect(lb);
+  Lin r2 = (la - r.unit()).unit();
+  Pnt pori = Flat::loc(r2, Ori(1), false);
+  Pnt tp = pori.re(lb);
   return (((tp / tp[3]) + pori) / 2.0).null();
 }
 /* //test for origin */
@@ -662,7 +650,7 @@ Par Construct::meet(const Cir& cir, const Dls& s) {
 /*!
  *  \brief  hit tests between point and pair (treats pair as an "edge")
  */
-bool Construct::hit(const Point& pnt, const Pair& par) {
+bool Construct::hit(const Pnt& pnt, const Par& par) {
   // if inside surround < 0
   if ((pnt <= Round::sur(par))[0] < 0) {
     if ((pnt ^ par ^ Inf(1)).wt() == 0.0) {
@@ -675,7 +663,7 @@ bool Construct::hit(const Point& pnt, const Pair& par) {
 /*!
  *  \brief  hit tests between point and circle (treats circle as "disc")
  */
-bool Construct::hit(const Point& p, const Circle& cir) {
+bool Construct::hit(const Pnt& p, const Cir& cir) {
   if ((p <= Round::sur(cir))[0] > 0) {
     if (fabs((p ^ Round::car(cir)).wt()) < .00001) {
       return true;
@@ -684,7 +672,7 @@ bool Construct::hit(const Point& p, const Circle& cir) {
   return false;
 }
 
-double Construct::squaredDistance(const Point& a, const Point& b) {
+double Construct::squaredDistance(const Pnt& a, const Pnt& b) {
   return Round::sqd(a, b);
 }
 
@@ -696,7 +684,7 @@ double Construct::squaredDistance(const Point& a, const Point& b) {
 /*!
  *  \brief  hyperbolic normalization of a conformal point
  */
-Point Construct::hnorm(const Pnt& p) { return -(p / (EP <= p)); }
+Pnt Construct::hnorm(const Pnt& p) { return -(p / (EP <= p)); }
 
 /*!
  *  \brief  hyperbolic distance between two conformal points
@@ -709,7 +697,7 @@ double Construct::hdist(const Pnt& pa, const Pnt& pb) {
  *  \brief  hyperbolic translation transformation generator between two
  * conformal points
  */
-Pair Construct::hgen(const Pnt& pa, const Pnt& pb, double amt) {
+Par Construct::hgen(const Pnt& pa, const Pnt& pb, double amt) {
   double dist = hdist(pa, pb);              //<-- h distance
   auto hline = pa ^ pb ^ EP;                //<-- h line (circle)
   auto par_versor = (EP <= hline).runit();  //<-- h trans generator (pair)
@@ -720,7 +708,7 @@ Pair Construct::hgen(const Pnt& pa, const Pnt& pb, double amt) {
 /*!
  *  \brief  hyperbolic spin transformation from pa to pb by amt (0,1)
  */
-Point Construct::hspin(const Pnt& pa, const Pnt& pb, double amt) {
+Pnt Construct::hspin(const Pnt& pa, const Pnt& pb, double amt) {
   return Round::loc(pa.boost(hgen(pa, pb, amt)));
   // versor * dist * amt * .5) );
 }

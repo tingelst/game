@@ -9,7 +9,8 @@ __author__ = "Lars Tingelstad"
 __email__ = "lars.tingelstad@ntnu.no"
 
 import sys
-sys.path.append('../../build/')
+# sys.path.append('../../build/')
+sys.path.append('../../build_gcc/')
 # sys.path.append('../build/Debug/')
 # sys.path.append('../../build/Debug/')
 

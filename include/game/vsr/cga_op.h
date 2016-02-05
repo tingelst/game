@@ -12,11 +12,11 @@
 #include <math.h>
 #include <vector>
 
-#include <vsr/space/vsr_cga3D_types.h>
-#include <vsr/space/vsr_cga3D_round.h>
-#include <vsr/detail/vsr_generic_op.h>
-#include <vsr/util/vsr_constants.h>
-#include <vsr/util/vsr_math.h>
+#include "game/vsr/cga_types.h"
+#include "game/vsr/cga_round.h"
+#include "game/vsr/generic_op.h"
+#include "game/vsr/constants.h"
+#include "game/vsr/math.h"
 
 namespace vsr {
 namespace cga {
@@ -67,13 +67,15 @@ struct Op {
   static auto dl(const T& t) RETURNS(dual(t));
 
   template <class T>
-  static auto udl(const T& t) RETURNS(udual(t)); template <class T>
-  static auto dle(const T& t) RETURNS(duale(t)); template <class T>
+  static auto udl(const T& t) RETURNS(udual(t));
+  template <class T>
+  static auto dle(const T& t) RETURNS(duale(t));
+  template <class T>
   static auto udle(const T& t) RETURNS(unduale(t));
 
-      /// Sign of A with Respect to B
-      template <class A>
-      static constexpr bool sign(const A& a, const A& b) {
+  /// Sign of A with Respect to B
+  template <class A>
+  static constexpr bool sign(const A& a, const A& b) {
     return (a / b)[0] > 0 ? 1 : 0;
   }
 
@@ -105,17 +107,17 @@ struct Op {
   @sa vsr::nga::Gen for @ref generic implementation details
 */
 struct Gen {
-  /// vsr::cga::Rotor from vsr::cga::Bivector
+  /// vsr::cga::Rot from vsr::cga::Bivector
   static Rot rot(const Biv& b);
-  /// vsr::cga::Rotor from vsr::cga::Bivector
+  /// vsr::cga::Rot from vsr::cga::Bivector
   static Rot rotor(const Biv& b);
-  /// vsr::cga::Boost from vsr::cga::Pair
-  static Bst bst(const Pair& p);
-  /// vsr::cga::Boost from vsr::cga::Pair
-  static Bst boost(const Pair& p);
-  /// vsr::cga::Dilator from vsr::cga::Point and amt t
+  /// vsr::cga::Boost from vsr::cga::Par
+  static Bst bst(const Par& p);
+  /// vsr::cga::Boost from vsr::cga::Par
+  static Bst boost(const Par& p);
+  /// vsr::cga::Dil from vsr::cga::Pnt and amt t
   static Tsd dil(const Pnt& p, VSR_PRECISION t);
-  /// vsr::cga::Dilator from vsr::cga::Point and amt t
+  /// vsr::cga::Dil from vsr::cga::Pnt and amt t
   static Tsd dilator(const Pnt& p, VSR_PRECISION t);
 
   /// vsr::cga::Translator from any type
@@ -139,18 +141,18 @@ struct Gen {
     return nga::Gen::trv(a);
   }
 
-  /// vsr::cga::Rotor that takes one vec to another
+  /// vsr::cga::Rot that takes one vec to another
   static Rot ratio(const Vec& v, const Vec& v2);
-  /// vsr::cga::Bivector log of vsr::cga::Rotor
+  /// vsr::cga::Bivector log of vsr::cga::Rot
   static Biv log(const Rot& r);
 
-  /*! Generate a vsr::cga::Rotor from spherical coordinates
+  /*! Generate a vsr::cga::Rot from spherical coordinates
        @param theta in xz plane from (1,0,0) in range [0,PI]
        @param phi in rotated xy plane in range [-PIOVERTWO, PIOVERTWO]
    */
   static Rot rot(double theta, double phi);
 
-  /*! Generate a vsr::cga::Rotor from Euler angles
+  /*! Generate a vsr::cga::Rot from Euler angles
       @param yaw in xz plane
       @param pitch in (transformed) yz plane
       @param roll in (transformed) xy plane
@@ -158,63 +160,61 @@ struct Gen {
   static Rot rot(double yaw, double pitch, double roll);
 
   /*-----------------------------------------------------------------------------
-   *  TWISTS (Motors, Plücker, etc)
+   *  TWISTS (Mots, Plücker, etc)
    *-----------------------------------------------------------------------------*/
-  /*! Generate a vsr::cga::Motor from a vsr::cga::DualLine Axis
-      @param dll a vsr::cga::DualLine generator axis of rotation
+  /*! Generate a vsr::cga::Mot from a vsr::cga::Dll Axis
+      @param dll a vsr::cga::Dll generator axis of rotation
   */
   static Mot mot(const Dll& dll);
+  static Mot motDll(const Dll& dll);
 
-
-  template <typename T>
-    static Motor<T> mot(const DualLine<T>* dll);
-
-  /*! Generate a vsr::cga::Motor from a vsr::cga::DualLine Axis
-       @param dll a vsr::cga::DualLine generator axis of rotation
+  /*! Generate a vsr::cga::Mot from a vsr::cga::Dll Axis
+       @param dll a vsr::cga::Dll generator axis of rotation
   */
   static Mot motor(const Dll& dll);
 
-  /*! DualLine generator from a Motor
-      @param m a vsr::cga::Motor (a concatenation of rotation and translation)
+  /*! Dll generator from a Mot
+      @param m a vsr::cga::Mot (a concatenation of rotation and translation)
   */
   static Dll log(const Mot& m);
+  static Dll logMotor(const Mot& m);
 
-  /*! DualLine generator of Motor That Twists DualLine a to DualLine b by amt t;
+  /*! Dll generator of Mot That Twists Dll a to Dll b by amt t;
 
-      @param a DualLine source
-      @param b DualLine target
+      @param a Dll source
+      @param b Dll target
       @param t amt to transform in range [0,1]
 
-      @return vsr::cga::Motor
+      @return vsr::cga::Mot
   */
   static Dll log(const Dll& a, const Dll& b, VSR_PRECISION t = 1.0);
 
   /*!
-      Generate Motor that twists Dual Line a to Dual Line b;
-      @param a DualLine source
-      @param b DualLine target
+      Generate Mot that twists Dual Lin a to Dual Lin b;
+      @param a Dll source
+      @param b Dll target
       @param t amt to transform in range [0,1]
 
-      @return vsr::cga::Motor;
+      @return vsr::cga::Mot;
   */
   static Mot ratio(const vsr::cga::Dll& a, const vsr::cga::Dll& b,
                    VSR_PRECISION t = 1.0);
 
-  // Due to overloading, it is also possible to use Motors as Arguments
+  // Due to overloading, it is also possible to use Mots as Arguments
 
   /*!
-      Generate Motor that twists Motor a to Motor b;
-      @param a vsr::cga::Motor source
-      @param b vsr::cga::Motor target
+      Generate Mot that twists Mot a to Mot b;
+      @param a vsr::cga::Mot source
+      @param b vsr::cga::Mot target
       @param t amt to transform in range [0,1]
 
-      @return vsr::cga::Motor
+      @return vsr::cga::Mot
   */
   static Mot ratio(const vsr::cga::Mot& a, const vsr::cga::Mot& b,
                    VSR_PRECISION t);
 
   /*-----------------------------------------------------------------------------
-   *  BOOSTS (Transversions, Conformal Rotors)
+   *  BOOSTS (Transversions, Conformal Rots)
    *-----------------------------------------------------------------------------*/
 
   /*! Generate a Translated Transversion
@@ -231,82 +231,82 @@ struct Gen {
   /*! Generate Simple Boost rotor from ratio of two dual spheres
         calculates SQUARE ROOT (normalizes 1+R)
    */
-  static Bst ratio(const DualSphere& a, const DualSphere& b, bool bFlip = true);
+  static Bst ratio(const Dls& a, const Dls& b, bool bFlip = true);
 
   /*! atanh2 function for logarithm of general rotors, with clockwise boolean */
-  static Pair atanh2(const Pair& p, VSR_PRECISION cs, bool bCW);
+  static Par atanh2(const Par& p, VSR_PRECISION cs, bool bCW);
 
   /*! Log of a simple rotor (uses atanh2) */
-  static Pair log(const Bst& b, bool bCW = false);
+  static Par log(const Bst& b, bool bCW = false);
 
   /*!  Generate Conformal Transformation from circle a to circle b
        uses square root method of Dorst et Valkenburg, 2011
   */
-  static Con ratio(const Circle& a, const Circle& b, bool bFlip = false,
+  static Con ratio(const Cir& a, const Cir& b, bool bFlip = false,
                    float theta = 0);
 
   /*!  Generate Conformal Transformation from pair a to pair b
        uses square root method of Dorst et Valkenburg, 2011
   */
-  static Con ratio(const Pair& a, const Pair& b, bool bFlip = false,
+  static Con ratio(const Par& a, const Par& b, bool bFlip = false,
                    float theta = 0);  //{ return ratio( a.dual(), b.dual() ); }
 
   /*! Bivector Split
         Takes a general bivector and splits  it into commuting pairs
         will give sinh(B+-)
    */
-  static vector<Pair> split(const Pair& par);
+  static vector<Par> split(const Par& par);
 
   /*! Bivector Split
         Takes a general ROTOR and splits  it into commuting pairs
         will give sinh(B+-)
    */
-  static vector<Pair> split(const Con& con);
+  static vector<Par> split(const Con& con);
 
-  /*! Split Log of General Conformal Rotor */
-  static vector<Pair> log(const Con& rot);
+  /*! Split Log of General Conformal Rot */
+  static vector<Par> log(const Con& rot);
 
-  /*! Split Log from a ratio of two Circles */
-  static vector<Pair> log(const Circle& ca, const Circle& cb,
+  /*! Split Log from a ratio of two Cirs */
+  static vector<Par> log(const Cir& ca, const Cir& cb,
                           bool bFlip = false, VSR_PRECISION theta = 0);
 
-  /*! Split Log from a ratio of two Circles */
-  static vector<Pair> log(const Pair& ca, const Pair& cb, bool bFlip = false,
+  /*! Split Log from a ratio of two Cirs */
+  static vector<Par> log(const Par& ca, const Par& cb, bool bFlip = false,
                           VSR_PRECISION theta = 0);
 
   /*! General Conformal Transformation from a split log*/
-  static Con con(const vector<Pair>& log, VSR_PRECISION amt);
+  static Con con(const vector<Par>& log, VSR_PRECISION amt);
 
   /*! General Conformal Transformation from a split log and two amts (one for
    * each)*/
-  static Con con(const vector<Pair>& log, VSR_PRECISION amtA,
+  static Con con(const vector<Par>& log, VSR_PRECISION amtA,
                  VSR_PRECISION amtB);
 
   /* General Conformal Transformation from two circles */
-  static Con con(const Circle& ca, const Circle& cb, VSR_PRECISION amt);
+  static Con con(const Cir& ca, const Cir& cb, VSR_PRECISION amt);
 
   /* General Conformal Transformation from two circles and two weights */
-  static Con con(const Circle& ca, const Circle& cb, VSR_PRECISION amtA,
+  static Con con(const Cir& ca, const Cir& cb, VSR_PRECISION amtA,
                  VSR_PRECISION amtB);
 
   /*!
    *  generates a Euclidean rotor transformation from a Euclidean
    * vsr::cga::Bivector;
    */
-  static Rotor xf(const Biv& b);
+  static Rot xf(const Biv& b);
   /*!
-   *  generates a vsr::cga::Motor transformation from a vsr::cga::DualLine
+   *  generates a vsr::cga::Mot transformation from a vsr::cga::Dll
    */
-  static Motor xf(const DualLine& dll);
+  static Mot xf(const Dll& dll);
   /*!
-   *  generates a vsr::cga::Dilator transformation from a vsr::cga::FlatPoint
+   *  generates a vsr::cga::Dil transformation from a vsr::cga::Flp
    */
-  static Dilator xf(const FlatPoint& flp);
+  static Dil xf(const Flp& flp);
 
   /*!
    *  generates a boost transformation from a point pair
    */
-  static Bst xf(const Pair& p);
+  static Bst xf(const Par& p);
 };
 
 /*-----------------------------------------------------------------------------
@@ -330,17 +330,17 @@ struct Construct {
    *  PAIRS
    *-----------------------------------------------------------------------------*/
 
-  /// constructs a Pair on Sphere s in v direction
-  /// @param s vsr::cga::DualSphere;
+  /// constructs a Par on Sph s in v direction
+  /// @param s vsr::cga::Dls;
   /// @param v vsr::cga::Vec;
-  /// @returns vsr::cga::Pair;
-  static Pair pair(const DualSphere& s, const Vec& v);
+  /// @returns vsr::cga::Par;
+  static Par pair(const Dls& s, const Vec& v);
 
   /*!
-  *  \brief Point Pair at x,y,z with direction vec (default Y) and radius r
+  *  \brief Pnt Par at x,y,z with direction vec (default Y) and radius r
   * (default 1)
   */
-  static Pair pair(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z,
+  static Par pair(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z,
                    Vec vec = Vec::y, VSR_PRECISION r = 1.0);
 
   /*-----------------------------------------------------------------------------
@@ -349,99 +349,99 @@ struct Construct {
   /*!
    *  \brief  First point of point pair pp
    */
-  static Point pointA(const Pair& pp);
+  static Pnt pointA(const Par& pp);
 
   /*!
    *  \brief  Second point of point pair pp
    */
-  static Point pointB(const Pair& pp);
+  static Pnt pointB(const Par& pp);
 
-  /// Point on Circle at theta t
-  static Point point(const Circle& c, VSR_PRECISION t);
-  /// Point on Sphere in v direction
-  static Point point(const DualSphere& s, const Vec& v);
-  /// Point from x,y,z
-  static Point point(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z);
-  /// Point from vec
-  static Point point(const Vec& v);
-  /// Point on line l closest to p
-  static Point point(const Line&, const Point&);
-  /// Point on dualline l closest to p
-  static Point point(const DualLine&, const Point&);
+  /// Pnt on Cir at theta t
+  static Pnt point(const Cir& c, VSR_PRECISION t);
+  /// Pnt on Sph in v direction
+  static Pnt point(const Dls& s, const Vec& v);
+  /// Pnt from x,y,z
+  static Pnt point(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z);
+  /// Pnt from vec
+  static Pnt point(const Vec& v);
+  /// Pnt on line l closest to p
+  static Pnt point(const Lin&, const Pnt&);
+  /// Pnt on dualline l closest to p
+  static Pnt point(const Dll&, const Pnt&);
 
   /*-----------------------------------------------------------------------------
    *  CIRCLES
    *-----------------------------------------------------------------------------*/
 
   /*!
-   *  \brief  Circle through three points
+   *  \brief  Cir through three points
    */
-  static Circle circle(const Point& a, const Point& b, const Point& c);
+  static Cir circle(const Pnt& a, const Pnt& b, const Pnt& c);
 
   /*!
-  *  \brief  Circle at point p with radius r, facing direction biv
+  *  \brief  Cir at point p with radius r, facing direction biv
  */
-  static Circle circle(const Point& p, VSR_PRECISION r,
+  static Cir circle(const Pnt& p, VSR_PRECISION r,
                        const Biv& biv = Biv::xy);
   /*!
-   *  \brief  Circle at origin in plane of bivector B
+   *  \brief  Cir at origin in plane of bivector B
    */
-  static Circle circle(const Biv& B);
+  static Cir circle(const Biv& B);
 
   // circle Facing v
-  static Circle circle(const Vec& v, VSR_PRECISION r = 1.0);
+  static Cir circle(const Vec& v, VSR_PRECISION r = 1.0);
 
-  // Circle at x,y,z facing in biv
-  static Circle circle(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z,
+  // Cir at x,y,z facing in biv
+  static Cir circle(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z,
                        Biv biv = Biv::xy, VSR_PRECISION r = 1.0);
 
   /*-----------------------------------------------------------------------------
    *  SPHERES
    *-----------------------------------------------------------------------------*/
-  static Sphere sphere(const Pnt& a, const Pnt& b, const Pnt& c, const Pnt& d);
-  static DualSphere sphere(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z,
+  static Sph sphere(const Pnt& a, const Pnt& b, const Pnt& c, const Pnt& d);
+  static Dls sphere(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z,
                            VSR_PRECISION r = 1.0);
-  static DualSphere sphere(const Point& p, VSR_PRECISION r = 1.0);
+  static Dls sphere(const Pnt& p, VSR_PRECISION r = 1.0);
 
   /*-----------------------------------------------------------------------------
    *  PLANES
    *-----------------------------------------------------------------------------*/
 
   /// Dual plane with normal and distance from center
-  static DualPlane plane(VSR_PRECISION a, VSR_PRECISION b, VSR_PRECISION c,
+  static Dlp plane(VSR_PRECISION a, VSR_PRECISION b, VSR_PRECISION c,
                          VSR_PRECISION d = 0.0);
   /// Dual plane from vec and distance from center
-  static DualPlane plane(const Vec& v, VSR_PRECISION d = 0.0);
+  static Dlp plane(const Vec& v, VSR_PRECISION d = 0.0);
   /// Direct plane through three points
-  static Plane plane(const Pnt& a, const Pnt& b, const Pnt& c);
+  static Pln plane(const Pnt& a, const Pnt& b, const Pnt& c);
 
   /*-----------------------------------------------------------------------------
    *  LINES
    *-----------------------------------------------------------------------------*/
 
   /*!
-  *  \brief  DualLine axis of circle c
+  *  \brief  Dll axis of circle c
   */
-  static DualLine axis(const Cir& c);
+  static Dll axis(const Cir& c);
 
   /// Direct line through points a and b
-  static Line line(const Vec& a, const Vec& b);
+  static Lin line(const Vec& a, const Vec& b);
 
   /// Direct line through origin
-  static Line line(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z);
+  static Lin line(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z);
 
   /// Dual line through origin
-  static Line dualLine(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z);
+  static Lin dualLin(VSR_PRECISION x, VSR_PRECISION y, VSR_PRECISION z);
 
   /// Direct line through two points
-  static Line line(const Point& a, const Point& b);
+  static Lin line(const Pnt& a, const Pnt& b);
   /// Direct line through point a in direction b
-  static Line line(const Point& a, const Vec& b);
+  static Lin line(const Pnt& a, const Vec& b);
 
   /// Hyperbolic line through two points
-  static Circle hline(const Point& a, const Point& b);
+  static Cir hline(const Pnt& a, const Pnt& b);
   /// Spherical line through two points
-  static Circle sline(const Point& a, const Point& b);
+  static Cir sline(const Pnt& a, const Pnt& b);
 
   /// Squared Distance between a line and a point
   static VSR_PRECISION distance(const Lin& lin, const Pnt& pnt);
@@ -449,41 +449,41 @@ struct Construct {
 #pragma mark COINCIDENCE_FUNCTIONS
 
   /// circle intersection of dual spheres
-  static Circle meet(const Dls& s, const Dls& d);
+  static Cir meet(const Dls& s, const Dls& d);
   /// circle intersection of dual sphere and direct plane
-  static Circle meet(const Dls& s, const Dlp& d);
+  static Cir meet(const Dls& s, const Dlp& d);
   /// circle intersection of dual spehre and direct plane
-  static Circle meet(const Dls& s, const Pln& d);
+  static Cir meet(const Dls& s, const Pln& d);
   /// circle intersection of direct sphere and dual plane
-  static Circle meet(const Sphere& s, const DualPlane& d);
+  static Cir meet(const Sph& s, const Dlp& d);
   /// circle intersection of direct sphere and direct plane
-  static Circle meet(const Sphere& s, const Plane& d);
+  static Cir meet(const Sph& s, const Pln& d);
 
   /// normalized and nulled point intersection of line and dual plane
-  static Point meet(const Line& lin, const DualPlane&);
+  static Pnt meet(const Lin& lin, const Dlp&);
   /// normalized and nulled point intersection of dualline and dual plane
-  static Point meet(const DualLine&, const DualPlane&);
-  /// Point intersection of two lines
-  static Point meet(const Line& la, const Line& lb);
+  static Pnt meet(const Dll&, const Dlp&);
+  /// Pnt intersection of two lines
+  static Pnt meet(const Lin& la, const Lin& lb);
 
   /// point pair intersection of circle and Dual plane
-  static Pair meet(const Cir& cir, const Dlp& dlp);
+  static Par meet(const Cir& cir, const Dlp& dlp);
   /// point pair intersection of circle and Dual sphere
-  static Pair meet(const Cir& cir, const Dls& s);
+  static Par meet(const Cir& cir, const Dls& s);
 
 #pragma mark HIT_TESTS
 
   /*!
    *  \brief  hit tests between point and pair (treats pair as an "edge")
    */
-  static bool hit(const Point&, const Pair&);
+  static bool hit(const Pnt&, const Par&);
 
   /*!
    *  \brief  hit tests between point and circle (treats circle as "disc")
    */
-  static bool hit(const Point&, const Circle&);
+  static bool hit(const Pnt&, const Cir&);
 
-  static double squaredDistance(const Point& a, const Point& b);
+  static double squaredDistance(const Pnt& a, const Pnt& b);
 
 #pragma mark HYPERBOLIC_FUNCTIONS
   /*-----------------------------------------------------------------------------
@@ -493,7 +493,7 @@ struct Construct {
   /*!
    *  \brief  hyperbolic normalization of a conformal point
    */
-  static Point hnorm(const Pnt& p);
+  static Pnt hnorm(const Pnt& p);
 
   /*!
    *  \brief  hyperbolic distance between two conformal points
@@ -504,17 +504,17 @@ struct Construct {
    *  \brief  hyperbolic translation transformation generator between two
    * conformal points
    */
-  static Pair hgen(const Pnt& pa, const Pnt& pb, double amt);
+  static Par hgen(const Pnt& pa, const Pnt& pb, double amt);
 
   /*!
    *  \brief  hyperbolic spin transformation from pa to pb by amt (0,1)
    */
-  static Point hspin(const Pnt& pa, const Pnt& pb, double amt);
+  static Pnt hspin(const Pnt& pa, const Pnt& pb, double amt);
 
 #pragma mark AFFINE combinations
 
   template <class A, class B>
-  static Point affine(const A& a, const B& b, VSR_PRECISION t) {
+  static Pnt affine(const A& a, const B& b, VSR_PRECISION t) {
     return (a + (b - a) * t).null();
   }
 };
@@ -524,34 +524,34 @@ struct Construct {
  *-----------------------------------------------------------------------------*/
 
 /*!
- *  \brief  Point on line closest to another point v
+ *  \brief  Pnt on line closest to another point v
  */
-auto pointOnLine = [](const Line& lin, const Point& v) {
+auto pointOnLin = [](const Lin& lin, const Pnt& v) {
   return Round::null(Flat::loc(lin, v, false));
 };
 
 /// a single point on circle c at theta t
-auto pointOnCircle =
-    [](const Circle& c, VSR_PRECISION t) { return Construct::point(c, t); };
+auto pointOnCir =
+    [](const Cir& c, VSR_PRECISION t) { return Construct::point(c, t); };
 /// n points on circle c
-auto pointsOnCircle = [](const Circle& c, int num) {
-  vector<Point> out;
+auto pointsOnCir = [](const Cir& c, int num) {
+  vector<Pnt> out;
   for (int i = 0; i <= num; ++i) {
-    out.push_back(pointOnCircle(c, TWOPI * (float)i / num));
+    out.push_back(pointOnCir(c, TWOPI * (float)i / num));
   }
   return out;
 };
 /// a pair on dual sphere
-auto pairOnSphere = [](const DualSphere& s, VSR_PRECISION t, VSR_PRECISION p) {
+auto pairOnSphere = [](const Dls& s, VSR_PRECISION t, VSR_PRECISION p) {
   return Construct::pair(s, Vec::x.sp(Gen::rot(t, p)));
 };
 /// a single point on dual sphere s at theta t and phi p
-auto pointOnSphere = [](const DualSphere& s, VSR_PRECISION t, VSR_PRECISION p) {
+auto pointOnSphere = [](const Dls& s, VSR_PRECISION t, VSR_PRECISION p) {
   return Construct::pointA(pairOnSphere(s, t, p)).null();
 };
 /// many points on sphere (could use map func from gfx::data)
-auto pointsOnSphere = [](const DualSphere& s, int u, int v) {
-  vector<Point> out;
+auto pointsOnSphere = [](const Dls& s, int u, int v) {
+  vector<Pnt> out;
   for (int i = 0; i < u; ++i) {
     for (int j = 0; j < v; ++j) {
       float tu = TWOPI * i / u;  //-1 + 2.0 * i/num;
@@ -594,9 +594,9 @@ Multivector<Algebra, B> Multivector<Algebra, B>::twist(
 #define E2 e2(1)
 #define E3 e3(1)
 
-/// A vsr::cga::Point at coordinates x,y,z
+/// A vsr::cga::Pnt at coordinates x,y,z
 #define PT(x, y, z) vsr::cga::Round::null(vsr::cga::Vec(x, y, z))
-/// A vsr::cga::DualSphere at (0,0,0) with radius r
+/// A vsr::cga::Dls at (0,0,0) with radius r
 #define DLS(r) vsr::cga::Round::dls(0, 0, 0, r)
 
 #define PV(v) vsr::cga::Round::null(v)
@@ -604,28 +604,28 @@ Multivector<Algebra, B> Multivector<Algebra, B>::twist(
 #define PY(f) vsr::cga::Round::null(vsr::cga::Vec(0, f, 0))
 #define PZ(f) vsr::cga::Round::null(vsr::cga::Vec(0, 0, f))
 
-/// A vsr::cga::Pair of points at x,y,z and -x,-y,-z
+/// A vsr::cga::Par of points at x,y,z and -x,-y,-z
 #define PAIR(x, y, z) (PT(x, y, z) ^ PT(-x, -y, -z))
-/// A vsr::cga::Circle in xy plane with radius f
+/// A vsr::cga::Cir in xy plane with radius f
 #define CXY(f) (PX(f) ^ PY(f) ^ PX(-f)).unit()
-/// A vsr::cga::Circle in xz plane with radius f
+/// A vsr::cga::Cir in xz plane with radius f
 #define CXZ(f) (PX(f) ^ PZ(f) ^ PX(-f)).unit()
-/// A vsr::cga::Circle in yz plane with radius f
+/// A vsr::cga::Cir in yz plane with radius f
 #define CYZ(f) (PY(f) ^ PY(-f) ^ PZ(f)).unit()
 #define F2S(f) f * 1000.0
 #define S2F(f) f / 1000.0
 
-/// vsr::cga::Line through origin in direction x,y,z
+/// vsr::cga::Lin through origin in direction x,y,z
 #define LN(x, y, z) \
-  (vsr::cga::Point(0, 0, 0, 1, .5) ^ PT(x, y, z) ^ vsr::cga::Inf(1))
-/// vsr::cga::DualLine through origin in direction x,y,z
+  (vsr::cga::Pnt(0, 0, 0, 1, .5) ^ PT(x, y, z) ^ vsr::cga::Inf(1))
+/// vsr::cga::Dll through origin in direction x,y,z
 #define DLN(x, y, z) (vsr::Op::dl(LN(x, y, z)))
-#define PAO vsr::cga::Point(0, 0, 0, 1, 0)  ///< vsr::cga::Point At Origin
+#define PAO vsr::cga::Pnt(0, 0, 0, 1, 0)  ///< vsr::cga::Pnt At Origin
 #define EP \
-  vsr::cga::Dls(0, 0, 0, 1, -.5)  ///< unit vsr::cga::DualSphere at origin: swap
+  vsr::cga::Dls(0, 0, 0, 1, -.5)  ///< unit vsr::cga::Dls at origin: swap
 /// with infinity for hyperbolic space
 #define EM \
-  vsr::cga::Dls(0, 0, 0, 1, .5)  ///< unit imaginary vsr::cga::DualSphere at
+  vsr::cga::Dls(0, 0, 0, 1, .5)  ///< unit imaginary vsr::cga::Dls at
 /// origin: swap with infinity for spherical
 /// space
 #define INFTY vsr::cga::Inf(1)  ///< vsr::cga::Infinity\(1\)

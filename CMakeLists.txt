@@ -46,6 +46,18 @@ target_link_libraries(rotor_bivector_generator_estimation ${CERES_LIBRARIES})
 add_library(rotor_estimation SHARED src/rotor_estimation_wrapper.cpp)
 target_link_libraries(rotor_estimation ${CERES_LIBRARIES} ${Boost_LIBRARIES})
 
+add_library(adept SHARED 
+  third_party/Adept/adept/adept.cpp 
+  third_party/Adept/adept/adept_openmp.cpp
+  )
+
+add_library(lds_calibration SHARED src/lds_calibration.cpp)
+target_link_libraries(lds_calibration
+  adept
+  ${PYTHON_LIBRARIES}
+  ${CERES_LIBRARIES}
+  ${Boost_LIBRARIES})
+
 add_library(motor_estimation SHARED 
   src/motor_estimation.cpp
   third_party/Adept/adept/adept.cpp 
@@ -72,6 +84,15 @@ target_link_libraries(kinematic_calibration
         ${CERES_LIBRARIES}
         ${Boost_LIBRARIES})
 
+<<<<<<< HEAD
+=======
+add_library(pso SHARED src/pso_rbm_estimation.cpp)
+target_link_libraries(pso ${CERES_LIBRARIES} ${Boost_LIBRARIES})
+
+add_library(versor_cga_op SHARED src/vsr/cga_op.cpp src/vsr/cga_round.cpp src/vsr/python_interface_cga_op.cpp)
+target_link_libraries(versor_cga_op ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
+
+>>>>>>> 66112160229da2ef5fe3481564afd0f84ca94677
 add_library(versor SHARED src/vsr/python_interface.cpp)
 target_link_libraries(versor ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
 

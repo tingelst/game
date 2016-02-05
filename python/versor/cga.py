@@ -3,19 +3,29 @@ import numpy as np
 
 from libversor import (Biv, Bst, Cir, Con, Dil, Dll, Dlp, Dls, Drb, Drt, Drv,
                        Flp, Grt, Inf, Lin, Mnk, Mot, Ori, Par, Pln, Pnt, Pss, Rot,
-                       Sca, Sph, Tnb, Tnt, Tnv, Tri, Trs, Trv, Tsd, Vec)
+                       Sca, Sph, Tnb, Tnt, Tnv, Tri, Trs, Trv, Tsd, Vec, VecTri)
 
-_types = [Biv, Bst, Cir, Con, Dil, Dll, Dlp, Dls, Drb, Drt, Flp,
+from libversor_cga_op import Gen
+
+_types = [Biv, Bst, Cir, Con, Dil, Dll, Dlp, Dls, Drb, Drt, Drv, Flp,
           Grt, Inf, Lin, Mnk, Mot, Ori, Par, Pln, Pnt, Pss, Rot,
-          Sca, Sph, Tnb, Tnt, Tnv, Tri, Trs, Trv, Tsd, Vec]
+          Sca, Sph, Tnb, Tnt, Tnv, Tri, Trs, Trv, Tsd, Vec, VecTri]
 
 
 def _to_array(self):
     return np.array([self[i] for i in range(self.num)])
 
+def _repr(self):
+    return self.to_array().__repr__()
+
+def _str(self):
+    return self.to_array().__str__()
+
 # Inject methods to all multivector types
 for t in _types:
     setattr(t, 'to_array', _to_array)
+    setattr(t, '__repr__', _repr)
+    setattr(t, '__str__', _str)
 
 # Inject factory method into Trs
 def _from_vector(self, vector):
@@ -56,3 +66,13 @@ def _motor_from_dir_ang_trs(self, dir, ang, trs):
          (B12 * t3 - B13 * t2 + B23 * t1) * sp]
     return Mot(*m)
 setattr(Mot, 'from_dir_ang_trs', classmethod(_motor_from_dir_ang_trs))
+
+def _motor_log(self):
+    return (Gen.log(self))
+def _dll_mot(self):
+    return (Gen.mot(self))
+
+setattr(Mot, 'log', _motor_log)
+setattr(Dll, 'mot', _dll_mot)
+
+

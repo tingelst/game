@@ -84,15 +84,9 @@ target_link_libraries(kinematic_calibration
         ${CERES_LIBRARIES}
         ${Boost_LIBRARIES})
 
-<<<<<<< HEAD
-=======
-add_library(pso SHARED src/pso_rbm_estimation.cpp)
-target_link_libraries(pso ${CERES_LIBRARIES} ${Boost_LIBRARIES})
-
 add_library(versor_cga_op SHARED src/vsr/cga_op.cpp src/vsr/cga_round.cpp src/vsr/python_interface_cga_op.cpp)
 target_link_libraries(versor_cga_op ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
 
->>>>>>> 66112160229da2ef5fe3481564afd0f84ca94677
 add_library(versor SHARED src/vsr/python_interface.cpp)
 target_link_libraries(versor ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
 
@@ -101,6 +95,11 @@ add_library(versorninja SHARED ./src/test_bindings.cpp)
 target_link_libraries(versorninja ${PYTHON_LIBRARIES})
 set_target_properties(versorninja PROPERTIES PREFIX "")
 set_target_properties(versorninja PROPERTIES SUFFIX ".so")
+
+add_library(versor_pybind11 SHARED ./src/vsr/versor_pybind11.cpp)
+target_link_libraries(versor_pybind11 ${PYTHON_LIBRARIES})
+set_target_properties(versor_pybind11 PROPERTIES PREFIX "")
+set_target_properties(versor_pybind11 PROPERTIES SUFFIX ".so")
 
 
 

@@ -11,7 +11,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -ftemplate-depth-1200 -Wn
 
 # find_package(hep-ga REQUIRED)
 find_package(Boost REQUIRED COMPONENTS python)
-find_package(PythonLibs 2.7.10 REQUIRED)
+find_package(PythonLibs 2.7.11 REQUIRED)
 
 set(Ceres_DIR /Users/lars/devel/game_ws/game/third_party/ceres-solver/cmake)
 find_package(Ceres REQUIRED)
@@ -63,10 +63,12 @@ add_library(motor_estimation SHARED
   third_party/Adept/adept/adept.cpp 
   third_party/Adept/adept/adept_openmp.cpp
   )
+
 target_link_libraries(motor_estimation 
   ${PYTHON_LIBRARIES}
-  ${CERES_LIBRARIES}
-  ${Boost_LIBRARIES})
+  ${CERES_LIBRARIES})
+set_target_properties(motor_estimation PROPERTIES PREFIX "")
+set_target_properties(motor_estimation PROPERTIES SUFFIX ".so")
 
 add_executable(adept_rotor_diff_example
   src/adept_rotor_diff_example.cpp
@@ -87,8 +89,8 @@ target_link_libraries(rigid_body_motion_estimation ${CERES_LIBRARIES} ${Boost_LI
 add_library(versor_cga_op SHARED src/vsr/cga_op.cpp src/vsr/cga_round.cpp src/vsr/python_interface_cga_op.cpp)
 target_link_libraries(versor_cga_op ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
 
-add_library(versor SHARED src/vsr/python_interface.cpp)
-target_link_libraries(versor ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
+# add_library(versor SHARED src/vsr/python_interface.cpp)
+# target_link_libraries(versor ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
 
 add_library(versorninja SHARED ./src/test_bindings.cpp)
 #add_library(versorninja SHARED ./src/vsr/init1.cpp src/vsr/vsr_pybind11.cpp)
@@ -96,7 +98,21 @@ target_link_libraries(versorninja ${PYTHON_LIBRARIES})
 set_target_properties(versorninja PROPERTIES PREFIX "")
 set_target_properties(versorninja PROPERTIES SUFFIX ".so")
 
-add_library(versor_pybind11 SHARED ./src/vsr/versor_pybind11.cpp)
+add_library(versor_pybind11 SHARED
+  src/vsr/versor_pybind11.cpp
+  src/vsr/versor_vector_pybind11.cpp
+  src/vsr/versor_bivector_pybind11.cpp
+  src/vsr/versor_rotor_pybind11.cpp
+  src/vsr/versor_point_pybind11.cpp
+  src/vsr/versor_dual_line_pybind11.cpp
+  src/vsr/versor_line_pybind11.cpp
+  src/vsr/versor_translator_pybind11.cpp
+  src/vsr/versor_motor_pybind11.cpp
+  src/vsr/versor_origin_pybind11.cpp
+  src/vsr/versor_infinity_pybind11.cpp
+  src/vsr/cga_op.cpp
+  src/vsr/cga_round.cpp
+  )
 target_link_libraries(versor_pybind11 ${PYTHON_LIBRARIES})
 set_target_properties(versor_pybind11 PROPERTIES PREFIX "")
 set_target_properties(versor_pybind11 PROPERTIES SUFFIX ".so")

@@ -1,12 +1,10 @@
 import sys
+sys.path.append('../build/')
 
 import numpy as np
 np.set_printoptions(precision=6, suppress=True)
 
-import sys
-sys.path.append('../build/')
-
-from libmotor_estimation import MotorEstimationSolver
+from motor_estimation import MotorEstimationSolver
 
 import versor as vsr
 from game import solver_options

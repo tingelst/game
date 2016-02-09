@@ -11,40 +11,36 @@ namespace python {
 namespace py = pybind11;
 using namespace vsr::cga;
 
-
-void AddRotor(py::module& m)
-{
-  py::class_<Rot>(m, "Rot")
-    .def(py::init<double, double, double, double>())
-    ;
-}
-
-void AddVector(py::module& m)
-{
-
-  py::class_<Vec>(m, "Vec")
-    .def(py::init<double, double, double>())
-    .def("__getitem__", &Vec::at)                                \
-    .def("__mul__", [](const Vec& lhs, const Vec& rhs){ return lhs * rhs;})
-    .def("spin", (Vec (Vec::*)(const Rot&) const) &Vec::spin)
-    .def("null", &Vec::null)
-    ;
-
-
-}
+// Forward declarations
+void AddScalar(py::module &m);
+void AddVector(py::module &m);
+void AddBivector(py::module &m);
+void AddRotor(py::module &m);
+void AddPoint(py::module &m);
+void AddLine(py::module &m);
+void AddDualLine(py::module &m);
+void AddTranslator(py::module &m);
+void AddMotor(py::module &m);
+void AddOrigin(py::module &m);
+void AddInfinity(py::module &m);
 
 PYBIND11_PLUGIN(versor_pybind11) {
 
   py::module m("versor_pybind11", "versor plugin");
   AddVector(m);
+  AddBivector(m);
   AddRotor(m);
+  AddPoint(m);
+  AddLine(m);
+  AddDualLine(m);
+  AddTranslator(m);
+  AddMotor(m);
+  AddOrigin(m);
+  AddInfinity(m);
 
   return m.ptr();
-
 }
 
+} // namespace python
 
-
-}  // namespace python
-
-}  // namespace vsr
+} // namespace vsr

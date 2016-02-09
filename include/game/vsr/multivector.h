@@ -52,8 +52,11 @@ struct Multivector {
 
   value_t val[Num];                       ///< %Data Array
   typedef const value_t array_type[Num];  ///< %Data Array Type
+  typedef value_t array_type_non_const[Num];  ///< %Data Array Type
 
   array_type& begin() const { return val; }  ///< Pointer to first data
+
+  array_type_non_const& data()  { return val; }  ///< Pointer to first data
 
   constexpr value_t at(int idx) const { return val[idx]; }
 

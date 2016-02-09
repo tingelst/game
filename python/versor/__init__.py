@@ -10,10 +10,11 @@ __email__ = "lars.tingelstad@ntnu.no"
 
 import sys
 sys.path.append('../../build/')
-# sys.path.append('../../build_gcc/')
-# sys.path.append('../build/Debug/')
-# sys.path.append('../../build/Debug/')
+
+from versor_pybind11 import *
 
 
-from versor.cga import *
-from versor.utils import array
+
+
+# from versor.cga import *
+# from versor.utils import array

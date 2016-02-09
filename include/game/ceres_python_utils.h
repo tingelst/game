@@ -1,13 +1,11 @@
 #ifndef GAME_GAME_CERES_PYTHON_UTILS_H_
 #define GAME_GAME_CERES_PYTHON_UTILS_H_
 
-/* #include <boost/numpy.hpp> */
-#include <boost/python.hpp>
+#include <pybind11/pybind11.h>
 #include <ceres/ceres.h>
 #include <glog/logging.h>
 
-namespace bp = boost::python;
-/* namespace np = boost::numpy; */
+namespace py = pybind11;
 
 namespace game {
 
@@ -61,41 +59,41 @@ void CheckContiguousArrayAndArrayShape(const np::ndarray& m,
 
   */
 
-auto SummaryToDict(const ceres::Solver::Summary& summary) -> bp::dict {
-  bp::dict summary_dict;
-  summary_dict["linear_solver_type_used"] = std::string(
+auto SummaryToDict(const ceres::Solver::Summary& summary) -> py::dict {
+  py::dict summary_dict;
+  summary_dict[py::str("linear_solver_type_used")] = py::str(
       ceres::LinearSolverTypeToString(summary.linear_solver_type_used));
-  summary_dict["num_parameter_blocks"] = summary.num_parameter_blocks;
-  summary_dict["num_parameters"] = summary.num_parameters;
-  summary_dict["num_residual_blocks"] = summary.num_residual_blocks;
-  summary_dict["num_residuals"] = summary.num_residuals;
-  summary_dict["trust_region_strategy_type"] =
-      std::string(ceres::TrustRegionStrategyTypeToString(
-          summary.trust_region_strategy_type));
-  summary_dict["minimizer_type"] =
-      std::string(ceres::MinimizerTypeToString(summary.minimizer_type));
 
-  bp::list iterations;
+  summary_dict[py::str("num_parameter_blocks")] = py::int_(summary.num_parameter_blocks);
+  summary_dict[py::str("num_parameters")] = py::int_(summary.num_parameters);
+  summary_dict[py::str("num_residual_blocks")] = py::int_(summary.num_residual_blocks);
+  summary_dict[py::str("num_residuals")] = py::int_(summary.num_residuals);
+  summary_dict[py::str("trust_region_strategy_type")] = py::str(ceres::TrustRegionStrategyTypeToString(summary.trust_region_strategy_type));
+  summary_dict[py::str("minimizer_type")] =
+    py::str(ceres::MinimizerTypeToString(summary.minimizer_type));
+
+  py::list iterations;
   auto its = summary.iterations;
   for (int i = 0; i < its.size(); ++i) {
-    bp::dict iteration;
-    iteration["iteration"] = its[i].iteration;
-    iteration["cost"] = its[i].cost;
-    iteration["cost_change"] = its[i].cost_change;
-    iteration["gradient_max_norm"] = its[i].gradient_max_norm;
-    iteration["step_norm"] = its[i].step_norm;
-    iteration["relative_decrease"] = its[i].relative_decrease;
-    iteration["trust_region_radius"] = its[i].trust_region_radius;
-    iteration["eta"] = its[i].eta;
-    iteration["linear_solver_iterations"] = its[i].linear_solver_iterations;
+    py::dict iteration;
+    iteration[py::str("iteration")] = py::int_(its[i].iteration);
+    iteration[py::str("cost")] = py::float_(its[i].cost);
+    iteration[py::str("cost_change")] = py::float_(its[i].cost_change);
+    iteration[py::str("gradient_max_norm")] = py::float_(its[i].gradient_max_norm);
+    iteration[py::str("step_norm")] = py::float_(its[i].step_norm);
+    iteration[py::str("relative_decrease")] = py::float_(its[i].relative_decrease);
+    iteration[py::str("trust_region_radius")] = py::float_(its[i].trust_region_radius);
+    iteration[py::str("eta")] = py::float_(its[i].eta);
+    iteration[py::str("linear_solver_iterations")] = py::int_(its[i].linear_solver_iterations);
     iterations.append(iteration);
   }
-  summary_dict["iterations"] = iterations;
-  summary_dict["brief_report"] = summary.BriefReport();
-  summary_dict["full_report"] = summary.FullReport();
+  summary_dict[py::str("iterations")] = iterations;
+  summary_dict[py::str("brief_report")] = py::str(summary.BriefReport().c_str());
+  summary_dict[py::str("full_report")] = py::str(summary.FullReport().c_str());
   return summary_dict;
 }
 
+/*
 void SetSolverOptions(const bp::dict& solver_options,
                       ceres::Solver::Options& options) {
   bp::extract<std::string> linear_solver_type(
@@ -173,5 +171,7 @@ void SetSolverOptions(const bp::dict& solver_options,
         trust_region_problem_dump_directory();
   }
 }
+*/
+
 }
 #endif  // GAME_GAME_CERES_PYTHON_UTILS_H_

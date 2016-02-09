@@ -4,7 +4,7 @@ import numpy as np
 np.set_printoptions(precision=6, suppress=True)
 
 import sys
-sys.path.append('../build_gcc/')
+sys.path.append('../build/')
 
 from libmotor_estimation import MotorEstimationSolver
 

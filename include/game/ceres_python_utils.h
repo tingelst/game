@@ -1,16 +1,17 @@
 #ifndef GAME_GAME_CERES_PYTHON_UTILS_H_
 #define GAME_GAME_CERES_PYTHON_UTILS_H_
 
-#include <boost/numpy.hpp>
+/* #include <boost/numpy.hpp> */
 #include <boost/python.hpp>
 #include <ceres/ceres.h>
 #include <glog/logging.h>
 
 namespace bp = boost::python;
-namespace np = boost::numpy;
+/* namespace np = boost::numpy; */
 
 namespace game {
 
+  /*
 void CheckContiguousArray(const np::ndarray& m, const std::string& name) {
   if (!(m.get_flags() & np::ndarray::C_CONTIGUOUS)) {
     std::stringstream ss;
@@ -57,6 +58,8 @@ void CheckContiguousArrayAndArrayShape(const np::ndarray& m,
   CheckContiguousArray(m, name);
   CheckArrayShape(m, name, rows, cols);
 }
+
+  */
 
 auto SummaryToDict(const ceres::Solver::Summary& summary) -> bp::dict {
   bp::dict summary_dict;

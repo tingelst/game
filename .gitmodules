@@ -4,3 +4,6 @@
 [submodule "third_party/ceres-solver"]
 	path = third_party/ceres-solver
 	url = https://github.com/ceres-solver/ceres-solver.git
+[submodule "third_party/Boost.NumPy"]
+	path = third_party/Boost.NumPy
+	url = https://github.com/ndarray/Boost.NumPy.git

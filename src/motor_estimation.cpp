@@ -3,7 +3,7 @@
 //
 
 #include <iostream>
-#include <boost/numpy.hpp>
+//#include <boost/numpy.hpp>
 #include <ceres/ceres.h>
 #include <ceres/rotation.h>
 #include <glog/logging.h>
@@ -15,7 +15,7 @@
 #include "game/ceres_python_utils.h"
 
 namespace bp = boost::python;
-namespace np = boost::numpy;
+// namespace np = boost::numpy;
 
 using vsr::cga::Scalar;
 using vsr::cga::Vector;
@@ -289,7 +289,6 @@ class MotorEstimationSolver {
 };
 
 BOOST_PYTHON_MODULE_INIT(libmotor_estimation) {
-  np::initialize();
 
   bp::class_<MotorEstimationSolver>("MotorEstimationSolver",
                                     bp::init<const Mot&, const bp::dict&>())

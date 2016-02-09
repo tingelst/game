@@ -1,6 +1,5 @@
 
-#include <boost/python.hpp>
-#include <boost/numpy.hpp>
+#include <pybind11/pybind11.h>
 
 #include "game/vsr/cga_types.h"
 #include "game/vsr/cga_op.h"
@@ -9,22 +8,19 @@ namespace vsr {
 
 namespace python {
 
-namespace bp = boost::python;
+namespace py = pybind11;
 using namespace vsr::cga;
 
+PYBIND11_PLUGIN(libversor_cga_op) {
+  py::module m("libversor_cga_op", "libversor_cga_op plugin");
 
+  py::class_<Gen>(m, "Gen")
+    .def_static("log", &Gen::logMotor)
+    .def_static("mot", &Gen::mot)
+    ;
 
-BOOST_PYTHON_MODULE_INIT(libversor_cga_op) {
-
-bp::class_<Gen>("Gen")
-  //.def("log", (Dll(Gen::*)(const Mot&))&Gen::log).staticmethod("log")
-  .def("log", &Gen::logMotor).staticmethod("log")
-  .def("mot", &Gen::mot).staticmethod("mot")
-  ;
-
-
+    return m.ptr();
 }
-
 
 }  // namespace python
 

@@ -11,7 +11,6 @@ namespace py = pybind11;
 using namespace vsr::cga;
 
 void AddBivector(py::module &m) {
-
   py::class_<Biv>(m, "Biv")
       .def(py::init<double, double, double>())
       .def("__getitem__", &Biv::at)
@@ -35,6 +34,6 @@ void AddBivector(py::module &m) {
       });
 }
 
-} // namespace python
+}  // namespace python
 
-} // namespace vsr
+}  // namespace vsr

@@ -15,8 +15,10 @@ void AddLine(py::module &m) {
       .def(py::init<double, double, double, double, double, double>())
       .def("__init__",
            [](Lin &instance, const Vec &arg1, const Vec &arg2) {
-             new (&instance) Lin(Construct::line(arg1, arg1));
+             new (&instance) Lin(Construct::line(arg1, arg2));
            })
+      .def("spin", (Lin (Lin::*)(const Rot &) const) & Lin::spin)
+      .def("spin", (Lin (Lin::*)(const Mot &) const) & Lin::spin)
       .def("duale", &Lin::duale)
       .def("unduale", &Lin::unduale)
       .def("dual", &Lin::dual)

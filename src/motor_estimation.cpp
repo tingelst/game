@@ -35,12 +35,12 @@ using vsr::nga::Op;
 namespace game {
 
 class MotorEstimationSolver {
-public:
+ public:
   MotorEstimationSolver() {}
   MotorEstimationSolver(const MotorEstimationSolver &motor_estimation_solver) {}
   MotorEstimationSolver(const Mot &motor, const py::dict &solver_options)
       : motor_(motor) {
-    // SetSolverOptions(solver_options, options_);
+    SetSolverOptions(solver_options, options_);
   }
 
   struct LineAngleDistanceNormCostFunctor {
@@ -78,7 +78,7 @@ public:
       return true;
     }
 
-  private:
+   private:
     const Dll a_;
     const Dll b_;
   };
@@ -119,7 +119,7 @@ public:
       return true;
     }
 
-  private:
+   private:
     const Dll a_;
     const Dll b_;
   };
@@ -141,7 +141,7 @@ public:
       return true;
     }
 
-  private:
+   private:
     const Dll a_;
     const Dll b_;
   };
@@ -165,7 +165,7 @@ public:
       return true;
     }
 
-  private:
+   private:
     const Pnt a_;
     const Pnt b_;
   };
@@ -188,7 +188,7 @@ public:
       return true;
     }
 
-  private:
+   private:
     const Pnt a_;
     const Pnt b_;
   };
@@ -276,13 +276,12 @@ public:
     }
   }
 
-  auto Solve() -> std::tuple<Mot> {
+  auto Solve() -> std::tuple<Mot, py::dict> {
     ceres::Solve(options_, &problem_, &summary_);
-    return std::make_tuple(motor_);
-    // return bp::make_tuple(motor_, Summary());
+    return std::make_tuple(motor_, Summary());
   }
 
-private:
+  // private:
   Mot motor_;
 
   ceres::Problem problem_;
@@ -291,7 +290,6 @@ private:
 };
 
 PYBIND11_PLUGIN(motor_estimation) {
-
   py::module m("motor_estimation", "motor estimation");
 
   py::class_<MotorEstimationSolver>(m, "MotorEstimationSolver")
@@ -310,9 +308,86 @@ PYBIND11_PLUGIN(motor_estimation) {
            &MotorEstimationSolver::AddPointDistanceResidualBlock)
       .def("set_parameterization",
            &MotorEstimationSolver::SetMotorParameterizationTypeFromString)
-      .def("solve", &MotorEstimationSolver::Solve);
+      .def("solve", &MotorEstimationSolver::Solve)
+      .def_property("num_threads",
+                    [](MotorEstimationSolver &instance) {
+                      return instance.options_.num_threads;
+                    },
+                    [](MotorEstimationSolver &instance, int arg) {
+                      instance.options_.num_threads = arg;
+                    })
+      .def_property("num_linear_solve_threads",
+                    [](MotorEstimationSolver &instance) {
+                      return instance.options_.num_linear_solver_threads;
+                    },
+                    [](MotorEstimationSolver &instance, int arg) {
+                      instance.options_.num_linear_solver_threads = arg;
+                    })
+      .def_property("max_num_iterations",
+                    [](MotorEstimationSolver &instance) {
+                      return instance.options_.max_num_iterations;
+                    },
+                    [](MotorEstimationSolver &instance, int arg) {
+                      instance.options_.max_num_iterations = arg;
+                    })
+
+      .def_property("parameter_tolerance",
+                    [](MotorEstimationSolver &instance) {
+                      return instance.options_.parameter_tolerance;
+                    },
+                    [](MotorEstimationSolver &instance, double arg) {
+                      instance.options_.parameter_tolerance = arg;
+                    })
+      .def_property("function_tolerance",
+                    [](MotorEstimationSolver &instance) {
+                      return instance.options_.function_tolerance;
+                    },
+                    [](MotorEstimationSolver &instance, double arg) {
+                      instance.options_.function_tolerance = arg;
+                    })
+      .def_property("gradient_tolerance",
+                    [](MotorEstimationSolver &instance) {
+                      return instance.options_.gradient_tolerance;
+                    },
+                    [](MotorEstimationSolver &instance, double arg) {
+                      instance.options_.gradient_tolerance = arg;
+                    })
+      .def_property("minimizer_progress_to_stdout",
+                    [](MotorEstimationSolver &instance) {
+                      return instance.options_.minimizer_progress_to_stdout;
+                    },
+                    [](MotorEstimationSolver &instance, double arg) {
+                      instance.options_.minimizer_progress_to_stdout = arg;
+                    })
+      .def_property(
+          "minimizer_type",
+          [](MotorEstimationSolver &instance) {
+            return ceres::MinimizerTypeToString(
+                instance.options_.minimizer_type);
+          },
+          [](MotorEstimationSolver &instance, const std::string &arg) {
+            ceres::StringToMinimizerType(arg,
+                                         &instance.options_.minimizer_type);
+          })
+      .def_property(
+          "trust_region_minimizer_iterations_to_dump",
+          [](MotorEstimationSolver &instance) {
+            return instance.options_.trust_region_minimizer_iterations_to_dump;
+          },
+          [](MotorEstimationSolver &instance, std::vector<int> arg) {
+            std::vector<int> trust_region_minimizer_iterations_to_dump{};
+            for (auto i : arg) {
+              trust_region_minimizer_iterations_to_dump.push_back(i);
+            }
+            instance.options_.trust_region_minimizer_iterations_to_dump.resize(
+                trust_region_minimizer_iterations_to_dump.size());
+            for (int i = 0; i < trust_region_minimizer_iterations_to_dump.size(); ++i)
+              instance.options_.trust_region_minimizer_iterations_to_dump[i] = 2;
+          })
+
+      ;
 
   return m.ptr();
 }
 
-} // namespace game
+}  // namespace game

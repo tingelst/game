@@ -15,7 +15,7 @@ void AddDualLine(py::module &m) {
       .def(py::init<double, double, double, double, double, double>())
       .def("__init__",
            [](Dll &instance, const Vec &arg1, const Vec &arg2) {
-             new (&instance) Dll(Construct::line(arg1, arg1).dual());
+             new (&instance) Dll(Construct::line(arg1, arg2).dual());
            })
       .def("duale", &Dll::duale)
       .def("unduale", &Dll::unduale)
@@ -38,6 +38,6 @@ void AddDualLine(py::module &m) {
       });
 }
 
-} // namespace python
+}  // namespace python
 
-} // namespace vsr
+}  // namespace vsr

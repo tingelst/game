@@ -23,9 +23,9 @@ void AddTranslator(py::module &m);
 void AddMotor(py::module &m);
 void AddOrigin(py::module &m);
 void AddInfinity(py::module &m);
+void AddDirectionVector(py::module &m);
 
 PYBIND11_PLUGIN(versor_pybind11) {
-
   py::module m("versor_pybind11", "versor plugin");
   AddVector(m);
   AddBivector(m);
@@ -37,10 +37,11 @@ PYBIND11_PLUGIN(versor_pybind11) {
   AddMotor(m);
   AddOrigin(m);
   AddInfinity(m);
+  AddDirectionVector(m);
 
   return m.ptr();
 }
 
-} // namespace python
+}  // namespace python
 
-} // namespace vsr
+}  // namespace vsr

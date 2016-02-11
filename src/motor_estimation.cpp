@@ -38,10 +38,7 @@ class MotorEstimationSolver {
  public:
   MotorEstimationSolver() {}
   MotorEstimationSolver(const MotorEstimationSolver &motor_estimation_solver) {}
-  MotorEstimationSolver(const Mot &motor, const py::dict &solver_options)
-      : motor_(motor) {
-    SetSolverOptions(solver_options, options_);
-  }
+  MotorEstimationSolver(const Mot &motor) : motor_(motor) {}
 
   struct LineAngleDistanceNormCostFunctor {
     LineAngleDistanceNormCostFunctor(const Dll &a, const Dll &b)
@@ -293,7 +290,7 @@ PYBIND11_PLUGIN(motor_estimation) {
   py::module m("motor_estimation", "motor estimation");
 
   py::class_<MotorEstimationSolver>(m, "MotorEstimationSolver")
-      .def(py::init<const Mot &, const py::dict &>())
+      .def(py::init<const Mot &>())
       .def("add_line_correspondences_residual_block",
            &MotorEstimationSolver::AddLineCorrespondencesResidualBlock)
       .def("add_line_angle_distance_residual_block",
@@ -370,20 +367,26 @@ PYBIND11_PLUGIN(motor_estimation) {
                                          &instance.options_.minimizer_type);
           })
       .def_property(
-          "trust_region_minimizer_iterations_to_dump",
+          "linear_solver_type",
           [](MotorEstimationSolver &instance) {
-            return instance.options_.trust_region_minimizer_iterations_to_dump;
+            return ceres::LinearSolverTypeToString(
+                instance.options_.linear_solver_type);
           },
-          [](MotorEstimationSolver &instance, std::vector<int> arg) {
-            std::vector<int> trust_region_minimizer_iterations_to_dump{};
-            for (auto i : arg) {
-              trust_region_minimizer_iterations_to_dump.push_back(i);
-            }
-            instance.options_.trust_region_minimizer_iterations_to_dump.resize(
-                trust_region_minimizer_iterations_to_dump.size());
-            for (int i = 0; i < trust_region_minimizer_iterations_to_dump.size(); ++i)
-              instance.options_.trust_region_minimizer_iterations_to_dump[i] = 2;
+          [](MotorEstimationSolver &instance, const std::string &arg) {
+            ceres::StringToLinearSolverType(
+                arg, &instance.options_.linear_solver_type);
           })
+      // .def_property(
+      //     "trust_region_minimizer_iterations_to_dump",
+      //     [](MotorEstimationSolver &instance) {
+      //       return
+      //       instance.options_.trust_region_minimizer_iterations_to_dump;
+      //     },
+      //     [](MotorEstimationSolver &instance, const std::vector<int>& arg) {
+      //       std::copy(arg.begin(), arg.end(),
+      //                 instance.options_
+      //                     .trust_region_minimizer_iterations_to_dump.begin());
+      //     })
 
       ;
 

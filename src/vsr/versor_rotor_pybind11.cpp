@@ -18,9 +18,25 @@ void AddRotor(py::module &m) {
            "Bivector logarithm: R = exp(B)")
       .def("log", [](const Rot &arg) { return Gen::log(arg); })
       .def("__mul__", [](const Rot &lhs, const Trs &rhs) { return lhs * rhs; })
-      .def("__getitem__", &Rot::at);
+      .def("__getitem__", &Rot::at)
+      .def("__repr__",
+           [](const Rot &arg) {
+             std::stringstream ss;
+             ss.precision(2);
+             ss << "Rot: [";
+             for (int i = 0; i < arg.Num; ++i) {
+               ss << " " << arg[i];
+             }
+             ss << " ]";
+             return ss.str();
+           })
+      .def_buffer([](Rot &arg) -> py::buffer_info {
+        return py::buffer_info(arg.data(), sizeof(double),
+                               py::format_descriptor<double>::value(), 1,
+                               {arg.Num}, {sizeof(double)});
+      });
 }
 
-} // namespace python
+}  // namespace python
 
-} // namespace vsr
+}  // namespace vsr

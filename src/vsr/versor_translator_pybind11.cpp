@@ -16,9 +16,19 @@ void AddTranslator(py::module &m) {
       .def("__getitem__", &Trs::at)
       .def("rev", &Trs::reverse)
       .def("inv", &Trs::inverse)
-      .def("__mul__", [](const Trs &lhs, const Rot &rhs) { return lhs * rhs; });
+      .def("__mul__", [](const Trs &lhs, const Rot &rhs) { return lhs * rhs; })
+      .def("__repr__", [](const Trs &arg) {
+        std::stringstream ss;
+        ss.precision(4);
+        ss << "Trs: [";
+        for (int i = 0; i < arg.Num; ++i) {
+          ss << " " << arg[i];
+        }
+        ss << " ]";
+        return ss.str();
+      });
 }
 
-} // namespace python
+}  // namespace python
 
-} // namespace vsr
+}  // namespace vsr

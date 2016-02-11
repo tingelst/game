@@ -21,18 +21,24 @@ void AddMotor(py::module &m) {
       .def("log", [](const Mot &arg) { return Gen::log(arg); })
       .def("__mul__", [](const Mot &lhs, double rhs) { return lhs * rhs; })
       .def("__mul__", [](const Mot &lhs, const Mot &rhs) { return lhs * rhs; })
-      .def("__repr__", [](const Mot &arg) {
-        std::stringstream ss;
-        ss.precision(2);
-        ss << "Mot: [";
-        for (int i = 0; i < arg.Num; ++i) {
-          ss << " " << arg[i];
-        }
-        ss << " ]";
-        return ss.str();
+      .def("__repr__",
+           [](const Mot &arg) {
+             std::stringstream ss;
+             ss.precision(2);
+             ss << "Mot: [";
+             for (int i = 0; i < arg.Num; ++i) {
+               ss << " " << arg[i];
+             }
+             ss << " ]";
+             return ss.str();
+           })
+      .def_buffer([](Mot &arg) -> py::buffer_info {
+        return py::buffer_info(arg.data(), sizeof(double),
+                               py::format_descriptor<double>::value(), 1,
+                               {arg.Num}, {sizeof(double)});
       });
 }
 
-} // namespace python
+}  // namespace python
 
-} // namespace vsr
+}  // namespace vsr

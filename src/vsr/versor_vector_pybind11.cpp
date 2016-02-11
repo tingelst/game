@@ -11,13 +11,16 @@ namespace py = pybind11;
 using namespace vsr::cga;
 
 void AddVector(py::module &m) {
-
   py::class_<Vec>(m, "Vec")
       .def(py::init<double, double, double>())
       .def("__getitem__", &Vec::at)
+      .def("norm", &Vec::norm)
+      .def("rnorm", &Vec::rnorm)
       .def("unit", &Vec::unit)
       .def("rev", &Vec::reverse)
       .def("inv", &Vec::inverse)
+      .def("duale", &Vec::duale)
+      .def("unduale", &Vec::unduale)
       .def("trs", [](const Vec &arg) { return Gen::trs(arg); })
       .def("__mul__", [](const Vec &lhs, const Vec &rhs) { return lhs * rhs; })
       .def("spin", (Vec (Vec::*)(const Rot &) const) & Vec::spin)
@@ -34,6 +37,6 @@ void AddVector(py::module &m) {
       });
 }
 
-} // namespace python
+}  // namespace python
 
-} // namespace vsr
+}  // namespace vsr

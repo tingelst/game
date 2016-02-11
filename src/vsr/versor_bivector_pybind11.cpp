@@ -22,6 +22,7 @@ void AddBivector(py::module &m) {
       .def("spin", (Biv (Biv::*)(const Rot &) const) & Biv::spin)
       .def("exp", [](const Biv &biv) { return Gen::rotor(biv); })
       .def("__mul__", [](const Biv &lhs, double rhs) { return lhs * rhs; })
+      .def("__div__", [](const Biv &lhs, double rhs) { return lhs / rhs; })
       .def("__repr__", [](const Biv &arg) {
         std::stringstream ss;
         ss.precision(4);

@@ -26,15 +26,23 @@ void AddDualLine(py::module &m) {
       .def("inv", &Dll::inverse)
       .def("spin", (Dll (Dll::*)(const Mot &) const) & Dll::spin)
       .def("exp", [](const Dll &arg) { return Gen::motor(arg); })
-      .def("__repr__", [](const Dll &arg) {
-        std::stringstream ss;
-        ss.precision(4);
-        ss << "Dll: [";
-        for (int i = 0; i < arg.Num; ++i) {
-          ss << " " << arg[i];
-        }
-        ss << " ]";
-        return ss.str();
+      .def("__mul__", [](const Dll &lhs, double rhs) { return lhs * rhs; })
+      .def("__div__", [](const Dll &lhs, double rhs) { return lhs / rhs; })
+      .def("__repr__",
+           [](const Dll &arg) {
+             std::stringstream ss;
+             ss.precision(4);
+             ss << "Dll: [";
+             for (int i = 0; i < arg.Num; ++i) {
+               ss << " " << arg[i];
+             }
+             ss << " ]";
+             return ss.str();
+           })
+      .def_buffer([](Dll &arg) -> py::buffer_info {
+        return py::buffer_info(arg.data(), sizeof(double),
+                               py::format_descriptor<double>::value(), 1,
+                               {arg.Num}, {sizeof(double)});
       });
 }
 

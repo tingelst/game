@@ -13,6 +13,7 @@ using namespace vsr::cga;
 void AddPoint(py::module &m) {
   py::class_<Pnt>(m, "Pnt")
       .def(py::init<double, double, double, double, double>())
+      .def("__getitem__", &Pnt::at)
       .def("spin", (Pnt (Pnt::*)(const Rot &) const) & Pnt::spin)
       .def("spin", (Pnt (Pnt::*)(const Mot &) const) & Pnt::spin)
       .def("__repr__",
@@ -33,6 +34,6 @@ void AddPoint(py::module &m) {
       });
 }
 
-} // namespace python
+}  // namespace python
 
-} // namespace vsr
+}  // namespace vsr

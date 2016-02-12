@@ -44,7 +44,7 @@ def estimate_motor(cost_function_num, parameterization_num, num_elements, points
 
     motor = vsr.Trs.from_vector(vsr.Vec(1,1,1)) * vsr.Rot.from_bivector(vsr.Biv(0,1,0) * np.pi/6.0)
 
-    motor = M_eye_in_hand
+motor = M_eye_in_hand
 
     error_motor = vsr.Mot.from_dir_ang_trs([1,0,0], np.pi/12, [0,0,0])
 

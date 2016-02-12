@@ -70,6 +70,17 @@ target_link_libraries(motor_estimation
 set_target_properties(motor_estimation PROPERTIES PREFIX "")
 set_target_properties(motor_estimation PROPERTIES SUFFIX ".so")
 
+add_library(hand_eye_calibration SHARED
+  src/hand_eye_calibration.cpp)
+
+target_link_libraries(hand_eye_calibration
+  ${PYTHON_LIBRARIES}
+  ${CERES_LIBRARIES})
+set_target_properties(hand_eye_calibration PROPERTIES PREFIX "")
+set_target_properties(hand_eye_calibration PROPERTIES SUFFIX ".so")
+
+
+
 add_executable(adept_rotor_diff_example
   src/adept_rotor_diff_example.cpp
   third_party/Adept/adept/adept.cpp 

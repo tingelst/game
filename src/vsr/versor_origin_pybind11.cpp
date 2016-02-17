@@ -10,11 +10,13 @@ namespace python {
 namespace py = pybind11;
 using namespace vsr::cga;
 
-void AddOrigin(py::module &m) {
+void AddOrigin(py::module& m) {
   py::class_<Ori>(m, "Ori")
-      .def(py::init<double>());
+      .def(py::init<double>())
+      .def("op",
+           [](const Ori& self, const Vec& other) { return self ^ other; });
 }
 
-} // namespace python
+}  // namespace python
 
-} // namespace vsr
+}  // namespace vsr

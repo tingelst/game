@@ -18,6 +18,7 @@ void AddRotor(py::module &m) {
            "Bivector logarithm: R = exp(B)")
       .def("log", [](const Rot &arg) { return Gen::log(arg); })
       .def("__mul__", [](const Rot &lhs, const Trs &rhs) { return lhs * rhs; })
+      .def("__mul__", [](const Rot &lhs, const Rot &rhs) { return lhs * rhs; })
       .def("__getitem__", &Rot::at)
       .def("__repr__",
            [](const Rot &arg) {

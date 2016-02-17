@@ -203,8 +203,7 @@ struct Gen {
   */
   template <class A>
   static auto rot(const A& b) -> decltype(b + 1) {
-    //  printf("me");
-    VSR_PRECISION c = sqrt(-(b.wt()));
+    VSR_PRECISION c = sqrt(b.rwt());
     VSR_PRECISION sc = -sin(c);
     if (c != 0) sc /= c;
     return b * sc + cos(c);

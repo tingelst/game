@@ -1,3 +1,4 @@
+#include <sstream>
 #include <pybind11/pybind11.h>
 
 #include "game/vsr/cga_types.h"
@@ -10,31 +11,26 @@ namespace python {
 namespace py = pybind11;
 using namespace vsr::cga;
 
-void AddDirectionVector(py::module &m) {
-  py::class_<Drv>(m, "Drv")
-      .def(py::init<double, double, double>())
-      .def("__getitem__", &Drv::at)
-      .def("norm", &Drv::norm)
-      .def("rnorm", &Drv::rnorm)
-      .def("unit", &Drv::unit)
-      .def("rev", &Drv::reverse)
-      .def("inv", &Drv::inverse)
-      .def("duale", &Drv::duale)
-      .def("unduale", &Drv::unduale)
-      .def("spin", (Drv (Drv::*)(const Rot &) const) & Drv::spin)
-      .def("spin", (Drv (Drv::*)(const Mot &) const) & Drv::spin)
+void AddGeneralRotor(py::module &m) {
+  py::class_<Grt>(m, "Grt")
+      .def(py::init<double, double, double, double, double, double, double>())
+      .def("__getitem__", &Grt::at)
+      .def("rev", &Grt::reverse)
+      .def("inv", &Grt::inverse)
+      .def("__mul__", [](const Grt &lhs, double rhs) { return lhs * rhs; })
+      .def("__mul__", [](const Grt &lhs, const Grt &rhs) { return lhs * rhs; })
       .def("__repr__",
-           [](const Drv &arg) {
+           [](const Grt &arg) {
              std::stringstream ss;
              ss.precision(2);
-             ss << "Drv: [";
+             ss << "Grt: [";
              for (int i = 0; i < arg.Num; ++i) {
                ss << " " << arg[i];
              }
              ss << " ]";
              return ss.str();
            })
-      .def_buffer([](Drv &arg) -> py::buffer_info {
+      .def_buffer([](Grt &arg) -> py::buffer_info {
         return py::buffer_info(arg.data(), sizeof(double),
                                py::format_descriptor<double>::value(), 1,
                                {arg.Num}, {sizeof(double)});

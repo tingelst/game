@@ -22,18 +22,25 @@ void AddVector(py::module &m) {
       .def("duale", &Vec::duale)
       .def("unduale", &Vec::unduale)
       .def("trs", [](const Vec &arg) { return Gen::trs(arg); })
+      .def("__mul__", [](const Vec &lhs, double rhs) { return lhs * rhs; })
       .def("__mul__", [](const Vec &lhs, const Vec &rhs) { return lhs * rhs; })
       .def("spin", (Vec (Vec::*)(const Rot &) const) & Vec::spin)
       .def("null", &Vec::null)
-      .def("__repr__", [](const Vec &arg) {
-        std::stringstream ss;
-        ss.precision(2);
-        ss << "Vec: [";
-        for (int i = 0; i < arg.Num; ++i) {
-          ss << " " << arg[i];
-        }
-        ss << " ]";
-        return ss.str();
+      .def("__repr__",
+           [](const Vec &arg) {
+             std::stringstream ss;
+             ss.precision(2);
+             ss << "Vec: [";
+             for (int i = 0; i < arg.Num; ++i) {
+               ss << " " << arg[i];
+             }
+             ss << " ]";
+             return ss.str();
+           })
+      .def_buffer([](Vec &arg) -> py::buffer_info {
+        return py::buffer_info(arg.data(), sizeof(double),
+                               py::format_descriptor<double>::value(), 1,
+                               {arg.Num}, {sizeof(double)});
       });
 }
 

@@ -22,14 +22,19 @@ using vsr::cga::Vector;
 using vsr::cga::Bivector;
 using vsr::cga::Point;
 using vsr::cga::DualLine;
+using vsr::cga::DualPlane;
 using vsr::cga::Motor;
 using vsr::cga::Rotor;
 using vsr::cga::Translator;
 using vsr::cga::Origin;
 using vsr::cga::Infinity;
+using vsr::cga::TangentVector;
+using vsr::cga::DirectionVector;
 using vsr::cga::Pnt;
 using vsr::cga::Dll;
+using vsr::cga::Dlp;
 using vsr::cga::Mot;
+using vsr::cga::Tnv;
 using vsr::nga::Op;
 
 namespace game {
@@ -39,6 +44,87 @@ class MotorEstimationSolver {
   MotorEstimationSolver() {}
   MotorEstimationSolver(const MotorEstimationSolver &motor_estimation_solver) {}
   MotorEstimationSolver(const Mot &motor) : motor_(motor) {}
+
+  struct TangentVectorPointAngleErrorCostFunctor {
+    TangentVectorPointAngleErrorCostFunctor(const Tnv &a, const Tnv &b)
+        : a_(a), b_(b) {}
+
+    template <typename T>
+    bool operator()(const T *const motor, T *residual) const {
+      Motor<T> M(motor);
+      TangentVector<T> a(a_);
+      TangentVector<T> b(b_);
+      TangentVector<T> c = a.spin(M);
+
+      Point<T> pb = b / (-Infinity<T>(T(1.0)) <= b);
+      Point<T> pc = c / (-Infinity<T>(T(1.0)) <= c);
+
+      for (int i = 0; i < 3; ++i) {
+        residual[i] = pc[i] - pb[i];
+      }
+
+      DirectionVector<T> db = -(Infinity<T>(T(1.0)) <= b) ^ Infinity<T>(T(1.0));
+      DirectionVector<T> dc = -(Infinity<T>(T(1.0)) <= c) ^ Infinity<T>(T(1.0));
+
+      // residual[3] = (Vector<T>{db[0], db[1], db[2]} <= Vector<T>{dc[0],
+      // dc[1], dc[2]})[0];
+
+      for (int i = 3; i < 6; ++i) {
+        residual[i] = dc[i] - db[i];
+      }
+
+      return true;
+    }
+
+   private:
+    const Tnv a_;
+    const Tnv b_;
+  };
+
+  struct DualPlaneAngleErrorCostFunctor {
+    DualPlaneAngleErrorCostFunctor(const Dlp &a, const Dlp &b) : a_(a), b_(b) {}
+
+    template <typename T>
+    bool operator()(const T *const motor, T *residual) const {
+      Motor<T> M(motor);
+      DualPlane<T> a(a_);
+      DualPlane<T> b(b_);
+      DualPlane<T> c = a.spin(M);
+
+      Origin<T> no{T(1.0)};
+      Infinity<T> ni{T(1.0)};
+
+      Motor<T> X = Scalar<T>{0.5} * (c / b);
+      Rotor<T> R{X[0], X[1], X[2], X[3]};
+      Vector<T> t = Scalar<T>{-2.0} * (no <= X) / R;
+      T distance = t.norm();
+
+      // T distance;
+      // if (abs(T(1.0) - X[0]) > T(0.0)) {
+      //   Bivector<T> B{R[1], R[2], R[3]};
+      //   B = B.unit();
+      //   Vector<T> w = Op::reject(t, B);
+      //   distance = w.norm();
+      //   residual[0] = distance;
+      // } else {
+      //   distance = t.norm();
+      //   residual[0] = distance;
+      // }
+
+      // residual[1] = T(1.0) - X[0];
+
+      Scalar<T> cos_theta = c <= b;
+
+      residual[0] = cos_theta[0];
+      residual[1] = distance;
+
+      return true;
+    }
+
+   private:
+    const Dlp a_;
+    const Dlp b_;
+  };
 
   struct LineAngleDistanceNormCostFunctor {
     LineAngleDistanceNormCostFunctor(const Dll &a, const Dll &b)
@@ -192,6 +278,24 @@ class MotorEstimationSolver {
 
   auto Summary() const -> py::dict { return game::SummaryToDict(summary_); }
 
+  bool AddTangentVectorPointAngleErrorResidualBlock(const Tnv &a,
+                                                    const Tnv &b) {
+    ceres::CostFunction *cost_function =
+        new ceres::AutoDiffCostFunction<TangentVectorPointAngleErrorCostFunctor,
+                                        6, 8>(
+            new TangentVectorPointAngleErrorCostFunctor(a, b));
+    problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
+    return true;
+  }
+
+  bool AddDualPlaneAngleErrorResidualBlock(const Dlp &a, const Dlp &b) {
+    ceres::CostFunction *cost_function =
+        new ceres::AutoDiffCostFunction<DualPlaneAngleErrorCostFunctor, 2, 8>(
+            new DualPlaneAngleErrorCostFunctor(a, b));
+    problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
+    return true;
+  }
+
   auto AddLineCorrespondencesResidualBlock(const Dll &a, const Dll &b) -> bool {
     ceres::CostFunction *cost_function =
         new ceres::AutoDiffCostFunction<LineCorrespondencesCostFunctor, 6, 8>(
@@ -291,6 +395,10 @@ PYBIND11_PLUGIN(motor_estimation) {
 
   py::class_<MotorEstimationSolver>(m, "MotorEstimationSolver")
       .def(py::init<const Mot &>())
+      .def("add_tangent_vector_point_angle_error_residual_block",
+           &MotorEstimationSolver::AddTangentVectorPointAngleErrorResidualBlock)
+      .def("add_dual_plane_angle_error_residual_block",
+           &MotorEstimationSolver::AddDualPlaneAngleErrorResidualBlock)
       .def("add_line_correspondences_residual_block",
            &MotorEstimationSolver::AddLineCorrespondencesResidualBlock)
       .def("add_line_angle_distance_residual_block",

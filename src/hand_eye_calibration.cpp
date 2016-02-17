@@ -128,7 +128,8 @@ class HandEyeCalibrator {
       Motor<T> Z(Z_arr);
       Motor<T> A(A_);
       Point<T> point(point_);
-      Point<T> point2 = point.spin(Z.reverse() * A * X);
+      // Point<T> point2 = point.spin(Z.reverse() * A * X);
+      Point<T> point2 = point.spin(X * A * Z.reverse());
 
       // Compute normalized coordinates: x /= x[2].
       T xn = point2[0] / point2[2];

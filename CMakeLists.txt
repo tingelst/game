@@ -122,6 +122,10 @@ add_library(versor_pybind11 SHARED
   src/vsr/versor_origin_pybind11.cpp
   src/vsr/versor_infinity_pybind11.cpp
   src/vsr/versor_direction_vector_pybind11.cpp
+  src/vsr/versor_dual_plane_pybind11.cpp
+  src/vsr/versor_plane_pybind11.cpp
+  src/vsr/versor_general_rotor_pybind11.cpp
+  src/vsr/versor_tangent_vector_pybind11.cpp
   src/vsr/cga_op.cpp
   src/vsr/cga_round.cpp
   )

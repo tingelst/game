@@ -14,6 +14,7 @@ void AddPoint(py::module &m) {
   py::class_<Pnt>(m, "Pnt")
       .def(py::init<double, double, double, double, double>())
       .def("__getitem__", &Pnt::at)
+      .def("vec", [](const Pnt &self) { return Vec(self); })
       .def("spin", (Pnt (Pnt::*)(const Rot &) const) & Pnt::spin)
       .def("spin", (Pnt (Pnt::*)(const Mot &) const) & Pnt::spin)
       .def("__repr__",

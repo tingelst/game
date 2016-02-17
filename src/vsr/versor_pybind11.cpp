@@ -24,6 +24,10 @@ void AddMotor(py::module &m);
 void AddOrigin(py::module &m);
 void AddInfinity(py::module &m);
 void AddDirectionVector(py::module &m);
+void AddDualPlane(py::module &m);
+void AddPlane(py::module &m);
+void AddGeneralRotor(py::module &m);
+void AddTangentVector(py::module &m);
 
 PYBIND11_PLUGIN(versor_pybind11) {
   py::module m("versor_pybind11", "versor plugin");
@@ -38,6 +42,10 @@ PYBIND11_PLUGIN(versor_pybind11) {
   AddOrigin(m);
   AddInfinity(m);
   AddDirectionVector(m);
+  AddDualPlane(m);
+  AddPlane(m);
+  AddGeneralRotor(m);
+  AddTangentVector(m);
 
   return m.ptr();
 }

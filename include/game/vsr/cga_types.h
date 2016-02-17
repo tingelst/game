@@ -57,7 +57,7 @@ using Plane = GAPln<ConformalGeometricAlgebra<T>>;
 template <typename T>
 using DirectionVector = GADrv<ConformalGeometricAlgebra<T>>;
 template <typename T>
-using TangentVector = GATnv<ConformalGeometricAlgebra<T>>;
+  using TangentVector = decltype(Point<T>{} ^ (-Point<T>{} <= (Vector<T>{} * Infinity<T>{})));
 template <typename T>
 using DirectionBivector = GADrb<ConformalGeometricAlgebra<T>>;
 template <typename T>

@@ -69,9 +69,9 @@ class MotorEstimationSolver {
       // residual[3] = (Vector<T>{db[0], db[1], db[2]} <= Vector<T>{dc[0],
       // dc[1], dc[2]})[0];
 
-      for (int i = 3; i < 6; ++i) {
-        residual[i] = dc[i] - db[i];
-      }
+      // for (int i = 3; i < 6; ++i) {
+      //   residual[i] = dc[i] - db[i];
+      // }
 
       return true;
     }
@@ -115,7 +115,7 @@ class MotorEstimationSolver {
 
       Scalar<T> cos_theta = c <= b;
 
-      residual[0] = cos_theta[0];
+      residual[0] = X[0];
       residual[1] = distance;
 
       return true;
@@ -282,7 +282,7 @@ class MotorEstimationSolver {
                                                     const Tnv &b) {
     ceres::CostFunction *cost_function =
         new ceres::AutoDiffCostFunction<TangentVectorPointAngleErrorCostFunctor,
-                                        6, 8>(
+                                        3, 8>(
             new TangentVectorPointAngleErrorCostFunctor(a, b));
     problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
     return true;

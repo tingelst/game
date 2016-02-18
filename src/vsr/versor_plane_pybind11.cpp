@@ -22,6 +22,7 @@ void AddPlane(py::module &m) {
       .def("inv", &Pln::inverse)
       .def("spin", (Pln (Pln::*)(const Mot &) const) & Pln::spin)
       .def("__mul__", [](const Pln &lhs, double rhs) { return lhs * rhs; })
+      .def("__mul__", [](const Pln &lhs, const Pln &rhs) { return lhs * rhs; })
       .def("__div__", [](const Pln &lhs, double rhs) { return lhs / rhs; })
       .def("__leq__", [](const Pln &lhs, const Pln &rhs) { return lhs <= rhs; })
       .def("left_contraction",
@@ -38,9 +39,9 @@ void AddPlane(py::module &m) {
              return ss.str();
            })
       .def_buffer([](Pln &arg) -> py::buffer_info {
-        return py::buffer_info(arg.data(), sizeof(double),
-                               py::format_descriptor<double>::value(), 1,
-                               {arg.Num}, {sizeof(double)});
+        return py::buffer_info(
+            arg.data(), sizeof(double), py::format_descriptor<double>::value(),
+            1, {static_cast<unsigned long>(arg.Num)}, {sizeof(double)});
       });
 }
 

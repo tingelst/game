@@ -11,7 +11,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -ftemplate-depth-1200 -Wn
 
 # find_package(hep-ga REQUIRED)
 find_package(Boost REQUIRED COMPONENTS python)
-find_package(PythonLibs 2.7.11 REQUIRED)
+find_package(PythonLibs 2.7.10 REQUIRED)
 
 set(Ceres_DIR /Users/lars/devel/game_ws/game/third_party/ceres-solver/cmake)
 find_package(Ceres REQUIRED)
@@ -126,6 +126,8 @@ add_library(versor_pybind11 SHARED
   src/vsr/versor_plane_pybind11.cpp
   src/vsr/versor_general_rotor_pybind11.cpp
   src/vsr/versor_tangent_vector_pybind11.cpp
+  src/vsr/versor_circle_pybind11.cpp
+  src/vsr/versor_sphere_pybind11.cpp
   src/vsr/cga_op.cpp
   src/vsr/cga_round.cpp
   )

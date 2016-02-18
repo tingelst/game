@@ -499,7 +499,7 @@ Cir Construct::circle(const Biv& B) {
  *  \brief  Cir at point p with radius r, facing direction biv
 */
 Cir Construct::circle(const Pnt& p, VSR_PRECISION r, const Biv& biv) {
-  return Round::produce(Round::dls(p, r * -1), biv);
+  return Round::produce(Round::dls(p, r * -1.0), biv);
 }
 
 /// Cir at origin with normal v and radius r (default r=1.0)

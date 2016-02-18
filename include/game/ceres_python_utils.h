@@ -60,7 +60,7 @@ void CheckContiguousArrayAndArrayShape(const np::ndarray& m,
 }
 
   */
-    
+
 auto SummaryToDict(const ceres::Solver::Summary& summary) -> py::dict {
   py::dict summary_dict;
   summary_dict[py::str("linear_solver_type_used")] = py::str(
@@ -96,58 +96,58 @@ auto SummaryToDict(const ceres::Solver::Summary& summary) -> py::dict {
 }
 
 
-void SetSolverOptions(py::dict solver_options,
-                      ceres::Solver::Options& options) {
+//void SetSolverOptions(py::dict solver_options,
+                      //ceres::Solver::Options& options) {
 
-    /* for (auto a : solver_options) */
-    /*     std::cout << a.first << " " << a.second << std::endl; */
+    //[> for (auto a : solver_options) <]
+    //[>     std::cout << a.first << " " << a.second << std::endl; <]
 
-    /* ceres::StringToLinearSolverType(std::string(py::str(solver_options[py::str("linear_solver_type")])), */
-    /*                                 &options.linear_solver_type); */
+    //[> ceres::StringToLinearSolverType(std::string(py::str(solver_options[py::str("linear_solver_type")])), <]
+    //[>                                 &options.linear_solver_type); <]
 
-    options.max_num_iterations = py::int_(solver_options["max_num_iterations"]);
-    options.num_threads = py::int_(solver_options["num_threads"]);
-    options.num_linear_solver_threads = py::int_(solver_options[py::str("num_linear_solver_threads")]);
+    //options.max_num_iterations = py::int_(solver_options["max_num_iterations"]);
+    //options.num_threads = py::int_(solver_options["num_threads"]);
+    //options.num_linear_solver_threads = py::int_(solver_options[py::str("num_linear_solver_threads")]);
 
 
-    double parameter_tolerance{solver_options["parameter_tolerance"]};
-    std::cout << parameter_tolerance << std::endl;
-    options.parameter_tolerance = parameter_tolerance;
+    //double parameter_tolerance{solver_options["parameter_tolerance"]};
+    //std::cout << parameter_tolerance << std::endl;
+    //options.parameter_tolerance = parameter_tolerance;
 
-    /* options.function_tolerance = py::object(solver_options["function_tolerance"]).cast<double>(); */
-    /* options.gradient_tolerance = solver_options["gradient_tolerance"]; */
+    //[> options.function_tolerance = py::object(solver_options["function_tolerance"]).cast<double>(); <]
+    //[> options.gradient_tolerance = solver_options["gradient_tolerance"]; <]
 
-    /* ceres::StringToTrustRegionStrategyType(std::string(py::str(solver_options["trust_region_strategy_type"])), */
-    /*                                        &options.trust_region_strategy_type); */
+    //[> ceres::StringToTrustRegionStrategyType(std::string(py::str(solver_options["trust_region_strategy_type"])), <]
+    //[>                                        &options.trust_region_strategy_type); <]
 
-    /* options.minimizer_progress_to_stdout = solver_options["minimizer_progress_to_stdout"]; */
+    //[> options.minimizer_progress_to_stdout = solver_options["minimizer_progress_to_stdout"]; <]
 
-    /* ceres::StringToMinimizerType( */
-    /*     std::string(py::str(solver_options["minimizer_type"])), &options.minimizer_type); */
+    //[> ceres::StringToMinimizerType( <]
+    //[>     std::string(py::str(solver_options["minimizer_type"])), &options.minimizer_type); <]
 
-    /* std::cout << options.num_linear_solver_threads << std::endl; */
-  
-/*
-  bp::extract<bp::list> trust_region_minimizer_iterations_to_dump(
-      solver_options["trust_region_minimizer_iterations_to_dump"]);
-  if (trust_region_minimizer_iterations_to_dump.check()) {
-    std::vector<int> iterations_to_dump{};
-    bp::list list = trust_region_minimizer_iterations_to_dump();
-    for (int i = 0; i < bp::len(list); ++i) {
-    iterations_to_dump.push_back(bp::extract<int>(list[i])());
-    }
-    options.trust_region_minimizer_iterations_to_dump = iterations_to_dump;
-  }
+    //[> std::cout << options.num_linear_solver_threads << std::endl; <]
 
-  bp::extract<std::string> trust_region_problem_dump_directory(
-      solver_options["trust_region_problem_dump_directory"]);
-  if (trust_region_problem_dump_directory.check()) {
-    options.trust_region_problem_dump_directory =
-        trust_region_problem_dump_directory();
-        }
-  
-*/
-}
+//[>
+  //bp::extract<bp::list> trust_region_minimizer_iterations_to_dump(
+      //solver_options["trust_region_minimizer_iterations_to_dump"]);
+  //if (trust_region_minimizer_iterations_to_dump.check()) {
+    //std::vector<int> iterations_to_dump{};
+    //bp::list list = trust_region_minimizer_iterations_to_dump();
+    //for (int i = 0; i < bp::len(list); ++i) {
+    //iterations_to_dump.push_back(bp::extract<int>(list[i])());
+    //}
+    //options.trust_region_minimizer_iterations_to_dump = iterations_to_dump;
+  //}
+
+  //bp::extract<std::string> trust_region_problem_dump_directory(
+      //solver_options["trust_region_problem_dump_directory"]);
+  //if (trust_region_problem_dump_directory.check()) {
+    //options.trust_region_problem_dump_directory =
+        //trust_region_problem_dump_directory();
+        //}
+
+//}
+
 
 }
 #endif  // GAME_GAME_CERES_PYTHON_UTILS_H_

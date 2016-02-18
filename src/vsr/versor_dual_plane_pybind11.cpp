@@ -40,7 +40,7 @@ void AddDualPlane(py::module &m) {
       .def_buffer([](Dlp &arg) -> py::buffer_info {
         return py::buffer_info(arg.data(), sizeof(double),
                                py::format_descriptor<double>::value(), 1,
-                               {arg.Num}, {sizeof(double)});
+                               {static_cast<unsigned long>(arg.Num)}, {sizeof(double)});
       });
 }
 

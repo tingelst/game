@@ -18,6 +18,7 @@ void AddGeneralRotor(py::module &m) {
       .def("rev", &Grt::reverse)
       .def("inv", &Grt::inverse)
       .def("__mul__", [](const Grt &lhs, double rhs) { return lhs * rhs; })
+      .def("__mul__", [](const Grt &lhs, const Dlp &rhs) { return lhs * rhs; })
       .def("__mul__", [](const Grt &lhs, const Grt &rhs) { return lhs * rhs; })
       .def("__repr__",
            [](const Grt &arg) {
@@ -31,9 +32,9 @@ void AddGeneralRotor(py::module &m) {
              return ss.str();
            })
       .def_buffer([](Grt &arg) -> py::buffer_info {
-        return py::buffer_info(arg.data(), sizeof(double),
-                               py::format_descriptor<double>::value(), 1,
-                               {arg.Num}, {sizeof(double)});
+        return py::buffer_info(
+            arg.data(), sizeof(double), py::format_descriptor<double>::value(),
+            1, {static_cast<unsigned long>(arg.Num)}, {sizeof(double)});
       });
 }
 

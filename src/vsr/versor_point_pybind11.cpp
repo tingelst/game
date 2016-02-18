@@ -21,7 +21,11 @@ void AddPoint(py::module &m) {
            [](const Pnt &arg) {
              std::stringstream ss;
              ss.precision(4);
-             ss << "Pnt: [";
+             if (nga::Round::radius(arg) > 0.0) {
+               ss << "Dls: [";
+             } else {
+               ss << "Pnt: [";
+             }
              for (int i = 0; i < arg.Num; ++i) {
                ss << " " << arg[i];
              }
@@ -29,9 +33,9 @@ void AddPoint(py::module &m) {
              return ss.str();
            })
       .def_buffer([](Pnt &arg) -> py::buffer_info {
-        return py::buffer_info(arg.data(), sizeof(double),
-                               py::format_descriptor<double>::value(), 1,
-                               {arg.Num}, {sizeof(double)});
+        return py::buffer_info(
+            arg.data(), sizeof(double), py::format_descriptor<double>::value(),
+            1, {static_cast<unsigned long>(arg.Num)}, {sizeof(double)});
       });
 }
 

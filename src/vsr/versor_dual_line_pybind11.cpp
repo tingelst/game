@@ -1,4 +1,4 @@
-#include <pybind11/pybind11.h>
+ne#include <pybind11/pybind11.h>
 
 #include "game/vsr/cga_types.h"
 #include "game/vsr/cga_op.h"
@@ -42,7 +42,7 @@ void AddDualLine(py::module &m) {
       .def_buffer([](Dll &arg) -> py::buffer_info {
         return py::buffer_info(arg.data(), sizeof(double),
                                py::format_descriptor<double>::value(), 1,
-                               {arg.Num}, {sizeof(double)});
+                               {static_cast<unsigned long>(arg.Num)}, {sizeof(double)});
       });
 }
 

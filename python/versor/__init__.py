@@ -14,6 +14,7 @@ sys.path.append('../../build/')
 import numpy as np
 from versor_pybind11 import *
 
+Dls = Pnt
 
 def to_array(self): 
     arr = np.zeros((4,4),dtype=np.float64)

@@ -15,6 +15,7 @@ void AddPoint(py::module &m) {
       .def(py::init<double, double, double, double, double>())
       .def("__getitem__", &Pnt::at)
       .def("vec", [](const Pnt &self) { return Vec(self); })
+      .def("__xor__", [](const Pnt &lhs, const Pnt &rhs) { return lhs ^ rhs; })
       .def("spin", (Pnt (Pnt::*)(const Rot &) const) & Pnt::spin)
       .def("spin", (Pnt (Pnt::*)(const Mot &) const) & Pnt::spin)
       .def("__repr__",
@@ -37,6 +38,7 @@ void AddPoint(py::module &m) {
             arg.data(), sizeof(double), py::format_descriptor<double>::value(),
             1, {static_cast<unsigned long>(arg.Num)}, {sizeof(double)});
       });
+
 }
 
 }  // namespace python

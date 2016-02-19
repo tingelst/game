@@ -16,6 +16,10 @@ from versor_pybind11 import *
 
 Dls = Pnt
 
+def __split_point_pair(self):
+    return (self.pnt_a(), self.pnt_b())
+Par.split = __split_point_pair
+
 def to_array(self): 
     arr = np.zeros((4,4),dtype=np.float64)
     arr[:3,0] = np.array(Drv(1,0,0).spin(self))

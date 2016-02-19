@@ -22,6 +22,7 @@ void AddVector(py::module &m) {
       .def("duale", &Vec::duale)
       .def("unduale", &Vec::unduale)
       .def("trs", [](const Vec &arg) { return Gen::trs(arg); })
+      .def("__xor__", [](const Vec &lhs, const Vec &rhs) { return lhs ^ rhs; })
       .def("__mul__", [](const Vec &lhs, double rhs) { return lhs * rhs; })
       .def("__mul__", [](const Vec &lhs, const Vec &rhs) { return lhs * rhs; })
       .def("spin", (Vec (Vec::*)(const Rot &) const) & Vec::spin)
@@ -38,9 +39,9 @@ void AddVector(py::module &m) {
              return ss.str();
            })
       .def_buffer([](Vec &arg) -> py::buffer_info {
-        return py::buffer_info(arg.data(), sizeof(double),
-                               py::format_descriptor<double>::value(), 1,
-                               {static_cast<unsigned long>(arg.Num)}, {sizeof(double)});
+        return py::buffer_info(
+            arg.data(), sizeof(double), py::format_descriptor<double>::value(),
+            1, {static_cast<unsigned long>(arg.Num)}, {sizeof(double)});
       });
 }
 

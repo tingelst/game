@@ -109,6 +109,16 @@ target_link_libraries(versorninja ${PYTHON_LIBRARIES})
 set_target_properties(versorninja PROPERTIES PREFIX "")
 set_target_properties(versorninja PROPERTIES SUFFIX ".so")
 
+
+add_library(motor_jacobian SHARED src/motor_local_parameterization_jacobian_py.cpp)
+target_link_libraries(motor_jacobian
+  ${PYTHON_LIBRARIES}
+  ${CERES_LIBRARIES}
+  )
+set_target_properties(motor_jacobian PROPERTIES PREFIX "")
+set_target_properties(motor_jacobian PROPERTIES SUFFIX ".so")
+
+
 add_library(versor_pybind11 SHARED
   src/vsr/versor_pybind11.cpp
   src/vsr/versor_vector_pybind11.cpp

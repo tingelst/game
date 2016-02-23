@@ -26,6 +26,12 @@ void AddDualLine(py::module &m) {
            [](const Dll &lhs, const Mot &rhs) {
              return (lhs * rhs + rhs * lhs) * 0.5;
            })
+      .def("comm", [](const Dll &lhs,
+                      const Pnt &rhs) { return Pnt((lhs * rhs - rhs * lhs) * 0.5); })
+      .def("acomm",
+           [](const Dll &lhs, const Pnt &rhs) {
+             return Pnt((lhs * rhs + rhs * lhs) * 0.5);
+           })
       .def("duale", &Dll::duale)
       .def("unduale", &Dll::unduale)
       .def("dual", &Dll::dual)

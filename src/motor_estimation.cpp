@@ -43,7 +43,12 @@ class MotorEstimationSolver {
  public:
   MotorEstimationSolver() {}
   MotorEstimationSolver(const MotorEstimationSolver &motor_estimation_solver) {}
-  MotorEstimationSolver(const Mot &motor) : motor_(motor) {}
+  MotorEstimationSolver(const Mot &motor) : motor_(motor) {
+    options_.trust_region_minimizer_iterations_to_dump =
+        std::vector<int>{0, 1, 2, 3, 4};
+    options_.trust_region_problem_dump_directory =
+        std::string{"/Users/lars/devel/game/dump"};
+  }
 
   struct TangentVectorPointAngleErrorCostFunctor {
     TangentVectorPointAngleErrorCostFunctor(const Tnv &a, const Tnv &b)

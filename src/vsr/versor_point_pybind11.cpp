@@ -21,13 +21,15 @@ void AddPoint(py::module &m) {
       .def("__xor__", [](const Pnt &lhs, const Pnt &rhs) { return lhs ^ rhs; })
       .def("spin", (Pnt (Pnt::*)(const Rot &) const) & Pnt::spin)
       .def("spin", (Pnt (Pnt::*)(const Mot &) const) & Pnt::spin)
+      .def("__sub__", [](const Pnt &lhs, const Pnt &rhs) { return lhs - rhs; })
+      .def("__add__", [](const Pnt &lhs, const Pnt &rhs) { return lhs + rhs; })
       .def("comm",
            [](const Pnt &lhs, const Dll &rhs) {
-             return Dlp((lhs * rhs - rhs * lhs) * 0.5);
+             return Pnt((lhs * rhs - rhs * lhs) * 0.5);
            })
       .def("acomm",
            [](const Pnt &lhs, const Dll &rhs) {
-             return Dlp((lhs * rhs + rhs * lhs) * 0.5);
+             return Pnt((lhs * rhs + rhs * lhs) * 0.5);
            })
 
       .def("comm",

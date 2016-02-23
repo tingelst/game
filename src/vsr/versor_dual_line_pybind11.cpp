@@ -17,6 +17,15 @@ void AddDualLine(py::module &m) {
            [](Dll &instance, const Vec &arg1, const Vec &arg2) {
              new (&instance) Dll(Construct::line(arg1, arg2).dual());
            })
+
+      .def("__getitem__", &Dll::at)
+      .def("__setitem__", [](Dll &arg, int idx, double val) { arg[idx] = val; })
+      .def("comm", [](const Dll &lhs,
+                      const Mot &rhs) { return (lhs * rhs - rhs * lhs) * 0.5; })
+      .def("acomm",
+           [](const Dll &lhs, const Mot &rhs) {
+             return (lhs * rhs + rhs * lhs) * 0.5;
+           })
       .def("duale", &Dll::duale)
       .def("unduale", &Dll::unduale)
       .def("dual", &Dll::dual)
@@ -26,6 +35,8 @@ void AddDualLine(py::module &m) {
       .def("inv", &Dll::inverse)
       .def("spin", (Dll (Dll::*)(const Mot &) const) & Dll::spin)
       .def("exp", [](const Dll &arg) { return Gen::motor(arg); })
+      .def("__neg__", [](const Dll &arg) { return -arg; })
+      .def("__mul__", [](const Dll &lhs, const Mot &rhs) { return lhs * rhs; })
       .def("__mul__", [](const Dll &lhs, double rhs) { return lhs * rhs; })
       .def("__div__", [](const Dll &lhs, double rhs) { return lhs / rhs; })
       .def("__repr__",
@@ -40,9 +51,9 @@ void AddDualLine(py::module &m) {
              return ss.str();
            })
       .def_buffer([](Dll &arg) -> py::buffer_info {
-        return py::buffer_info(arg.data(), sizeof(double),
-                               py::format_descriptor<double>::value(), 1,
-                               {static_cast<unsigned long>(arg.Num)}, {sizeof(double)});
+        return py::buffer_info(
+            arg.data(), sizeof(double), py::format_descriptor<double>::value(),
+            1, {static_cast<unsigned long>(arg.Num)}, {sizeof(double)});
       });
 }
 

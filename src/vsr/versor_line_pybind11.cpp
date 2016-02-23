@@ -21,6 +21,10 @@ void AddLine(py::module &m) {
            [](Lin &instance, const Pnt &arg1, const Pnt &arg2) {
              new (&instance) Lin(Construct::line(arg1, arg2));
            })
+    .def("__init__",
+         [](Lin &instance, const Pnt &arg1, const Vec &arg2) {
+           new (&instance) Lin(arg1 ^ arg2 ^ Inf(1.0));
+         })
       .def("spin", (Lin (Lin::*)(const Rot &) const) & Lin::spin)
       .def("spin", (Lin (Lin::*)(const Mot &) const) & Lin::spin)
       .def("duale", &Lin::duale)

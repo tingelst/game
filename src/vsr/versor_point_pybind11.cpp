@@ -13,11 +13,31 @@ using namespace vsr::cga;
 void AddPoint(py::module &m) {
   py::class_<Pnt>(m, "Pnt")
       .def(py::init<double, double, double, double, double>())
+      .def(
+          "__init__",
+          [](Pnt &instance) { new (&instance) Pnt(Vec(0.0, 0.0, 0.0).null()); })
       .def("__getitem__", &Pnt::at)
       .def("vec", [](const Pnt &self) { return Vec(self); })
       .def("__xor__", [](const Pnt &lhs, const Pnt &rhs) { return lhs ^ rhs; })
       .def("spin", (Pnt (Pnt::*)(const Rot &) const) & Pnt::spin)
       .def("spin", (Pnt (Pnt::*)(const Mot &) const) & Pnt::spin)
+      .def("comm",
+           [](const Pnt &lhs, const Dll &rhs) {
+             return Dlp((lhs * rhs - rhs * lhs) * 0.5);
+           })
+      .def("acomm",
+           [](const Pnt &lhs, const Dll &rhs) {
+             return Dlp((lhs * rhs + rhs * lhs) * 0.5);
+           })
+
+      .def("comm",
+           [](const Pnt &lhs, const Mot &rhs) {
+             return Pnt((lhs * rhs - rhs * lhs) * 0.5);
+           })
+      .def("acomm",
+           [](const Pnt &lhs, const Mot &rhs) {
+             return Pnt((lhs * rhs + rhs * lhs) * 0.5);
+           })
       .def("__repr__",
            [](const Pnt &arg) {
              std::stringstream ss;
@@ -38,7 +58,6 @@ void AddPoint(py::module &m) {
             arg.data(), sizeof(double), py::format_descriptor<double>::value(),
             1, {static_cast<unsigned long>(arg.Num)}, {sizeof(double)});
       });
-
 }
 
 }  // namespace python

@@ -25,6 +25,8 @@ void AddVector(py::module &m) {
       .def("__xor__", [](const Vec &lhs, const Vec &rhs) { return lhs ^ rhs; })
       .def("__mul__", [](const Vec &lhs, double rhs) { return lhs * rhs; })
       .def("__mul__", [](const Vec &lhs, const Vec &rhs) { return lhs * rhs; })
+      .def("__sub__", [](const Vec &lhs, const Vec &rhs) { return lhs - rhs; })
+      .def("__add__", [](const Vec &lhs, const Vec &rhs) { return lhs + rhs; })
       .def("spin", (Vec (Vec::*)(const Rot &) const) & Vec::spin)
       .def("null", &Vec::null)
       .def("__repr__",

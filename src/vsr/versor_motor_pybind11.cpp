@@ -19,8 +19,23 @@ void AddMotor(py::module &m) {
       .def("rev", &Mot::reverse)
       .def("inv", &Mot::inverse)
       .def("log", [](const Mot &arg) { return Gen::log(arg); })
+      .def("comm", [](const Mot &lhs,
+                      const Dll &rhs) { return (lhs * rhs - rhs * lhs) * 0.5; })
+      .def("acomm",
+           [](const Mot &lhs, const Dll &rhs) {
+             return (lhs * rhs + rhs * lhs) * 0.5;
+           })
+      .def("comm", [](const Mot &lhs,
+                      const Mot &rhs) { return (lhs * rhs - rhs * lhs) * 0.5; })
+      .def("acomm",
+           [](const Mot &lhs, const Mot &rhs) {
+             return (lhs * rhs + rhs * lhs) * 0.5;
+           })
+      .def("__add__", [](const Mot &lhs, const Mot &rhs) { return lhs + rhs; })
+      .def("__sub__", [](const Mot &lhs, const Mot &rhs) { return lhs - rhs; })
       .def("__mul__", [](const Mot &lhs, double rhs) { return lhs * rhs; })
       .def("__mul__", [](const Mot &lhs, const Mot &rhs) { return lhs * rhs; })
+      .def("__mul__", [](const Mot &lhs, const Dll &rhs) { return lhs * rhs; })
       .def("__repr__",
            [](const Mot &arg) {
              std::stringstream ss;
@@ -33,9 +48,9 @@ void AddMotor(py::module &m) {
              return ss.str();
            })
       .def_buffer([](Mot &arg) -> py::buffer_info {
-        return py::buffer_info(arg.data(), sizeof(double),
-                               py::format_descriptor<double>::value(), 1,
-                               {static_cast<unsigned long>(arg.Num)}, {sizeof(double)});
+        return py::buffer_info(
+            arg.data(), sizeof(double), py::format_descriptor<double>::value(),
+            1, {static_cast<unsigned long>(arg.Num)}, {sizeof(double)});
       });
 }
 

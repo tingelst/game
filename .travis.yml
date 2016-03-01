@@ -1,9 +1,14 @@
+sudo: required
+
+dist: xenial
+
 language: cpp
 
 compiler:
   - gcc
 
 before_script:
+  - sudo apt-get install libpython-dev
   - mkdir build
   - cd build
   - cmake ..

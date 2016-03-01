@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/tingelst/game.svg?token=JjgE1aL6Uy3yn3YFR5Nx&branch=master)](https://travis-ci.com/tingelst/game)
+
 # **G**eometric **A**lgebra **M**ultivector **E**stimation
 
 

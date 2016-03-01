@@ -91,17 +91,7 @@ target_link_libraries(rigid_body_motion_estimation ${CERES_LIBRARIES} ${Boost_LI
 #         ${CERES_LIBRARIES}
 #         ${Boost_LIBRARIES})
 
-add_library(versor_cga_op SHARED src/vsr/cga_op.cpp src/vsr/cga_round.cpp src/vsr/python_interface_cga_op.cpp)
-target_link_libraries(versor_cga_op ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
 
-# add_library(versor SHARED src/vsr/python_interface.cpp)
-# target_link_libraries(versor ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
-
-add_library(versorninja SHARED ./src/test_bindings.cpp)
-#add_library(versorninja SHARED ./src/vsr/init1.cpp src/vsr/vsr_pybind11.cpp)
-target_link_libraries(versorninja ${PYTHON_LIBRARIES})
-set_target_properties(versorninja PROPERTIES PREFIX "")
-set_target_properties(versorninja PROPERTIES SUFFIX ".so")
 
 
 add_library(motor_jacobian SHARED src/motor_local_parameterization_jacobian_py.cpp)
@@ -139,6 +129,7 @@ add_library(versor_pybind11 SHARED
 target_link_libraries(versor_pybind11 ${PYTHON_LIBRARIES})
 set_target_properties(versor_pybind11 PROPERTIES PREFIX "")
 set_target_properties(versor_pybind11 PROPERTIES SUFFIX ".so")
+
 
 #add_executable(test_versor src/versor_rotor_estimation.cpp)
 #target_link_libraries(test_versor ${CERES_LIBRARIES})

@@ -23,6 +23,7 @@ include_directories(
         ../hep-ga/include/
         third_party/Adept/include
         third_party/pybind11/include/
+        third_party/vahlen/include/
         ${Boost_INCLUDE_DIRS}
         ${PYTHON_INCLUDE_DIRS}
         ${CERES_INCLUDE_DIRS}
@@ -63,6 +64,15 @@ target_link_libraries(motor_estimation
   ${CERES_LIBRARIES})
 set_target_properties(motor_estimation PROPERTIES PREFIX "")
 set_target_properties(motor_estimation PROPERTIES SUFFIX ".so")
+
+add_library(motor_estimation_vahlen SHARED 
+  src/motor_estimation_vahlen.cpp
+  )
+target_link_libraries(motor_estimation_vahlen
+  ${PYTHON_LIBRARIES}
+  ${CERES_LIBRARIES})
+set_target_properties(motor_estimation_vahlen PROPERTIES PREFIX "")
+set_target_properties(motor_estimation_vahlen PROPERTIES SUFFIX ".so")
 
 add_library(hand_eye_calibration SHARED
   src/hand_eye_calibration.cpp)

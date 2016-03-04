@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
 
-#include "game/vsr/cga_types.h"
 #include "game/vsr/cga_op.h"
+#include "game/vsr/cga_types.h"
 
 namespace vsr {
 
@@ -27,6 +27,7 @@ void AddVector(py::module &m) {
       .def("__mul__", [](const Vec &lhs, const Vec &rhs) { return lhs * rhs; })
       .def("__sub__", [](const Vec &lhs, const Vec &rhs) { return lhs - rhs; })
       .def("__add__", [](const Vec &lhs, const Vec &rhs) { return lhs + rhs; })
+      .def("__le__", [](const Vec &lhs, const Biv &rhs) { return lhs <= rhs; })
       .def("spin", (Vec (Vec::*)(const Rot &) const) & Vec::spin)
       .def("null", &Vec::null)
       .def("__repr__",
@@ -47,6 +48,6 @@ void AddVector(py::module &m) {
       });
 }
 
-}  // namespace python
+} // namespace python
 
-}  // namespace vsr
+} // namespace vsr

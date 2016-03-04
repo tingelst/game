@@ -4,14 +4,14 @@
 
 #include <pybind11/pybind11.h>
 
-#include <iostream>
 #include <ceres/ceres.h>
 #include <ceres/rotation.h>
 #include <glog/logging.h>
+#include <iostream>
 
 #include "game/vsr/vsr.h"
-#include "game/motor_parameterization.h"
 #include "game/ceres_python_utils.h"
+#include "game/motor_parameterization.h"
 
 #include <vahlen/vahlen.h>
 
@@ -40,7 +40,7 @@ using vsr::nga::Op;
 namespace game {
 
 class MotorEstimationSolver {
- public:
+public:
   MotorEstimationSolver() {}
   MotorEstimationSolver(const MotorEstimationSolver &motor_estimation_solver) {}
   MotorEstimationSolver(const Mot &motor) : motor_(motor) {
@@ -68,7 +68,30 @@ class MotorEstimationSolver {
       return true;
     }
 
-   private:
+  private:
+    const Pnt a_;
+    const Pnt b_;
+  };
+
+  struct VahlenPointCorrespondencesCostFunctor {
+    VahlenPointCorrespondencesCostFunctor(const Pnt &a, const Pnt &b)
+        : a_(a), b_(b) {}
+
+    template <typename T>
+    auto operator()(const T *const motor, T *residual) const -> bool {
+      vahlen::Matrix<T> M = vahlen::Motor<T>(motor);
+      vahlen::Matrix<T> a = vahlen::Point<T>(T(a_[0]), T(a_[1]), T(a_[2]));
+      vahlen::Matrix<T> b = vahlen::Point<T>(T(b_[0]), T(b_[1]), T(b_[2]));
+      vahlen::Matrix<T> c = M * a * vahlen::Reverse(M);
+
+      residual[0] = c(2,0) - b(2,0);
+      residual[1] = c(3,0) - b(3,0);
+      residual[2] = c(0,0) - b(0,0);
+
+      return true;
+    }
+
+  private:
     const Pnt a_;
     const Pnt b_;
   };
@@ -80,6 +103,16 @@ class MotorEstimationSolver {
     ceres::CostFunction *cost_function =
         new ceres::AutoDiffCostFunction<PointCorrespondencesCostFunctor, 3, 8>(
             new PointCorrespondencesCostFunctor(a, b));
+    problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
+    return true;
+  }
+
+  auto AddVahlenPointCorrespondencesResidualBlock(const Pnt &a, const Pnt &b)
+      -> bool {
+    ceres::CostFunction *cost_function =
+        new ceres::AutoDiffCostFunction<VahlenPointCorrespondencesCostFunctor,
+                                        3, 8>(
+            new VahlenPointCorrespondencesCostFunctor(a, b));
     problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
     return true;
   }
@@ -127,10 +160,12 @@ PYBIND11_PLUGIN(motor_estimation_vahlen) {
       .def(py::init<const Mot &>())
       .def("add_point_correspondences_residual_block",
            &MotorEstimationSolver::AddPointCorrespondencesResidualBlock)
+      .def("add_vahlen_point_correspondences_residual_block",
+           &MotorEstimationSolver::AddVahlenPointCorrespondencesResidualBlock)
       .def("set_parameterization",
            &MotorEstimationSolver::SetMotorParameterizationTypeFromString)
 
-      // .def("solve", &MotorEstimationSolver::Solve)
+      .def("solve", &MotorEstimationSolver::Solve)
       .def_property("num_threads",
                     [](MotorEstimationSolver &instance) {
                       return instance.options_.num_threads;
@@ -218,4 +253,4 @@ PYBIND11_PLUGIN(motor_estimation_vahlen) {
   return m.ptr();
 }
 
-}  // namespace game
+} // namespace game

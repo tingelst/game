@@ -34,10 +34,10 @@ void InnerProductVectorBivector(const T *vec, const T *biv, T *res) {
 }
 
 template <typename T>
-void InnerProductVectorVector(const T *vec, const T *biv, T *res) {
+void InnerProductVectorVector(const T *vec, const T *vec1, T *res) {
   Vector<T> vector(vec);
-  Vector<T> vector(vec2);
-  Scalar<T> result = vector <= bivector;
+  Vector<T> vector1(vec1);
+  Scalar<T> result = vector <= vector1;
   res[0] = result[0];
 }
 
@@ -107,8 +107,8 @@ struct InnerProductVectorBivectorFunctor {
 
 struct InnerProductVectorVectorFunctor {
   template <typename T>
-  bool operator()(const T *vec, const T *biv, T *res) const {
-    InnerProductVectorVector(vec, biv, res);
+  bool operator()(const T *vec, const T *vec2, T *res) const {
+    InnerProductVectorVector(vec, vec2, res);
     return true;
   }
 };
@@ -116,7 +116,7 @@ struct InnerProductVectorVectorFunctor {
 py::list CeresDiffInnerProductVectorVector(const Vec &vec, const Vec &vec2) {
   auto py_array_jac = py::array(py::buffer_info(
       nullptr, sizeof(double), py::format_descriptor<double>::value(), 2,
-      {3, 3}, {sizeof(double) * 3, sizeof(double)}));
+      {1, 3}, {sizeof(double) * 3, sizeof(double)}));
 
   auto py_array_result = py::array(py::buffer_info(
       nullptr, sizeof(double), py::format_descriptor<double>::value(), 2,

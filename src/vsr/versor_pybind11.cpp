@@ -31,6 +31,8 @@ void AddTangentVector(py::module &m);
 void AddCircle(py::module &m);
 void AddSphere(py::module &m);
 void AddPointPair(py::module &m);
+void AddTrivector(py::module &m);
+void AddMultivectorDiff(py::module &m);
 
 PYBIND11_PLUGIN(versor_pybind11) {
   py::module m("versor_pybind11", "versor plugin");
@@ -52,6 +54,8 @@ PYBIND11_PLUGIN(versor_pybind11) {
   AddCircle(m);
   AddSphere(m);
   AddPointPair(m);
+  AddTrivector(m);
+  AddMultivectorDiff(m);
 
   return m.ptr();
 }

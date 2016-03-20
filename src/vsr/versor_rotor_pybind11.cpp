@@ -16,7 +16,12 @@ void AddRotor(py::module &m) {
       .def("__init__", [](Rot &instance,
                           Biv &arg) { new (&instance) Rot(Gen::rotor(arg)); },
            "Bivector logarithm: R = exp(B)")
+      .def("rev", &Rot::reverse)
+      .def("inv", &Rot::inverse)
       .def("log", [](const Rot &arg) { return Gen::log(arg); })
+      .def("__neg__", [](const Rot &arg) { return -arg; })
+      .def("__mul__", [](const Rot &lhs, double rhs) { return lhs * rhs; })
+      .def("__mul__", [](const Rot &lhs, const Biv &rhs) { return lhs * rhs; })
       .def("__mul__", [](const Rot &lhs, const Trs &rhs) { return lhs * rhs; })
       .def("__mul__", [](const Rot &lhs, const Rot &rhs) { return lhs * rhs; })
       .def("__getitem__", &Rot::at)
@@ -32,9 +37,9 @@ void AddRotor(py::module &m) {
              return ss.str();
            })
       .def_buffer([](Rot &arg) -> py::buffer_info {
-        return py::buffer_info(arg.data(), sizeof(double),
-                               py::format_descriptor<double>::value(), 1,
-                               {static_cast<unsigned long>(arg.Num)}, {sizeof(double)});
+        return py::buffer_info(
+            arg.data(), sizeof(double), py::format_descriptor<double>::value(),
+            1, {static_cast<unsigned long>(arg.Num)}, {sizeof(double)});
       });
 }
 

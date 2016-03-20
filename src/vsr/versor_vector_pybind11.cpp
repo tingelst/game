@@ -22,6 +22,7 @@ void AddVector(py::module &m) {
       .def("duale", &Vec::duale)
       .def("unduale", &Vec::unduale)
       .def("trs", [](const Vec &arg) { return Gen::trs(arg); })
+      .def("__neg__", [](const Vec &arg) { return -arg; })
       .def("__xor__", [](const Vec &lhs, const Vec &rhs) { return lhs ^ rhs; })
       .def("__mul__", [](const Vec &lhs, double rhs) { return lhs * rhs; })
       .def("__mul__", [](const Vec &lhs, const Vec &rhs) { return lhs * rhs; })

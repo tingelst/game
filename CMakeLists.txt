@@ -133,6 +133,8 @@ add_library(versor_pybind11 SHARED
   src/vsr/versor_circle_pybind11.cpp
   src/vsr/versor_sphere_pybind11.cpp
   src/vsr/versor_point_pair_pybind11.cpp
+  src/vsr/versor_trivector_pybind11.cpp
+  src/vsr/versor_diff_pybind11.cpp
   src/vsr/cga_op.cpp
   src/vsr/cga_round.cpp
   )

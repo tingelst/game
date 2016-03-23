@@ -4,9 +4,8 @@ project(game)
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -ftemplate-depth-1200 -Wno-switch -Wno-deprecated-declarations -Wno-int-to-pointer-cast")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -stdlib=libc++ -ftemplate-depth-1200 -Wno-switch -Wno-deprecated-declarations -Wno-int-to-pointer-cast")
 
-find_package(PythonLibs 2.7.10 REQUIRED)
+find_package(PythonLibs 2.7.11 REQUIRED)
 
 find_package(Ceres REQUIRED)
 
@@ -20,46 +19,24 @@ endif()
 
 include_directories(
         include
-        ../hep-ga/include/
         third_party/Adept/include
         third_party/pybind11/include/
         third_party/vahlen/include/
-        ${Boost_INCLUDE_DIRS}
         ${PYTHON_INCLUDE_DIRS}
         ${CERES_INCLUDE_DIRS}
 )
-
-# add_library(sphere_fit SHARED src/sphere_fit.cpp)
-# target_link_libraries(sphere_fit ${CERES_LIBRARIES} ${Boost_LIBRARIES})
-
-#add_executable(rotor_estimation src/rotor_estimation.cpp)
-#target_link_libraries(rotor_estimation ${CERES_LIBRARIES})
-#
-# add_executable(rotor_bivector_generator_estimation src/rotor_bivector_generator_estimation.cpp)
-# target_link_libraries(rotor_bivector_generator_estimation ${CERES_LIBRARIES})
-
-# add_library(rotor_estimation SHARED src/rotor_estimation_wrapper.cpp)
-# target_link_libraries(rotor_estimation ${CERES_LIBRARIES} ${Boost_LIBRARIES})
 
 add_library(adept SHARED 
   third_party/Adept/adept/adept.cpp 
   third_party/Adept/adept/adept_openmp.cpp
   )
 
-# add_library(lds_calibration SHARED src/lds_calibration.cpp)
-# target_link_libraries(lds_calibration
-#   adept
-#   ${PYTHON_LIBRARIES}
-#   ${CERES_LIBRARIES}
-#   ${Boost_LIBRARIES})
-
 add_library(motor_estimation SHARED 
   src/motor_estimation.cpp
-  third_party/Adept/adept/adept.cpp 
-  third_party/Adept/adept/adept_openmp.cpp
   )
 
-target_link_libraries(motor_estimation 
+target_link_libraries(motor_estimation
+  adept
   ${PYTHON_LIBRARIES}
   ${CERES_LIBRARIES})
 set_target_properties(motor_estimation PROPERTIES PREFIX "")
@@ -83,35 +60,15 @@ target_link_libraries(hand_eye_calibration
 set_target_properties(hand_eye_calibration PROPERTIES PREFIX "")
 set_target_properties(hand_eye_calibration PROPERTIES SUFFIX ".so")
 
-
-
-add_executable(adept_rotor_diff_example
-  src/adept_rotor_diff_example.cpp
-  third_party/Adept/adept/adept.cpp 
+add_library(motor_jacobian SHARED
+  src/motor_local_parameterization_jacobian_py.cpp
   )
-
-
-add_library(rigid_body_motion_estimation SHARED src/rigid_body_motion_estimation_wrapper.cpp)
-target_link_libraries(rigid_body_motion_estimation ${CERES_LIBRARIES} ${Boost_LIBRARIES})
-
-# add_library(kinematic_calibration SHARED
-#         src/versor_kinematic_calibration_wrapper.cpp)
-# set_target_properties(kinematic_calibration PROPERTIES COMPILE_FLAGS "-save-temps ")
-# target_link_libraries(kinematic_calibration
-#         ${CERES_LIBRARIES}
-#         ${Boost_LIBRARIES})
-
-
-
-
-add_library(motor_jacobian SHARED src/motor_local_parameterization_jacobian_py.cpp)
 target_link_libraries(motor_jacobian
   ${PYTHON_LIBRARIES}
   ${CERES_LIBRARIES}
   )
 set_target_properties(motor_jacobian PROPERTIES PREFIX "")
 set_target_properties(motor_jacobian PROPERTIES SUFFIX ".so")
-
 
 add_library(versor_pybind11 SHARED
   src/vsr/versor_pybind11.cpp
@@ -141,14 +98,6 @@ add_library(versor_pybind11 SHARED
 target_link_libraries(versor_pybind11 ${PYTHON_LIBRARIES})
 set_target_properties(versor_pybind11 PROPERTIES PREFIX "")
 set_target_properties(versor_pybind11 PROPERTIES SUFFIX ".so")
-
-
-#add_executable(test_versor src/versor_rotor_estimation.cpp)
-#target_link_libraries(test_versor ${CERES_LIBRARIES})
-
-# add_library(hello_world SHARED src/hello_world.cpp)
-# target_link_libraries(hello_world ${CERES_LIBRARIES} ${Boost_LIBRARIES})
-
 
 # enable_testing(false)
 # file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/*.cpp)

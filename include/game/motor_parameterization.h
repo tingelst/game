@@ -104,9 +104,16 @@ struct MotorFromBivectorGeneratorNotWorking {
 };
 */
 
+  /*
 struct VahlenMotorFromBivectorGenerator {
   template <typename T>
   bool operator()(const T *x, const T *delta, T *x_plus_delta) const {
+    using vsr::cga::Scalar;
+    using vsr::cga::Vector;
+    using vsr::cga::Bivector;
+    using vsr::cga::DualLine;
+    using vsr::cga::Motor;
+    using vsr::nga::Op;
 
     Motor<T> M1;
     if (SquaredNorm3(delta) > T(0.0)) {
@@ -151,6 +158,7 @@ struct VahlenMotorFromBivectorGenerator {
     return true;
   }
 };
+  */
 
 struct MotorFromBivectorGenerator {
   template <typename T>

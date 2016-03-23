@@ -15,14 +15,19 @@ install:
   - sudo apt-get install -y libpython-dev
   - sudo apt-get install -y libgoogle-glog-dev 
   - sudo apt-get install -y libatlas-base-dev
-  - sudo apt-get install -y libeigen3-dev
   - sudo apt-get install -y libsuitesparse-dev
+  - wget http://bitbucket.org/eigen/eigen/get/3.2.8.tar.gz -O /tmp/eigen-3.2.8.tar.gz
+  - tar -C /tmp -xzvf /tmp/eigen-3.2.8.tar.gz
+  - rm /tmp/eigen-3.2.8.tar.gz
+  - mkdir /tmp/eigen-3.2.8-build
+  - cd /tmp/eigen-3.2.8-build
+  - cmake /tmp/eigen-eigen-07105f7124f9 && make && sudo make install
   - wget http://ceres-solver.org/ceres-solver-1.11.0.tar.gz -O /tmp/ceres-solver-1.11.0.tar.gz
   - tar -C /tmp -xzvf /tmp/ceres-solver-1.11.0.tar.gz
   - rm /tmp/ceres-solver-1.11.0.tar.gz
   - mkdir /tmp/ceres-solver-1.11.0-build
   - cd /tmp/ceres-solver-1.11.0-build
-  - cmake /tmp/ceres-solver-1.11.0 && make && sudo make install
+  - cmake -DBUILD_TESTING=OFF -DBUILD_EXAMPLES=OFF /tmp/ceres-solver-1.11.0 && make && sudo make install
 
 before_script:
   - mkdir /tmp/game-build

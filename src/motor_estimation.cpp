@@ -4,16 +4,16 @@
 
 #include <pybind11/pybind11.h>
 
-#include <iostream>
 #include <ceres/ceres.h>
 #include <ceres/rotation.h>
 #include <glog/logging.h>
+#include <iostream>
 
-#include "game/vsr/vsr.h"
 #include "game/adept_autodiff_cost_function.h"
 #include "game/adept_autodiff_local_parameterization.h"
-#include "game/motor_parameterization.h"
 #include "game/ceres_python_utils.h"
+#include "game/motor_parameterization.h"
+#include "game/vsr/vsr.h"
 
 namespace py = pybind11;
 
@@ -40,15 +40,10 @@ using vsr::nga::Op;
 namespace game {
 
 class MotorEstimationSolver {
- public:
+public:
   MotorEstimationSolver() {}
   MotorEstimationSolver(const MotorEstimationSolver &motor_estimation_solver) {}
-  MotorEstimationSolver(const Mot &motor) : motor_(motor) {
-    options_.trust_region_minimizer_iterations_to_dump =
-        std::vector<int>{0, 1, 2, 3, 4};
-    options_.trust_region_problem_dump_directory =
-        std::string{"/Users/lars/devel/game/dump"};
-  }
+  MotorEstimationSolver(const Mot &motor) : motor_(motor) {}
 
   struct TangentVectorPointAngleErrorCostFunctor {
     TangentVectorPointAngleErrorCostFunctor(const Tnv &a, const Tnv &b)
@@ -81,7 +76,7 @@ class MotorEstimationSolver {
       return true;
     }
 
-   private:
+  private:
     const Tnv a_;
     const Tnv b_;
   };
@@ -126,7 +121,7 @@ class MotorEstimationSolver {
       return true;
     }
 
-   private:
+  private:
     const Dlp a_;
     const Dlp b_;
   };
@@ -166,7 +161,7 @@ class MotorEstimationSolver {
       return true;
     }
 
-   private:
+  private:
     const Dll a_;
     const Dll b_;
   };
@@ -207,7 +202,7 @@ class MotorEstimationSolver {
       return true;
     }
 
-   private:
+  private:
     const Dll a_;
     const Dll b_;
   };
@@ -229,7 +224,7 @@ class MotorEstimationSolver {
       return true;
     }
 
-   private:
+  private:
     const Dll a_;
     const Dll b_;
   };
@@ -253,7 +248,7 @@ class MotorEstimationSolver {
       return true;
     }
 
-   private:
+  private:
     const Pnt a_;
     const Pnt b_;
   };
@@ -276,7 +271,7 @@ class MotorEstimationSolver {
       return true;
     }
 
-   private:
+  private:
     const Pnt a_;
     const Pnt b_;
   };
@@ -506,4 +501,4 @@ PYBIND11_PLUGIN(motor_estimation) {
   return m.ptr();
 }
 
-}  // namespace game
+} // namespace game

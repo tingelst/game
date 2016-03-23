@@ -6,7 +6,7 @@ language: cpp
 
 compiler:
   - gcc
-  - clang
+  # - clang
 
 before_install:
   - sudo apt-get -qq update
@@ -22,7 +22,7 @@ install:
   - rm /tmp/ceres-solver-1.11.0.tar.gz
   - mkdir /tmp/ceres-solver-1.11.0-build
   - cd /tmp/ceres-solver-1.11.0-build
-  - cmake /tmp/ceres-solver-1.11.0-build && make && sudo make install
+  - cmake /tmp/ceres-solver-1.11.0 && make && sudo make install
 
 before_script:
   - mkdir /tmp/game-build

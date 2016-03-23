@@ -21,13 +21,13 @@ install:
   - rm /tmp/eigen-3.2.8.tar.gz
   - mkdir /tmp/eigen-3.2.8-build
   - cd /tmp/eigen-3.2.8-build
-  - cmake /tmp/eigen-eigen-07105f7124f9 && make && sudo make install
+  - cmake /tmp/eigen-eigen-07105f7124f9 && make -j4 && sudo make install
   - wget http://ceres-solver.org/ceres-solver-1.11.0.tar.gz -O /tmp/ceres-solver-1.11.0.tar.gz
   - tar -C /tmp -xzvf /tmp/ceres-solver-1.11.0.tar.gz
   - rm /tmp/ceres-solver-1.11.0.tar.gz
   - mkdir /tmp/ceres-solver-1.11.0-build
   - cd /tmp/ceres-solver-1.11.0-build
-  - cmake -DBUILD_TESTING=OFF -DBUILD_EXAMPLES=OFF /tmp/ceres-solver-1.11.0 && make && sudo make install
+  - cmake -DBUILD_TESTING=OFF -DBUILD_EXAMPLES=OFF /tmp/ceres-solver-1.11.0 && make -j4 && sudo make install
 
 before_script:
   - mkdir /tmp/game-build

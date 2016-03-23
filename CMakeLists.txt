@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(game)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
+option(BUILD_TESTING "Enable tests" OFF)
+option(BUILD_EXAMPLES "Build examples" ON)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -ftemplate-depth-1200 -Wno-switch -Wno-deprecated-declarations -Wno-int-to-pointer-cast")
@@ -23,8 +28,16 @@ include_directories(
         third_party/pybind11/include/
         third_party/vahlen/include/
         ${PYTHON_INCLUDE_DIRS}
+        ${EIGEN_INCLUDE_DIRS}
         ${CERES_INCLUDE_DIRS}
 )
+
+if (BUILD_EXAMPLES)
+  message("-- Build the examples.")
+  add_subdirectory(examples)
+else (BUILD_EXAMPLES)
+  message("-- Do not build any example.")
+endif (BUILD_EXAMPLES)
 
 add_library(adept SHARED 
   third_party/Adept/adept/adept.cpp 
@@ -99,22 +112,10 @@ target_link_libraries(versor_pybind11 ${PYTHON_LIBRARIES})
 set_target_properties(versor_pybind11 PROPERTIES PREFIX "")
 set_target_properties(versor_pybind11 PROPERTIES SUFFIX ".so")
 
-# enable_testing(false)
-# file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/*.cpp)
 
-# add_executable(test_speed_no_ceres test/test_speed.cpp)
-
-#Run through each source
-# foreach(TEST_SRC ${TEST_SRCS})
-#   #Extract the filename without an extension (NAME_WE)
-#   get_filename_component(TEST ${TEST_SRC} NAME_WE)
-
-#   #Add compile target
-#   add_executable(${TEST} ${TEST_SRC} ./third_party/Adept/adept/adept.cpp)
-#       target_link_libraries(${TEST} ${CERES_LIBRARIES})
-
-#   #Finally add it to test execution -
-#   add_test(NAME ${TEST}
-#     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-#     COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build/${TEST} )
-# endforeach(TEST_SRC)
+if (BUILD_TESTING)
+  message("-- Build the tests.")
+  add_subdirectory(test)
+else (BUILD_TESTING)
+  message("-- Do not build any test.")
+endif (BUILD_TESTING)

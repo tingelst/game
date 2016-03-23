@@ -1,8 +1,8 @@
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 
-#include "ceres/autodiff_local_parameterization.h"
 #include "ceres/autodiff_cost_function.h"
+#include "ceres/autodiff_local_parameterization.h"
 #include "ceres/cost_function.h"
 #include "ceres/internal/autodiff.h"
 #include "ceres/internal/eigen.h"
@@ -73,7 +73,7 @@ struct VectorCorrespondencesCostFunctor {
     return true;
   }
 
- private:
+private:
   const Vec a_;
   const Vec b_;
 };
@@ -95,7 +95,7 @@ struct PointCorrespondencesCostFunctor {
     return true;
   }
 
- private:
+private:
   const Pnt a_;
   const Pnt b_;
 };
@@ -117,7 +117,8 @@ py::array_t<ScalarType> Matrix() {
 py::array_t<double> AnalyticDiffRotorCost(const Rot &rot, const Vec &a,
                                           const Vec &b) {
   // auto result = py::array(py::buffer_info(
-  //     nullptr,        /* Pointer to data (nullptr -> ask NumPy to allocate!) */
+  //     nullptr,        /* Pointer to data (nullptr -> ask NumPy to allocate!)
+  //     */
   //     sizeof(double), /* Size of one item */
   //     py::format_descriptor<double>::value(), /* Buffer format */
   //     2,                                      /* How many dimensions? */
@@ -247,7 +248,8 @@ struct TransformPoint {
 
     Point<T> p_prime = p.spin(M);
 
-    for (int i = 0; i < p.Num; ++i) x_prime[i] = p_prime[i];
+    for (int i = 0; i < p.Num; ++i)
+      x_prime[i] = p_prime[i];
 
     return true;
   }

@@ -20,32 +20,20 @@ RUN apt-get update && apt-get -y install \
     libsuitesparse-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# ENV CC gcc-4.8
-# ENV CXX g++-4.8
-
-RUN mkdir -p /usr/src/ \
-    && curl -SL http://bitbucket.org/eigen/eigen/get/3.2.7.tar.gz \
-    | tar -xvzC /usr/src/ \
-    && mkdir -p /usr/src/eigen-eigen-b30b87236a1b/build \
-    && cd /usr/src/eigen-eigen-b30b87236a1b/build \
-    && cmake .. \
-    && make install 
-
 RUN mkdir -p /usr/src/ \
     && curl -SL http://ceres-solver.org/ceres-solver-1.11.0.tar.gz \
     | tar -xvzC /usr/src/ \
     && mkdir -p /usr/src/ceres-solver-1.11.0/build \
     && cd /usr/src/ceres-solver-1.11.0/build \
-    && cmake .. \
-    && make -j12 \
-    # && make test \
+    && cmake -DBUILD_TESTING=OFF -DBUILD_EXAMPLES=OFF .. \
+    && make \
     && make install
 
 COPY . /usr/src/game
 RUN mkdir -p /usr/src/game/build \
     && cd /usr/src/game/build \
     && cmake .. \
-    && make -j12 all
+    && make
 
 EXPOSE 8888
 
@@ -55,7 +43,6 @@ RUN mkdir -p -m 700 /root/.jupyter/ && \
 
 WORKDIR /usr/src/game/python
 ENTRYPOINT ["jupyter", "notebook"]
-# ENTRYPOINT ["python", "-i", "motor_estimation.py"]
 
 
 

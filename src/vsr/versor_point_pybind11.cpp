@@ -23,6 +23,8 @@ void AddPoint(py::module &m) {
       .def("spin", (Pnt (Pnt::*)(const Mot &) const) & Pnt::spin)
       .def("__sub__", [](const Pnt &lhs, const Pnt &rhs) { return lhs - rhs; })
       .def("__add__", [](const Pnt &lhs, const Pnt &rhs) { return lhs + rhs; })
+      .def("__le__",
+           [](const Pnt &lhs, const Pnt &rhs) { return (lhs <= rhs)[0]; })
       .def("comm",
            [](const Pnt &lhs, const Dll &rhs) {
              return Pnt((lhs * rhs - rhs * lhs) * 0.5);
@@ -62,6 +64,6 @@ void AddPoint(py::module &m) {
       });
 }
 
-}  // namespace python
+} // namespace python
 
-}  // namespace vsr
+} // namespace vsr

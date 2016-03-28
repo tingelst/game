@@ -83,6 +83,17 @@ target_link_libraries(motor_jacobian
 set_target_properties(motor_jacobian PROPERTIES PREFIX "")
 set_target_properties(motor_jacobian PROPERTIES SUFFIX ".so")
 
+add_library(motor_estimation_valkenburg_dorst SHARED
+  src/motor_estimation_valkenburg_dorst.cpp
+  )
+target_link_libraries(motor_estimation_valkenburg_dorst
+  ${PYTHON_LIBRARIES}
+  ${CERES_LIBRARIES}
+  )
+set_target_properties(motor_estimation_valkenburg_dorst PROPERTIES PREFIX "")
+set_target_properties(motor_estimation_valkenburg_dorst PROPERTIES SUFFIX ".so")
+
+
 add_library(versor_pybind11 SHARED
   src/vsr/versor_pybind11.cpp
   src/vsr/versor_vector_pybind11.cpp

@@ -28,6 +28,8 @@ void AddVector(py::module &m) {
       .def("__mul__", [](const Vec &lhs, const Vec &rhs) { return lhs * rhs; })
       .def("__sub__", [](const Vec &lhs, const Vec &rhs) { return lhs - rhs; })
       .def("__add__", [](const Vec &lhs, const Vec &rhs) { return lhs + rhs; })
+      .def("__le__",
+           [](const Vec &lhs, const Vec &rhs) { return (lhs <= rhs)[0]; })
       .def("__le__", [](const Vec &lhs, const Biv &rhs) { return lhs <= rhs; })
       .def("spin", (Vec (Vec::*)(const Rot &) const) & Vec::spin)
       .def("null", &Vec::null)

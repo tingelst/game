@@ -14,6 +14,7 @@ void AddBivector(py::module &m) {
   py::class_<Biv>(m, "Biv")
       .def(py::init<double, double, double>())
       .def("__getitem__", &Biv::at)
+      .def("__setitem__", [](Biv &arg, int idx, double val) { arg[idx] = val; })
       .def("duale", &Biv::duale)
       .def("unduale", &Biv::unduale)
       .def("unit", &Biv::unit)
@@ -21,8 +22,25 @@ void AddBivector(py::module &m) {
       .def("inv", &Biv::inverse)
       .def("spin", (Biv (Biv::*)(const Rot &) const) & Biv::spin)
       .def("exp", [](const Biv &biv) { return Gen::rotor(biv); })
+      .def("__mul__", [](const Biv &lhs, const Vec &rhs) { return lhs * rhs; })
+      .def("__mul__", [](const Biv &lhs, const Biv &rhs) { return lhs * rhs; })
       .def("__mul__", [](const Biv &lhs, double rhs) { return lhs * rhs; })
+      .def("__mul__", [](const Biv &lhs, const Rot &rhs) { return lhs * rhs; })
       .def("__div__", [](const Biv &lhs, double rhs) { return lhs / rhs; })
+      .def("comm", [](const Biv &lhs,
+                      const Rot &rhs) { return (lhs * rhs - rhs * lhs) * 0.5; })
+      .def("acomm",
+           [](const Biv &lhs, const Rot &rhs) {
+             return (lhs * rhs + rhs * lhs) * 0.5;
+           })
+      .def("comm",
+           [](const Biv &lhs, const Vec &rhs) {
+             return Vec(lhs * rhs - rhs * lhs) * 0.5;
+           })
+      .def("acomm",
+           [](const Biv &lhs, const Vec &rhs) {
+             return Vec(lhs * rhs + rhs * lhs) * 0.5;
+           })
       .def("__repr__", [](const Biv &arg) {
         std::stringstream ss;
         ss.precision(4);

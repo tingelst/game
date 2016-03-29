@@ -1,6 +1,7 @@
 #ifndef GAME_GAME_ADEPT_AUTODIFF_COST_FUNCTION_H_
 #define GAME_GAME_ADEPT_AUTODIFF_COST_FUNCTION_H_
 
+#include <adept.h>
 #include "ceres/internal/autodiff.h"
 #include "ceres/internal/scoped_ptr.h"
 #include "ceres/sized_cost_function.h"

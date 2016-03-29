@@ -1,5 +1,7 @@
 build
 build_gcc
+build-osx
 .idea
 .ipynb_checkpoints
 *.pyc
+*.DS_Store

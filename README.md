@@ -2,35 +2,24 @@
 
 # **G**eometric **A**lgebra **M**ultivector **E**stimation
 
+GAME is framework for estimation of multivectors in geometric algebra with focus on, but not limited to, the Euclidean and conformal model. 
 
-## License
+## Installation
 
-GAME - Geometric Algebra Multivector Estimation
+The main external dependency of GAME is the Ceres optimization framework from Google. 
 
-Copyright (c) 2015, Norwegian University of Science and Technology
-All rights reserved.
+On OSX we recommend building the homebrew formula from source:
+``` bash
+brew tap homebrew/science
+brew install ceres-solver --build-from-source
+```
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+On Linux we recommend following the installation instructions found here: http://ceres-solver.org/building.html.
 
-* Redistributions of source code must retain the above copyright notice, this
-  list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-
-* Neither the name of GAME nor the names of its
-  contributors may be used to endorse or promote products derived from
-  this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+To build GAME follow the steps below:
+``` bash
+$ git clone --recursive https://github.com/tingelst/game.git
+$ cd game
+$ mkdir build && cd build 
+$ cmake .. && make
+```

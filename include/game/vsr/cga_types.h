@@ -3,11 +3,9 @@
 
 #include "game/vsr/multivector.h"
 
-namespace vsr
-{
+namespace vsr {
 
-namespace cga
-{
+namespace cga {
 
 template <typename T>
 using ConformalGeometricAlgebra = vsr::algebra<vsr::metric<4, 1, true>, T>;
@@ -57,7 +55,8 @@ using Plane = GAPln<ConformalGeometricAlgebra<T>>;
 template <typename T>
 using DirectionVector = GADrv<ConformalGeometricAlgebra<T>>;
 template <typename T>
-  using TangentVector = decltype(Point<T>{} ^ (-Point<T>{} <= (Vector<T>{} * Infinity<T>{})));
+using TangentVector =
+    decltype(Point<T>{} ^ (-Point<T>{} <= (Vector<T>{} * Infinity<T>{})));
 template <typename T>
 using DirectionBivector = GADrb<ConformalGeometricAlgebra<T>>;
 template <typename T>
@@ -123,8 +122,9 @@ using Con = ConformalRotor<double>;
 using Dil = Dilator<double>;
 using Tsd = TranslatedDilator<double>;
 
-} // namespace cga
 
-} // namespace vsr
+}  // namespace cga
+
+}  // namespace vsr
 
 #endif  // GAME_GAME_VSR_CGA_TYPES_H_

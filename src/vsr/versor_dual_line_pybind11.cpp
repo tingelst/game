@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
 
-#include "game/vsr/cga_types.h"
 #include "game/vsr/cga_op.h"
+#include "game/vsr/cga_types.h"
 
 namespace vsr {
 
@@ -21,13 +21,21 @@ void AddDualLine(py::module &m) {
       .def("__getitem__", &Dll::at)
       .def("__setitem__", [](Dll &arg, int idx, double val) { arg[idx] = val; })
       .def("comm", [](const Dll &lhs,
+                      const Dll &rhs) { return (lhs * rhs - rhs * lhs) * 0.5; })
+      .def("acomm",
+           [](const Dll &lhs, const Dll &rhs) {
+             return (lhs * rhs + rhs * lhs) * 0.5;
+           })
+      .def("comm", [](const Dll &lhs,
                       const Mot &rhs) { return (lhs * rhs - rhs * lhs) * 0.5; })
       .def("acomm",
            [](const Dll &lhs, const Mot &rhs) {
              return (lhs * rhs + rhs * lhs) * 0.5;
            })
-      .def("comm", [](const Dll &lhs,
-                      const Pnt &rhs) { return Pnt((lhs * rhs - rhs * lhs) * 0.5); })
+      .def("comm",
+           [](const Dll &lhs, const Pnt &rhs) {
+             return Pnt((lhs * rhs - rhs * lhs) * 0.5);
+           })
       .def("acomm",
            [](const Dll &lhs, const Pnt &rhs) {
              return Pnt((lhs * rhs + rhs * lhs) * 0.5);
@@ -42,6 +50,7 @@ void AddDualLine(py::module &m) {
       .def("spin", (Dll (Dll::*)(const Mot &) const) & Dll::spin)
       .def("exp", [](const Dll &arg) { return Gen::motor(arg); })
       .def("__neg__", [](const Dll &arg) { return -arg; })
+      .def("__sub__", [](const Dll &lhs, const Dll &rhs) { return lhs - rhs; })
       .def("__mul__", [](const Dll &lhs, const Mot &rhs) { return lhs * rhs; })
       .def("__mul__", [](const Dll &lhs, double rhs) { return lhs * rhs; })
       .def("__div__", [](const Dll &lhs, double rhs) { return lhs / rhs; })
@@ -63,6 +72,6 @@ void AddDualLine(py::module &m) {
       });
 }
 
-}  // namespace python
+} // namespace python
 
-}  // namespace vsr
+} // namespace vsr

@@ -229,6 +229,29 @@ public:
     const Dll b_;
   };
 
+  struct LineCommutatorCostFunctor {
+    LineCommutatorCostFunctor(const Dll &a, const Dll &b) : a_(a), b_(b) {}
+
+    template <typename T>
+    auto operator()(const T *const motor, T *residual) const -> bool {
+      Motor<T> M(motor);
+      DualLine<T> a(a_);
+      DualLine<T> b(b_);
+      DualLine<T> c = a.spin(M);
+      DualLine<T> d = (c * b - b * c) * Scalar<T>{0.5};
+
+      for (int i = 0; i < b.Num; ++i) {
+        residual[i] = d[i];
+      }
+
+      return true;
+    }
+
+  private:
+    const Dll a_;
+    const Dll b_;
+  };
+
   struct PointDistanceCostFunctor {
     PointDistanceCostFunctor(const Pnt &a, const Pnt &b) : a_(a), b_(b) {}
 
@@ -300,6 +323,14 @@ public:
     ceres::CostFunction *cost_function =
         new ceres::AutoDiffCostFunction<LineCorrespondencesCostFunctor, 6, 8>(
             new LineCorrespondencesCostFunctor(a, b));
+    problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
+    return true;
+  }
+
+  auto AddLineCommutatorResidualBlock(const Dll &a, const Dll &b) -> bool {
+    ceres::CostFunction *cost_function =
+        new ceres::AutoDiffCostFunction<LineCommutatorCostFunctor, 6, 8>(
+            new LineCommutatorCostFunctor(a, b));
     problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
     return true;
   }
@@ -401,6 +432,8 @@ PYBIND11_PLUGIN(motor_estimation) {
            &MotorEstimationSolver::AddDualPlaneAngleErrorResidualBlock)
       .def("add_line_correspondences_residual_block",
            &MotorEstimationSolver::AddLineCorrespondencesResidualBlock)
+      .def("add_line_commutator_residual_block",
+           &MotorEstimationSolver::AddLineCommutatorResidualBlock)
       .def("add_line_angle_distance_residual_block",
            &MotorEstimationSolver::AddLineAngleDistanceResidualBlock)
       .def("add_line_angle_distance_norm_residual_block",

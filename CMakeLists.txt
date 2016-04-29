@@ -55,24 +55,6 @@ target_link_libraries(motor_estimation
 set_target_properties(motor_estimation PROPERTIES PREFIX "")
 set_target_properties(motor_estimation PROPERTIES SUFFIX ".so")
 
-add_library(motor_estimation_vahlen SHARED 
-  src/motor_estimation_vahlen.cpp
-  )
-target_link_libraries(motor_estimation_vahlen
-  ${PYTHON_LIBRARIES}
-  ${CERES_LIBRARIES})
-set_target_properties(motor_estimation_vahlen PROPERTIES PREFIX "")
-set_target_properties(motor_estimation_vahlen PROPERTIES SUFFIX ".so")
-
-add_library(hand_eye_calibration SHARED
-  src/hand_eye_calibration.cpp)
-
-target_link_libraries(hand_eye_calibration
-  ${PYTHON_LIBRARIES}
-  ${CERES_LIBRARIES})
-set_target_properties(hand_eye_calibration PROPERTIES PREFIX "")
-set_target_properties(hand_eye_calibration PROPERTIES SUFFIX ".so")
-
 add_library(motor_jacobian SHARED
   src/motor_local_parameterization_jacobian_py.cpp
   )

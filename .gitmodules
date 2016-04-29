@@ -10,4 +10,4 @@
 	url = http://git.automatics.dyndns.dk/pymath3d.git
 [submodule "third_party/vahlen"]
 	path = third_party/vahlen
-	url = https://github.com:tingelst/vahlen.git
+	url = https://github.com/tingelst/vahlen.git

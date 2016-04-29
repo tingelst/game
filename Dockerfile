@@ -12,13 +12,13 @@ RUN apt-get update && apt-get -y install \
     python-numpy \
     python-matplotlib \
     python-scipy \
-    ipython-notebook \
-    libboost-all-dev \
     libgoogle-glog-dev \
     libatlas-base-dev \
     libeigen3-dev \
     libsuitesparse-dev \
     && rm -rf /var/lib/apt/lists/*
+
+RUN pip install jupyter
 
 RUN mkdir -p /usr/src/ \
     && curl -SL http://ceres-solver.org/ceres-solver-1.11.0.tar.gz \
@@ -29,20 +29,21 @@ RUN mkdir -p /usr/src/ \
     && make \
     && make install
 
-COPY . /usr/src/game
-RUN mkdir -p /usr/src/game/build \
-    && cd /usr/src/game/build \
-    && cmake .. \
-    && make
+VOLUME /home/game/
 
 EXPOSE 8888
 
-RUN pip install jupyter
-RUN mkdir -p -m 700 /root/.jupyter/ && \
-    echo "c.NotebookApp.ip = '*'" >> /root/.jupyter/jupyter_notebook_config.py
 
-WORKDIR /usr/src/game/python
-ENTRYPOINT ["jupyter", "notebook"]
+
+WORKDIR /home/game/
+
+
+# RUN pip install jupyter
+# RUN mkdir -p -m 700 /root/.jupyter/ && \
+#     echo "c.NotebookApp.ip = '*'" >> /root/.jupyter/jupyter_notebook_config.py
+
+# WORKDIR /usr/src/game/python
+# ENTRYPOINT ["jupyter", "notebook"]
 
 
 

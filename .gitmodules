@@ -1,6 +1,6 @@
 [submodule "third_party/Adept"]
 	path = third_party/Adept
-	url = git@github.com:tingelst/Adept.git
+        url = https://github.com/tingelst/Adept.git
 	branch = jacobian-row-major-output
 [submodule "third_party/pybind11"]
 	path = third_party/pybind11

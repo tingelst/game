@@ -1,8 +1,16 @@
-[![Build Status](https://travis-ci.com/tingelst/game.svg?token=JjgE1aL6Uy3yn3YFR5Nx&branch=master)](https://travis-ci.com/tingelst/game)
+[![Build Status](https://travis-ci.org/tingelst/game.svg?branch=master)](https://travis-ci.org/tingelst/game)
 
 # **G**eometric **A**lgebra **M**ultivector **E**stimation
 
 GAME is framework for estimation of multivectors in geometric algebra with focus on, but not limited to, the Euclidean and conformal model. 
+
+## Docker
+```
+docker build -t tingelst/game .
+```
+```
+docker run -v `pwd`:/home/game/game -p 8888:8888 -e PASSWORD=YOUR_PASSWORD -e USE_HTTPS=yes game 
+```
 
 ## Installation
 

@@ -5,3 +5,5 @@ build-osx
 .ipynb_checkpoints
 *.pyc
 *.DS_Store
+.bash_history
+.local

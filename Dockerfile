@@ -3,6 +3,7 @@ FROM ubuntu:16.04
 MAINTAINER Lars Tingelstad
 
 RUN apt-get update && apt-get -y install \
+    wget \
     curl \
     git \
     cmake \
@@ -20,31 +21,42 @@ RUN apt-get update && apt-get -y install \
 
 RUN pip install jupyter
 
+# Install Ceres
 RUN mkdir -p /usr/src/ \
     && curl -SL http://ceres-solver.org/ceres-solver-1.11.0.tar.gz \
     | tar -xvzC /usr/src/ \
     && mkdir -p /usr/src/ceres-solver-1.11.0/build \
     && cd /usr/src/ceres-solver-1.11.0/build \
     && cmake -DBUILD_TESTING=OFF -DBUILD_EXAMPLES=OFF .. \
-    && make \
+    && make -j12 \
     && make install
 
-VOLUME /home/game/
+# Install Tini
+RUN wget --quiet https://github.com/krallin/tini/releases/download/v0.9.0/tini \
+    && echo "faafbfb5b079303691a939a747d7f60591f2143164093727e870b289a44d9872 *tini" | sha256sum -c - \
+    && mv tini /usr/local/bin/tini \
+    && chmod +x /usr/local/bin/tini
+
+RUN useradd -m -s /bin/bash -N -u 1000 game 
+
+USER game
+
+RUN mkdir /home/game/game/ \
+    && mkdir /home/game/.jupyter
+
+USER root
+
+VOLUME /home/game/game
 
 EXPOSE 8888
+WORKDIR /home/game/game/python
+ENTRYPOINT ["tini", "--"]
+CMD ["jupyter", "notebook"]
 
+# Add local files as late as possible to avoid cache busting
+# Start notebook server
+COPY jupyter_notebook_config.py /home/game/.jupyter/
+RUN chown -R game:users /home/game/.jupyter
 
-
-WORKDIR /home/game/
-
-
-# RUN pip install jupyter
-# RUN mkdir -p -m 700 /root/.jupyter/ && \
-#     echo "c.NotebookApp.ip = '*'" >> /root/.jupyter/jupyter_notebook_config.py
-
-# WORKDIR /usr/src/game/python
-# ENTRYPOINT ["jupyter", "notebook"]
-
-
-
-
+# Switch back to user to avoid accidental container runs as root
+USER game

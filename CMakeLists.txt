@@ -13,6 +13,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -ftemplate-depth-1200 -Wn
 find_package(PythonLibs 2.7.6 REQUIRED)
 
 find_package(Ceres REQUIRED)
+find_package(benchmark REQUIRED)
 
 find_package(OpenMP QUIET)
 if(OPENMP_FOUND)
@@ -30,6 +31,7 @@ include_directories(
         ${PYTHON_INCLUDE_DIRS}
         ${EIGEN_INCLUDE_DIRS}
         ${CERES_INCLUDE_DIRS}
+        ${BENCHMARK_INCLUDE_DIR}
 )
 
 if (BUILD_EXAMPLES)
@@ -42,6 +44,15 @@ endif (BUILD_EXAMPLES)
 add_library(adept SHARED 
   third_party/Adept/adept/adept.cpp 
   third_party/Adept/adept/adept_openmp.cpp
+  )
+
+add_executable(benchmark 
+  src/benchmark.cpp
+  )
+target_link_libraries(benchmark
+  adept
+  ${CERES_LIBRARIES}
+  ${BENCHMARK_LIBRARY}
   )
 
 add_library(motor_estimation SHARED 

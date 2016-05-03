@@ -17,6 +17,7 @@ RUN apt-get update && apt-get -y install \
     libatlas-base-dev \
     libeigen3-dev \
     libsuitesparse-dev \
+    clang-3.8 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip install jupyter
@@ -28,6 +29,14 @@ RUN mkdir -p /usr/src/ \
     && mkdir -p /usr/src/ceres-solver-1.11.0/build \
     && cd /usr/src/ceres-solver-1.11.0/build \
     && cmake -DBUILD_TESTING=OFF -DBUILD_EXAMPLES=OFF .. \
+    && make -j12 \
+    && make install
+
+RUN cd /usr/src/ \
+    && git clone https://github.com/google/benchmark.git \
+    && mkdir -p /usr/src/benchmark/build/ \
+    && cd /usr/src/benchmark/build/ \
+    && cmake -DCMAKE_BUILD_TYPE=Release -DBENCHMARK_ENABLE_LTO=true .. \
     && make -j12 \
     && make install
 

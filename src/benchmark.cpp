@@ -1,10 +1,7 @@
 #include <benchmark/benchmark.h>
-
-#include <stan/math/rev/mat.hpp>
 #include <adept.h>
-#include "ceres/autodiff_cost_function.h"
+#include <ceres/autodiff_cost_function.h>
 #include <glog/logging.h>
-
 #include <game/vsr/cga_op.h>
 
 using namespace vsr::cga;
@@ -17,10 +14,6 @@ double g_motor[8] = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 double g_point[5] = {1.0, 2.0, 3.0, 1.0, 7.0};
 double g_point_spin_motor[5];
 double g_vec_ip_biv[3] = {0.0, 0.0, 0.0};
-stan::math::var g_stan_vector[3] = {g_vector[0], g_vector[1], g_vector[2]};
-stan::math::var g_stan_bivector[3] = {g_bivector[0], g_bivector[1],
-                                      g_bivector[2]};
-stan::math::var g_stan_vec_ip_biv[3] = {0.0, 0.0, 0.0};
 
 template <typename T>
 void InnerProductVectorBivector(const T *vec, const T *biv, T *res) {
@@ -78,19 +71,6 @@ static void BM_InnerProductVectorBivector(benchmark::State &state) {
 static void BM_InnerProductVectorBivector2(benchmark::State &state) {
   while (state.KeepRunning()) {
     InnerProductVectorBivector2(g_vector, g_bivector, g_vec_ip_biv);
-  }
-}
-
-static void BM_StanInnerProductVectorBivector2(benchmark::State &state) {
-  while (state.KeepRunning()) {
-    InnerProductVectorBivector(g_stan_vector, g_stan_bivector,
-                               g_stan_vec_ip_biv);
-    double jac[9];
-    for (int i = 0; i < 3; ++i) {
-      if (i > 0) stan::math::set_zero_all_adjoints();
-      g_stan_vec_ip_biv[i].grad();
-      for (int j = 0; j < 3; ++j) jac[3 * i + j] = g_stan_vector[j].adj();
-    }
   }
 }
 
@@ -255,6 +235,5 @@ BENCHMARK(BM_MotorSpinPoint);
 BENCHMARK(BM_AdeptMotorSpinPointJacobianForward);
 BENCHMARK(BM_AdeptMotorSpinPointJacobianReverse);
 BENCHMARK(BM_CeresMotorSpinPointJacobian);
-BENCHMARK(BM_StanInnerProductVectorBivector2);
 
 BENCHMARK_MAIN()

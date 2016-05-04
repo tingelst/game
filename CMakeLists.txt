@@ -46,6 +46,12 @@ add_library(adept SHARED
   third_party/Adept/adept/adept_openmp.cpp
   )
 
+add_executable(vd src/motor_estimation_valkenburg_dorst_eigen.cpp
+  src/vsr/cga_op.cpp
+  src/vsr/cga_round.cpp
+  )
+
+
 add_executable(benchmark 
   src/benchmark.cpp
   )

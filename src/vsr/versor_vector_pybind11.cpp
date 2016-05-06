@@ -14,6 +14,7 @@ void AddVector(py::module &m) {
   py::class_<Vec>(m, "Vec")
       .def(py::init<double, double, double>())
       .def("__getitem__", &Vec::at)
+      .def("__setitem__", [](Vec &arg, int idx, double val) { arg[idx] = val; })
       .def("norm", &Vec::norm)
       .def("rnorm", &Vec::rnorm)
       .def("unit", &Vec::unit)

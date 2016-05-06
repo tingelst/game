@@ -84,6 +84,8 @@ set_target_properties(motor_jacobian PROPERTIES SUFFIX ".so")
 
 add_library(motor_estimation_valkenburg_dorst SHARED
   src/motor_estimation_valkenburg_dorst.cpp
+  src/vsr/cga_op.cpp
+  src/vsr/cga_round.cpp
   )
 target_link_libraries(motor_estimation_valkenburg_dorst
   ${PYTHON_LIBRARIES}

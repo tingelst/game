@@ -117,6 +117,9 @@ add_library(versor_pybind11 SHARED
   src/vsr/versor_point_pair_pybind11.cpp
   src/vsr/versor_trivector_pybind11.cpp
   src/vsr/versor_diff_pybind11.cpp
+  src/vsr/versor_reciprocal_motor_pybind11.cpp
+  src/vsr/versor_euclidean_geometric_algebra_pybind11.cpp
+  src/vsr/versor_conformal_geometric_algebra_pybind11.cpp
   src/vsr/cga_op.cpp
   src/vsr/cga_round.cpp
   )

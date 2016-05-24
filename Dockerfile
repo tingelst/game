@@ -1,18 +1,18 @@
 FROM ubuntu:16.04
 
-MAINTAINER Lars Tingelstad
+MAINTAINER Lars Tingelstad <lars.tingelstad@ntnu.no>
+
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh 
 
 RUN apt-get update && apt-get -y install \
     wget \
     curl \
     git \
     cmake \
+    zsh \
     build-essential \
     python-pip \
     libpython-dev \
-    python-numpy \
-    python-matplotlib \
-    python-scipy \
     libgoogle-glog-dev \
     libatlas-base-dev \
     libeigen3-dev \
@@ -20,7 +20,9 @@ RUN apt-get update && apt-get -y install \
     clang-3.8 \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install jupyter
+RUN pip install --upgrade \
+    pip \
+    virtualenv
 
 # Install Ceres
 RUN mkdir -p /usr/src/ \
@@ -40,32 +42,46 @@ RUN cd /usr/src/ \
     && make -j12 \
     && make install
 
+RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
+    && apt-get install -y nodejs
+
 # Install Tini
 RUN wget --quiet https://github.com/krallin/tini/releases/download/v0.9.0/tini \
     && echo "faafbfb5b079303691a939a747d7f60591f2143164093727e870b289a44d9872 *tini" | sha256sum -c - \
     && mv tini /usr/local/bin/tini \
     && chmod +x /usr/local/bin/tini
 
-RUN useradd -m -s /bin/bash -N -u 1000 game 
+RUN useradd -m -s /bin/zsh -N -u 1000 game 
 
 USER game
 
 RUN mkdir /home/game/game/ \
     && mkdir /home/game/.jupyter
 
+RUN cd /home/game/ \
+    && virtualenv python \
+    && . python/bin/activate \
+    && pip install \
+        numpy \
+#        matplotlib \
+ #       scipy \
+        notebook \
+    && git clone https://github.com/tingelst/pythreejs.git \
+    && cd pythreejs \
+    && pip install -e . \
+    && jupyter nbextension install --py --symlink --user pythreejs \
+    && jupyter nbextension enable --py --user pythreejs \
+    && jupyter nbextension enable --py --sys-prefix widgetsnbextension
+
 USER root
-
 VOLUME /home/game/game
-
-EXPOSE 8888
-WORKDIR /home/game/game/python
-ENTRYPOINT ["tini", "--"]
-CMD ["jupyter", "notebook"]
-
 # Add local files as late as possible to avoid cache busting
 # Start notebook server
 COPY jupyter_notebook_config.py /home/game/.jupyter/
 RUN chown -R game:users /home/game/.jupyter
 
-# Switch back to user to avoid accidental container runs as root
 USER game
+EXPOSE 8888
+WORKDIR /home/game/game/python
+ENTRYPOINT ["tini", "--"]
+CMD ["/bin/zsh", "-c", "source /home/game/python/bin/activate && jupyter notebook"]

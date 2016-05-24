@@ -377,13 +377,33 @@ public:
     }
   }
 
-  auto Solve() -> std::tuple<Mot, py::dict> {
+  class UpdateMotorEachIterationCallback : public ceres::IterationCallback {
+  public:
+    UpdateMotorEachIterationCallback(const Mot *motor, std::vector<Mot> *list)
+        : motor_(motor), list_(list) {}
+    virtual ceres::CallbackReturnType
+    operator()(const ceres::IterationSummary &summary) {
+      std::cout << *motor_ << std::endl;
+      list_->push_back(Mot(*motor_));
+      return ceres::SOLVER_CONTINUE;
+    }
+
+  private:
+    std::vector<Mot> *list_;
+    const Mot *motor_;
+  };
+
+  auto Solve() -> std::tuple<Mot, py::dict, std::vector<Mot>> {
+    UpdateMotorEachIterationCallback callback(&motor_, &list_);
+    options_.callbacks.push_back(&callback);
+    options_.update_state_every_iteration = true;
     ceres::Solve(options_, &problem_, &summary_);
-    return std::make_tuple(motor_, Summary());
+    return std::make_tuple(motor_, Summary(), list_);
   }
 
   // private:
   Mot motor_;
+  std::vector<Mot> list_;
 
   ceres::Problem problem_;
   ceres::Solver::Options options_;

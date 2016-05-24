@@ -26,6 +26,7 @@ def to_array(self):
     arr[:3,1] = np.array(Drv(0,1,0).spin(self))
     arr[:3,2] = np.array(Drv(0,0,1).spin(self))
     arr[:3,3] = np.array(Vec(0,0,0).null().spin(self))[:3]
+    arr[3,3] = 1.
     return arr
 
 Mot.matrix = to_array

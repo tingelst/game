@@ -31,6 +31,7 @@ void AddMotor(py::module &m) {
            [](const Mot &lhs, const Mot &rhs) {
              return (lhs * rhs + rhs * lhs) * 0.5;
            })
+      .def("ratio", [](const Mot &lhs, const Mot &rhs, double t){ return Mot(Gen::log(lhs, rhs, t));})
       .def("__add__", [](const Mot &lhs, const Mot &rhs) { return lhs + rhs; })
       .def("__sub__", [](const Mot &lhs, const Mot &rhs) { return lhs - rhs; })
       .def("__mul__", [](const Mot &lhs, double rhs) { return lhs * rhs; })

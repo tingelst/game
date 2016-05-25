@@ -2,8 +2,6 @@ FROM ubuntu:16.04
 
 MAINTAINER Lars Tingelstad <lars.tingelstad@ntnu.no>
 
-RUN rm /bin/sh && ln -s /bin/bash /bin/sh 
-
 RUN apt-get update && apt-get -y install \
     wget \
     curl \
@@ -11,8 +9,11 @@ RUN apt-get update && apt-get -y install \
     cmake \
     zsh \
     build-essential \
+    ninja-build \
     python-pip \
     libpython-dev \
+    libpng-dev\
+    libfreetype6-dev \
     libgoogle-glog-dev \
     libatlas-base-dev \
     libeigen3-dev \
@@ -51,7 +52,7 @@ RUN wget --quiet https://github.com/krallin/tini/releases/download/v0.9.0/tini \
     && mv tini /usr/local/bin/tini \
     && chmod +x /usr/local/bin/tini
 
-RUN useradd -m -s /bin/zsh -N -u 1000 game 
+RUN useradd -m -s /bin/zsh -N -u 1000 game
 
 USER game
 
@@ -62,10 +63,10 @@ RUN cd /home/game/ \
     && virtualenv python \
     && . python/bin/activate \
     && pip install \
-        numpy \
-#        matplotlib \
- #       scipy \
-        notebook \
+       numpy \
+       matplotlib \
+       scipy \
+       notebook \
     && git clone https://github.com/tingelst/pythreejs.git \
     && cd pythreejs \
     && pip install -e . \

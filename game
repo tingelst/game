@@ -1,0 +1,146 @@
+#!/usr/bin/env python3
+
+from __future__ import print_function
+
+import subprocess
+import signal
+import os
+import sys
+import errno
+import argparse
+import getpass
+import hashlib
+import random
+
+# From: https://github.com/jupyter/notebook/blob/master/notebook/auth/security.py
+def no_code(x, encoding=None):
+    return x
+
+def encode(u, encoding=None):
+    encoding = encoding or DEFAULT_ENCODING
+    return u.encode(encoding, "replace")
+
+def cast_bytes(s, encoding=None):
+    if not isinstance(s, bytes):
+        return encode(s, encoding)
+    return s
+
+if sys.version_info[0] >= 3:
+    str_to_bytes = encode
+else:
+    str_to_bytes = no_code
+
+# Length of the salt in nr of hex chars, which implies salt_len * 4
+# bits of randomness.
+salt_len = 12
+def passwd(passphrase=None, algorithm='sha1'):
+    """Generate hashed password and salt for use in notebook configuration.
+    In the notebook configuration, set `c.NotebookApp.password` to
+    the generated string.
+    Parameters
+    ----------
+    passphrase : str
+        Password to hash.  If unspecified, the user is asked to input
+        and verify a password.
+    algorithm : str
+        Hashing algorithm to use (e.g, 'sha1' or any argument supported
+        by :func:`hashlib.new`).
+    Returns
+    -------
+    hashed_passphrase : str
+        Hashed password, in the format 'hash_algorithm:salt:passphrase_hash'.
+    Examples
+    --------
+    >>> passwd('mypassword')
+    'sha1:7cf3:b7d6da294ea9592a9480c8f52e63cd42cfb9dd12'
+    """
+    if passphrase is None:
+        for i in range(3):
+            p0 = getpass.getpass('Enter password: ')
+            p1 = getpass.getpass('Verify password: ')
+            if p0 == p1:
+                passphrase = p0
+                break
+            else:
+                print('Passwords do not match.')
+        else:
+            raise ValueError('No matching passwords found. Giving up.')
+
+    h = hashlib.new(algorithm)
+    salt = ('%0' + str(salt_len) + 'x') % random.getrandbits(4 * salt_len)
+    h.update(cast_bytes(passphrase, 'utf-8') + str_to_bytes(salt, 'ascii'))
+
+    return ':'.join((algorithm, salt, h.hexdigest()))
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(prog='game')
+    subparser = parser.add_subparsers(help='verbs', dest='verb')
+    run_parser = subparser.add_parser('run')
+    run_parser.add_argument('--use-password', default=True, help='Password protect notebook',
+                            dest='usepassword')
+    run_parser.add_argument('--hostname', default="docker-game", help='Container host name')
+    build_parser = subparser.add_parser('build')
+    build_parser.add_argument('--tag',
+                              default='tingelst/game',
+                              help='Name and optionally a tag in the "name:tag" format')
+    build_container_parser = subparser.add_parser('build-container')
+    build_container_parser.add_argument('--tag',
+                              default='tingelst/game',
+                              help='Name and optionally a tag in the "name:tag" format')
+    args = parser.parse_args()
+    if args.verb == 'build-container':
+        subprocess.check_call(['docker', 'build', '-t', args.tag, '.'])
+
+    elif args.verb == 'build':
+        if not os.path.isdir('build'):
+            try:
+                os.makedirs('build')
+            except OSError as exc: # Python >2.5
+                if exc.errno == errno.EEXIST and os.path.isdir('build'):
+                    pass
+                else: raise
+            with subprocess.Popen(['docker', 'run',
+                                   '--volume',
+                                   '{pwd}:/home/game/game'.format(pwd=os.getcwd()),
+                                   '--workdir',
+                                   '/home/game/game/build',
+                                   args.tag,
+                                   'zsh',
+                                   '-c',
+                                   'source /home/game/python/bin/activate && cmake -GNinja ..']) as p:
+                try:
+                    p.wait()
+                except KeyboardInterrupt:
+                    p.terminate()
+
+        with subprocess.Popen(['docker', 'run',
+                               '--volume',
+                               '{pwd}:/home/game/game'.format(pwd=os.getcwd()),
+                               '--workdir',
+                               '/home/game/game/build',
+                               args.tag,
+                               'zsh',
+                               '-c',
+                               'source /home/game/python/bin/activate && cmake --build .']) as p:
+            try:
+                p.wait()
+            except KeyboardInterrupt:
+                p.terminate()
+
+    elif args.verb == 'run':
+        if args.usepassword:
+            h = passwd()
+        with subprocess.Popen(['docker', 'run',
+                               '-h', args.hostname,
+                               '-it',
+                               '--rm',
+                               '-v', '{pwd}:/home/game/game'.format(pwd=os.getcwd()),
+                               '-e', "USE_HTTPS=yes",
+                               '-e', "PASSWORD={}".format(h),
+                               '-p', '8888:8888',
+                               'tingelst/game']) as p:
+            try:
+                p.wait()
+            except KeyboardInterrupt:
+                p.terminate()
+

@@ -29,6 +29,11 @@ def to_array(self):
     arr[3,3] = 1.
     return arr
 
+def _quat(self):
+    return np.array([self[3], -self[2], self[1], self[0]])
+
+Rot.quat = _quat                   
+
 Mot.matrix = to_array
 
 

@@ -73,8 +73,8 @@ def passwd(passphrase=None, algorithm='sha1'):
     return ':'.join((algorithm, salt, h.hexdigest()))
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(prog='game')
-    subparser = parser.add_subparsers(help='verbs', dest='verb')
+    parser = argparse.ArgumentParser(description="Geometric Algebra Multivector Estimation", prog='game')
+    subparser = parser.add_subparsers(help='commands', dest='verb')
     run_parser = subparser.add_parser('run')
     run_parser.add_argument('--use-password', default=True, help='Password protect notebook',
                             dest='usepassword')
@@ -87,6 +87,11 @@ if __name__ == '__main__':
     build_container_parser.add_argument('--tag',
                               default='tingelst/game',
                               help='Name and optionally a tag in the "name:tag" format')
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
+
     args = parser.parse_args()
     if args.verb == 'build-container':
         subprocess.check_call(['docker', 'build', '-t', args.tag, '.'])

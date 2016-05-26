@@ -2,6 +2,7 @@
 
 #include "game/vsr/cga_types.h"
 #include "game/vsr/generic_op.h"
+#include "game/vsr/cga_op.h"
 
 namespace vsr {
 
@@ -29,6 +30,10 @@ void AddSphere(py::module &m) {
       .def("spin", (Sph (Sph::*)(const Mot &) const) & Sph::spin)
       .def("pnt", [](const Sph &self) { return nga::Round::location(self); })
       .def("radius", [](const Sph &self) { return nga::Round::radius(self); })
+      .def("meet",
+           [](const Sph &self, const Sph &other) {
+             return Construct::meet(self.dual(), other.dual());
+           })
       .def("__repr__",
            [](const Sph &arg) {
              std::stringstream ss;
@@ -47,6 +52,6 @@ void AddSphere(py::module &m) {
       });
 }
 
-}  // namespace python
+} // namespace python
 
-}  // namespace vsr
+} // namespace vsr

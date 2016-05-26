@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
 
-#include "game/vsr/cga_types.h"
 #include "game/vsr/cga_op.h"
+#include "game/vsr/cga_types.h"
 
 namespace vsr {
 
@@ -25,6 +25,12 @@ void AddCircle(py::module &m) {
       .def("unit", &Cir::unit)
       .def("rev", &Cir::reverse)
       .def("inv", &Cir::inverse)
+      .def("rot",
+           [](const Cir &self) {
+             Biv b = Round::dir(self).copy<Biv>();
+             Rot r = nga::Gen::ratio(Vec::z, Op::dle(b).unit());
+             return r;
+           })
       .def("pnt", [](const Cir &self) { return Round::location(self); })
       .def("radius", [](const Cir &self) { return Round::radius(self); })
       .def("pln", [](const Cir &self) { return Round::carrier(self); })
@@ -49,6 +55,6 @@ void AddCircle(py::module &m) {
       });
 }
 
-}  // namespace python
+} // namespace python
 
-}  // namespace vsr
+} // namespace vsr

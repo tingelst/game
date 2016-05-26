@@ -35,3 +35,4 @@ if 'USE_HTTPS' in os.environ:
 # Set a password if PASSWORD is set
 if 'PASSWORD' in os.environ:
     c.NotebookApp.password = os.environ['PASSWORD']
+    del os.environ['PASSWORD']

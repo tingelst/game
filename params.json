@@ -1,1 +1,7 @@
-{"name":"GAME","tagline":"Geometric Algebra Multivector Estimation","body":"# **G**eometric **A**lgebra **M**ultivector **E**stimation\r\n\r\n\r\n","google":"","note":"Don't delete this file! It's used internally to help with page regeneration."}
+{
+  "name": "GAME",
+  "tagline": "Geometric Algebra Multivector Estimation",
+  "body": "![](https://github.com/tingelst/game/blob/master/game_logo.png)\r\n\r\n# Geometric Algebra Multivector Estimation\r\n\r\nGAME is framework for estimation of multivectors in geometric algebra with focus on, but not limited to, the Euclidean and conformal model.\r\n\r\n## Docker\r\n```\r\ndocker build -t tingelst/game .\r\n```\r\n```\r\ndocker run -v `pwd`:/home/game/game -p 8888:8888 -e PASSWORD=YOUR_PASSWORD -e USE_HTTPS=yes game\r\n```\r\n\r\n## Installation\r\n\r\nThe main external dependency of GAME is the Ceres optimization framework from Google.\r\n\r\nOn OSX we recommend building the homebrew formula from source:\r\n``` bash\r\nbrew tap homebrew/science\r\nbrew install ceres-solver --build-from-source\r\n```\r\n\r\nOn Linux we recommend following the installation instructions found here: http://ceres-solver.org/building.html.\r\n\r\nTo build GAME follow the steps below:\r\n``` bash\r\n$ git clone --recursive https://github.com/tingelst/game.git\r\n$ cd game\r\n$ mkdir build && cd build\r\n$ cmake .. && make\r\n```",
+  "google": "",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}

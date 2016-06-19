@@ -2,6 +2,7 @@ build
 build_gcc
 build-osx
 build2
+build3
 .idea
 .ipynb_checkpoints
 *.pyc

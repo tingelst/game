@@ -1,8 +1,8 @@
 #ifndef VERSOR_VSR_DETAIL_GENERIC_OP_H_
 #define VERSOR_VSR_DETAIL_GENERIC_OP_H_
 
-#include "multivector.h"
 #include "constants.h"
+#include "multivector.h"
 #include <vector>
 
 namespace vsr {
@@ -36,21 +36,20 @@ namespace nga {
 /*!
  *  Projection fron ND Euclidean down to 3D
  */
-template <int DIM>
-struct Proj {
-  typedef NEVec<DIM> TVec;         ///< ND Vector Type
-  typedef NEVec<DIM - 1> OneDown;  ///< Next Projection Down
+template <int DIM> struct Proj {
+  typedef NEVec<DIM> TVec;        ///< ND Vector Type
+  typedef NEVec<DIM - 1> OneDown; ///< Next Projection Down
 
-  static auto Call(VSR_PRECISION dist, const TVec& v)
-      RETURNS((Proj<DIM - 1>::Call(dist, v.template cast<OneDown>() *k
-                                             (dist / (dist - v[DIM - 1])))));
+  static auto Call(VSR_PRECISION dist, const TVec &v)
+      RETURNS((Proj<DIM - 1>::Call(dist, v.template cast<OneDown>() *
+                                             k(dist / (dist - v[DIM - 1])))));
 
   template <int DIM2>
-  static auto Ortho(const TVec& v) RETURNS((v.template cast<NEVec<DIM2>>()));
+  static auto Ortho(const TVec &v) RETURNS((v.template cast<NEVec<DIM2>>()));
 
-  static auto Ortho3(const TVec& v) RETURNS((v.template cast<NEVec<3>>()));
+  static auto Ortho3(const TVec &v) RETURNS((v.template cast<NEVec<3>>()));
 
-  static VSR_PRECISION Val(VSR_PRECISION dist, const TVec& v) {
+  static VSR_PRECISION Val(VSR_PRECISION dist, const TVec &v) {
     return dist / (dist - v[DIM - 1]) * Proj<DIM - 1>::Val(dist, OneDown(v));
   }
   // static VSR_PRECISION Val( VSR_PRECISION dist, const Vec& v) {
@@ -58,30 +57,24 @@ struct Proj {
   // }
 };
 
-template <>
-struct Proj<3> {
+template <> struct Proj<3> {
   typedef NEVec<3> TVec;
-  static TVec Call(VSR_PRECISION dist, const TVec& v) { return v; }
-  static VSR_PRECISION Val(VSR_PRECISION dist, const TVec& v) { return 1.0; }
-  static TVec Ortho3(const TVec& v) { return v; }
+  static TVec Call(VSR_PRECISION dist, const TVec &v) { return v; }
+  static VSR_PRECISION Val(VSR_PRECISION dist, const TVec &v) { return 1.0; }
+  static TVec Ortho3(const TVec &v) { return v; }
 };
 
 // lift up to 3 from 2
-template <>
-struct Proj<2> {
+template <> struct Proj<2> {
   typedef NEVec<3> TVec;
-  static TVec Call(VSR_PRECISION dist, const TVec& v) { return v; }
-  static VSR_PRECISION Val(VSR_PRECISION dist, const TVec& v) { return 1.0; }
-  static TVec Ortho3(const TVec& v) { return v; }
+  static TVec Call(VSR_PRECISION dist, const TVec &v) { return v; }
+  static VSR_PRECISION Val(VSR_PRECISION dist, const TVec &v) { return 1.0; }
+  static TVec Ortho3(const TVec &v) { return v; }
 };
 
-template <class X>
-constexpr VSR_PRECISION dot(X x) {
-  return x * x;
-}
+template <class X> constexpr VSR_PRECISION dot(X x) { return x * x; }
 
-template <class X, class... XS>
-constexpr VSR_PRECISION dot(X x, XS... xs) {
+template <class X, class... XS> constexpr VSR_PRECISION dot(X x, XS... xs) {
   return (x * x) + dot(xs...);
 }
 
@@ -93,52 +86,42 @@ constexpr VSR_PRECISION dot(X x, XS... xs) {
 
 */
 struct Op {
-  template <class A>
-  static auto dual(const A& a) RETURNS(a.dual());
+  template <class A> static auto dual(const A &a) RETURNS(a.dual());
 
-  template <class A>
-  static auto undual(const A& a) RETURNS(a.undual());
+  template <class A> static auto undual(const A &a) RETURNS(a.undual());
 
-  template <class A>
-  static auto duale(const A& a) RETURNS(a.duale());
+  template <class A> static auto duale(const A &a) RETURNS(a.duale());
 
-  template <class A>
-  static auto unduale(const A& a) RETURNS(a.unduale());
+  template <class A> static auto unduale(const A &a) RETURNS(a.unduale());
 
-  template <class T>
-  static auto dl(const T& t) RETURNS(dual(t));
-  template <class T>
-  static auto udl(const T& t) RETURNS(udual(t));
-  template <class T>
-  static auto dle(const T& t) RETURNS(duale(t));
-  template <class T>
-  static auto udle(const T& t) RETURNS(unduale(t));
+  template <class T> static auto dl(const T &t) RETURNS(dual(t));
+  template <class T> static auto udl(const T &t) RETURNS(udual(t));
+  template <class T> static auto dle(const T &t) RETURNS(duale(t));
+  template <class T> static auto udle(const T &t) RETURNS(unduale(t));
 
   /// Sign of A with Respect to B
-  template <class A>
-  static constexpr bool sign(const A& a, const A& b) {
+  template <class A> static constexpr bool sign(const A &a, const A &b) {
     return (a / b)[0] > 0 ? 1 : 0;
   }
 
   /// Sign of A with Respect to B (short hand)
-  template <class A>
-  static constexpr bool sn(const A& a, const A& b) {
+  template <class A> static constexpr bool sn(const A &a, const A &b) {
     return sign(a, b);
   }
 
   /// Projection of A onto B
   template <class A, class B>
-  static constexpr auto project(const A& a, const B& b) RETURNS((a <= b) / b);
+  static constexpr auto project(const A &a, const B &b) RETURNS((a <= b) / b);
 
   /// Rejection of A from B
   template <class A, class B>
-  static constexpr auto reject(const A& a, const B& b) RETURNS((a ^ b) / b);
+  static constexpr auto reject(const A &a, const B &b) RETURNS((a ^ b) / b);
 
   /// Shorthand Proj and Rejection
   template <class A, class B>
-  static constexpr auto pj(const A& a, const B& b) RETURNS(project(a, b));
+  static constexpr auto pj(const A &a, const B &b) RETURNS(project(a, b));
   template <class A, class B>
-  static constexpr auto rj(const A& a, const B& b) RETURNS(reject(a, b));
+  static constexpr auto rj(const A &a, const B &b) RETURNS(reject(a, b));
 };
 
 /*!
@@ -150,7 +133,7 @@ struct Euc {
    *  Homegenize an ND Euclidean Vector (add a dimension with weight of 1.0)
    */
   template <class algebra>
-  GAVec<typename algebra::up> static hom(const GAVec<algebra>& v) {
+  GAVec<typename algebra::up> static hom(const GAVec<algebra> &v) {
     using up = typename algebra::up;
     return GAVec<up>(v) + GAE<up>::e<up::Dim>(1.0);
   }
@@ -201,19 +184,18 @@ struct Gen {
   /*! ND Rotor from Bivector b
       @param b vsr::cga::Bivector or vsr::ega::Bivector
   */
-  template <class A>
-  static auto rot(const A& b) -> decltype(b + 1) {
+  template <class A> static auto rot(const A &b) -> decltype(b + 1) {
     VSR_PRECISION c = sqrt(b.rwt());
     VSR_PRECISION sc = -sin(c);
-    if (c != 0) sc /= c;
+    if (c != 0)
+      sc /= c;
     return b * sc + cos(c);
   }
 
   /*! ND Rotor from Bivector b
       @param b Bivector
   */
-  template <class A>
-  static auto rotor(const A& b) -> decltype(b + 1) {
+  template <class A> static auto rotor(const A &b) -> decltype(b + 1) {
     return rot(b);
   }
 
@@ -223,11 +205,11 @@ struct Gen {
         @return vsr::cga::Bivector or vsr::ega::Bivector
   */
   template <class algebra>
-  static auto log(const GARot<algebra>& r) -> GABiv<algebra> {
+  static auto log(const GARot<algebra> &r) -> GABiv<algebra> {
     using TBiv = GABiv<algebra>;
 
     VSR_PRECISION t =
-        r.template get<0>();  //<--- Field Value from Rotor, or r[0]
+        r.template get<0>(); //<--- Field Value from Rotor, or r[0]
 
     TBiv b = r.template cast<TBiv>();
 
@@ -251,14 +233,14 @@ struct Gen {
         @todo test generic dimensionality of this log
     */
   template <class algebra>
-  static auto log(const GABst<algebra>& r) -> GAPar<algebra> {
+  static auto log(const GABst<algebra> &r) -> GAPar<algebra> {
     using TPar = GAPar<algebra>;
 
     VSR_PRECISION n;
 
     TPar p;
-    p = r;                      // extract 2-blade part
-    VSR_PRECISION td = p.wt();  // get scalar
+    p = r;                     // extract 2-blade part
+    VSR_PRECISION td = p.wt(); // get scalar
 
     if (td > 0) {
       VSR_PRECISION s2 = sqrt(td);
@@ -276,28 +258,24 @@ struct Gen {
   /*! Normalized plane of rotation from Rotor
       @param r vsr::cga::Rotor or vsr::ega::Rotor
   */
-  template <class A>
-  static auto pl(const GARot<A>& r) -> GABiv<A> {
+  template <class A> static auto pl(const GARot<A> &r) -> GABiv<A> {
     using TBiv = GABiv<A>;
     TBiv b = r.template cast<TBiv>();
-    VSR_PRECISION t = b.rnorm();  // use rnorm or norm here?
-    if (t == 0) return TBiv(1);
+    VSR_PRECISION t = b.rnorm(); // use rnorm or norm here?
+    if (t == 0)
+      return TBiv(1);
     return b / t;
   }
 
   /*! Normalized plane of rotation from Rotor
       @param r vsr::cga::Rotor or vsr::ega::Rotor
   */
-  template <class A>
-  static auto plane(const A& r) -> GABiv<A> {
-    return pl(r);
-  }
+  template <class A> static auto plane(const A &r) -> GABiv<A> { return pl(r); }
 
   /*! Angle of Rotation from Rotor
       @param r vsr::cga::Rotor or vsr::ega::Rotor
   */
-  template <class A>
-  static VSR_PRECISION iphi(const GARot<A>& r) {
+  template <class A> static VSR_PRECISION iphi(const GARot<A> &r) {
     using TBiv = GABiv<A>;
     return TBiv(log(r) * -2).norm();
   }
@@ -305,8 +283,7 @@ struct Gen {
   /*! Axis Angle from Rotor (WARNING NOT GENERIC)
       @param r vsr::cga::Rotor or vsr::ega::Rotor
   */
-  template <class A>
-  static auto aa(const GARot<A>& r) -> GARot<A> {
+  template <class A> static auto aa(const GARot<A> &r) -> GARot<A> {
     using TRot = GARot<A>;
     using TVec = GAVec<A>;
 
@@ -319,65 +296,60 @@ struct Gen {
   /*! Axis Angle from Rotor (WARNING NOT GENERIC)
       @param Rotor input
   */
-  template <class A>
-  static auto axisAngle(const A& r) RETURNS(aa(r))
+  template <class A> static auto axisAngle(const A &r) RETURNS(aa(r));
 
-      /*!
-           Generate Local Boost at origin as exponential of a TangentVector
-         vsr::GATnv<A>
-           @param a tangent vector in ND cga
-       */
-      template <class A, class B>
-      static auto trv(const Multivector<A, B>& a)
-          RETURNS(a.template copy<GATnv<A>>() + 1)
+  /*!
+       Generate Local Boost at origin as exponential of a TangentVector
+     vsr::GATnv<A>
+       @param a tangent vector in ND cga
+   */
+  template <class A, class B>
+  static auto trv(const Multivector<A, B> &a)
+      RETURNS(a.template copy<GATnv<A>>() + 1);
 
-      /*!
-            Generate Local Boost at origin as exponential of a Point Pair
-            @param a tangent vector
-       */
-      template <class A>
-      static auto transversor(const A& a) RETURNS(trv(a))
+  /*!
+        Generate Local Boost at origin as exponential of a Point Pair
+        @param a tangent vector
+   */
+  template <class A> static auto transversor(const A &a) RETURNS(trv(a));
 
-      /*
-          Generate transversor  as exponential of a direction vector
-          @param a tangent vector
-      */
+  /*
+      Generate transversor  as exponential of a direction vector
+      @param a tangent vector
+  */
 
-      //  template< typename ... T >
-      //  auto trv ( T ... v ) ->  NTrv<sizeof...(T)+2> {
-      //    return ( NTnv<sizeof...(T)+2>(v...) ) + 1;
-      //  }
+  //  template< typename ... T >
+  //  auto trv ( T ... v ) ->  NTrv<sizeof...(T)+2> {
+  //    return ( NTnv<sizeof...(T)+2>(v...) ) + 1;
+  //  }
 
-      /*!
-            Generate nd transversor as exponential of a direction vector
-            @param n number of coordinates
-        */
-      template <typename... T>
-      static auto transversor(T... v) RETURNS(trv(v...))
+  /*!
+        Generate nd transversor as exponential of a direction vector
+        @param n number of coordinates
+    */
+  template <typename... T> static auto transversor(T... v) RETURNS(trv(v...));
 
-      /*!
-            Generate translation from any type as exponential of a direction
-         vector
-            @param any multivector (will be copied, not cast, to direction
-         vector)
-      */
-      template <class A, class B>
-      static GATrs<A> trs(const Multivector<A, B>& a) {
+  /*!
+        Generate translation from any type as exponential of a direction
+     vector
+        @param any multivector (will be copied, not cast, to direction
+     vector)
+  */
+  template <class A, class B> static GATrs<A> trs(const Multivector<A, B> &a) {
     return (a.template copy<GADrv<A>>() * -.5) + 1;
   }
   /*!
         Generate translation  as exponential of a direction vector
         @param a a direction vector
     */
-  template <class A>
-  static auto translator(const A& a) RETURNS(trs(a))
+  template <class A> static auto translator(const A &a) RETURNS(trs(a));
 
-      /*!
-            Generate translation  as exponential of a direction vector
-            @param some floats etc
-        */
-      template <typename... Ts>
-      static auto trs(Ts... v) -> NTrs<sizeof...(Ts) + 2> {
+  /*!
+        Generate translation  as exponential of a direction vector
+        @param some floats etc
+    */
+  template <typename... Ts>
+  static auto trs(Ts... v) -> NTrs<sizeof...(Ts) + 2> {
     return (NDrv<sizeof...(Ts) + 2>(v...) * -.5) + 1;
   }
   /*!
@@ -391,23 +363,21 @@ struct Gen {
         pass in ( log(t) * .5 )
         @param Amt t
     */
-  template <bits::type N, class T>
-  static constexpr auto dil(T t) -> NDil<N> {
+  template <bits::type N, class T> static constexpr auto dil(T t) -> NDil<N> {
     return NDil<N>(cosh(t * .5), sinh(t * .5));
   }
   /*! Generate a Dilation from Origin [[[ pass in ( log(t) * .5 ) ]]]
         @param Amt t
     */
-  template <class T>
-  static constexpr auto dilator(T t) RETURNS(dil(t))
+  template <class T> static constexpr auto dilator(T t) RETURNS(dil(t));
 
-      /*! Generate a Dilation from a point p by amt t
-          @param Point p (or Vec)
-          @param Amt t -- to pass in a relative amt (i.e. t=.5 for half size or
-         t=2 for VSR_PRECISION), pass in std::log(t)
-      */
-      template <class A, class T>
-      static auto dil(const GAPnt<A>& p, T t) -> GATsd<A> {
+  /*! Generate a Dilation from a point p by amt t
+      @param Point p (or Vec)
+      @param Amt t -- to pass in a relative amt (i.e. t=.5 for half size or
+     t=2 for VSR_PRECISION), pass in std::log(t)
+  */
+  template <class A, class T>
+  static auto dil(const GAPnt<A> &p, T t) -> GATsd<A> {
     return GATsd<A>(GADil<A>(cosh(t * .5), sinh(t * .5))).trs(p);
   }
   /*! Generate a Dilation from a point p by amt t
@@ -416,17 +386,16 @@ struct Gen {
      for VSR_PRECISION), pass in std::log(t)
   */
   template <class A, class T>
-  static constexpr auto dilator(const A& p, T t) RETURNS(dil(p, t))
+  static constexpr auto dilator(const A &p, T t) RETURNS(dil(p, t));
 
-      /*!
-           Generate Boost as exponential of a Point Pair
-           Implemented from "Square Root and Logarithm of Rotors. . ." by Dorst
-         and Valkenburg, 2011
-           e^B/2 = cosh(B/2) - sinh(B/2)
-           @param Point Pair generator
-       */
-      template <class A>
-      static auto bst(const GAPar<A>& tp) -> decltype(tp + 1) {
+  /*!
+       Generate Boost as exponential of a Point Pair
+       Implemented from "Square Root and Logarithm of Rotors. . ." by Dorst
+     and Valkenburg, 2011
+       e^B/2 = cosh(B/2) - sinh(B/2)
+       @param Point Pair generator
+   */
+  template <class A> static auto bst(const GAPar<A> &tp) -> decltype(tp + 1) {
     VSR_PRECISION norm;
     VSR_PRECISION sn;
     VSR_PRECISION cn;
@@ -437,7 +406,7 @@ struct Gen {
       norm = sqrt(-td);
       sn = -sin(norm) / norm;
       cn = cos(norm);
-    }  // note, changed to cos from cosh
+    } // note, changed to cos from cosh
     else if (td > 0) {
       norm = sqrt(td);
       sn = -sinh(norm) / norm;
@@ -456,64 +425,63 @@ struct Gen {
      Valkenburg, 2011
         @param Point Pair generator
     */
+  template <class A> static auto boost(const A &a) RETURNS(bst(a));
+
+  // /*!
+  //           Generate general rotation as exponential of anonymous
+  //           Implemented from "Square Root and Logarithm of Rotors. . ."
+  //           by Dorst and Valkenburg, 2011
+  //           @param Point Pair generator
+  //       */
+  // template<bits::type DIM, class A>
+  //       auto gen(const CGAMultivector<DIM,A>& tp) -> decltype( tp + 1 ) {
+  //
+  //   VSR_PRECISION norm; VSR_PRECISION sn; VSR_PRECISION cn;
+  //
+  //           VSR_PRECISION td = tp.wt();
+  //
+  //           if (td < 0) { norm =  sqrt( - td );  sn = -sin(norm) / norm;
+  //           cn = cosh(norm); }
+  //           else if (td > 0) { norm = sqrt(td); sn = -sinh(norm) / norm;
+  //           cn = cosh(norm); }
+  //           else if (td == 0) { norm = 0; sn = -1; cn = 1; }
+  //
+  //           return (tp * sn) + cn;
+  // }
+
+  // feed in vectors!
+  /*! Rotor Ratio of two Conformal vectors transforming a to b
+      see dorst and valkenburg, basically this normalizes 1+R to give
+     sqrt(ba)
+  */
   template <class A>
-  static auto boost(const A& a) RETURNS(bst(a))
-
-      // /*!
-      //           Generate general rotation as exponential of anonymous
-      //           Implemented from "Square Root and Logarithm of Rotors. . ."
-      //           by Dorst and Valkenburg, 2011
-      //           @param Point Pair generator
-      //       */
-      // template<bits::type DIM, class A>
-      //       auto gen(const CGAMultivector<DIM,A>& tp) -> decltype( tp + 1 ) {
-      //
-      //   VSR_PRECISION norm; VSR_PRECISION sn; VSR_PRECISION cn;
-      //
-      //           VSR_PRECISION td = tp.wt();
-      //
-      //           if (td < 0) { norm =  sqrt( - td );  sn = -sin(norm) / norm;
-      //           cn = cosh(norm); }
-      //           else if (td > 0) { norm = sqrt(td); sn = -sinh(norm) / norm;
-      //           cn = cosh(norm); }
-      //           else if (td == 0) { norm = 0; sn = -1; cn = 1; }
-      //
-      //           return (tp * sn) + cn;
-      // }
-
-      // feed in vectors!
-      /*! Rotor Ratio of two Conformal vectors transforming a to b
-          see dorst and valkenburg, basically this normalizes 1+R to give
-         sqrt(ba)
-      */
-      template <class A>
-      static auto ratio(const GAVec<A>& a, const GAVec<A>& b)
-          -> decltype((a * b)) {
-    using TVec = GAVec<A>;  // typename NVec<DIM>::Space::Vec;
-    using TBiv = GABiv<A>;  // typename NVec<DIM>::Space::Biv;
-    using TRot = GARot<A>;  // decltype( (a^b) + 1);
+  static auto ratio(const GAVec<A> &a, const GAVec<A> &b) -> decltype((a * b)) {
+    using TVec = GAVec<A>; // typename NVec<DIM>::Space::Vec;
+    using TBiv = GABiv<A>; // typename NVec<DIM>::Space::Biv;
+    using TRot = GARot<A>; // decltype( (a^b) + 1);
 
     VSR_PRECISION s = (a <= b)[0];
     // 180 degree check
-    if (a == b.conjugation()) {  // fabs ((a<=b)[0]) > .999999) {//a ==
-                                 // b.conjugation() ) {
+    if (a == b.conjugation()) { // fabs ((a<=b)[0]) > .999999) {//a ==
+                                // b.conjugation() ) {
       // printf("180!\n");
       if (a == TVec::y || a == -TVec::y) {
         return rot(TBiv::xy * PIOVERTWO);
       }
-      return rot(a ^ TVec::y * PIOVERTWO);  // mind the ordering of blades
+      return rot(a ^ TVec::y * PIOVERTWO); // mind the ordering of blades
     }
 
     VSR_PRECISION ss = 2 * (s + 1);
     // VSR_PRECISION n = ( ss >= 0 ? sqrt ( ss ) : 0 );
     VSR_PRECISION n = (ss >= 0 ? sqrt(ss) : -sqrt(-ss));
 
-    TRot r = (b * a);  // cout << r << endl;
+    TRot r = (b * a); // cout << r << endl;
     r[0] += 1;
-    if (!FERROR(n)) r /= n;
+    if (!FERROR(n))
+      r /= n;
     if (r == TRot()) {
       return TRot(1);
-    }  // else cout << r << endl; //printf("0 in Gen::ratio\n");
+    } // else cout << r << endl; //printf("0 in Gen::ratio\n");
     return r;
   }
 };
@@ -526,7 +494,7 @@ struct Round {
   /*! Null Point from Arbitrary Multivector
   */
   template <class A, class B>
-  static constexpr GAPnt<A> null(const Multivector<A, B>& v) {
+  static constexpr GAPnt<A> null(const Multivector<A, B> &v) {
     using TVec = GAVec<A>;
     using TOri = GAOri<A>;
     using TInf = GAInf<A>;
@@ -536,8 +504,7 @@ struct Round {
 
   /*! Or Null Point from Coordinates (x,y,z,...)
   */
-  template <class... T>
-  static constexpr NPnt<sizeof...(T) + 2> null(T... v) {
+  template <class... T> static constexpr NPnt<sizeof...(T) + 2> null(T... v) {
     using TVEC = NVec<sizeof...(T) + 2>;
     using TORI = NOri<sizeof...(T) + 2>;
     using TINF = NInf<sizeof...(T) + 2>;
@@ -547,8 +514,7 @@ struct Round {
 
   /*! Null Point from Coordinates
   */
-  template <class... T>
-  static constexpr NPnt<sizeof...(T) + 2> point(T... v) {
+  template <class... T> static constexpr NPnt<sizeof...(T) + 2> point(T... v) {
     using TVEC = NVec<sizeof...(T) + 2>;
     return null(TVEC(v...));
   }
@@ -567,7 +533,7 @@ struct Round {
     using TPNT = NPnt<sizeof...(T) + 2>;
     TPNT s = point(v...);
     (r > 0)
-        ? s.template get<bits::infinity<sizeof...(T) + 2>()>() -= .5 *(r * r)
+        ? s.template get<bits::infinity<sizeof...(T) + 2>()>() -= .5 * (r * r)
         : s.template get<bits::infinity<sizeof...(T) + 2>()>() += .5 * (r * r);
     return s;
   }
@@ -579,32 +545,32 @@ struct Round {
           @param Radius (enter a negative radius for an imaginary sphere)
       */
       template <class A, class B>
-      static auto dls(const Multivector<A, B>& v, VSR_PRECISION r = 1.0)
+      static auto dls(const Multivector<A, B> &v, VSR_PRECISION r = 1.0)
           -> GAPnt<A> {
     auto s = null(v);
-    (r > 0) ? s.template get<bits::infinity<A::dim>()>() -= .5 *(r * r)
+    (r > 0) ? s.template get<bits::infinity<A::dim>()>() -= .5 * (r * r)
             : s.template get<bits::infinity<A::dim>()>() += .5 * (r * r);
     return s;
   }
 
   template <class T>
-  static auto dualSphere(const T& t, VSR_PRECISION r = 1.0) RETURNS(dls(t, r))
+  static auto dualSphere(const T &t, VSR_PRECISION r = 1.0) RETURNS(dls(t, r))
 
       /*! Dual Sphere from Element FIRST and Radius
           @param Any input Multivector v (function will take first 3 weights)
           @param Radius (enter a negative radius for an imaginary sphere)
       */
       template <class S>
-      static auto sphere(const S& v, VSR_PRECISION r = 1.0) RETURNS(dls(v, r))
+      static auto sphere(const S &v, VSR_PRECISION r = 1.0) RETURNS(dls(v, r))
 
       /*! Dual Sphere from Point and Radius (faster)
           @param Point
           @param Radius (enter a negative radius for an imaginary sphere)
       */
       template <class A>
-      static GADls<A> dls_pnt(const GAPnt<A>& p, VSR_PRECISION r = 1.0) {
+      static GADls<A> dls_pnt(const GAPnt<A> &p, VSR_PRECISION r = 1.0) {
     GAPnt<A> s = p;
-    (r > 0) ? s.template get<bits::infinity<A::dim>()>() -= .5 *(r * r)
+    (r > 0) ? s.template get<bits::infinity<A::dim>()>() -= .5 * (r * r)
             : s.template get<bits::infinity<A::dim>()>() += .5 * (r * r);
     return s;
   }
@@ -614,7 +580,7 @@ struct Round {
    method)
   */
   template <class A, class B>
-  static constexpr GAPnt<A> center(const Multivector<A, B>& s) {
+  static constexpr GAPnt<A> center(const Multivector<A, B> &s) {
     return (s / (GAInf<A>(-1) <= s)).template cast<GAPnt<A>>();
   }
 
@@ -624,7 +590,7 @@ struct Round {
    @sa cga::Round::cen
   */
   template <class A, class B>
-  static constexpr GAPnt<A> cen(const Multivector<A, B>& s) {
+  static constexpr GAPnt<A> cen(const Multivector<A, B> &s) {
     return center(s);
   }
 
@@ -632,12 +598,11 @@ struct Round {
     Location of A Round Element (normalized) (Shorthand)
   */
   template <class A>
-  static constexpr typename A::space::point location(const A& s) {
+  static constexpr typename A::space::point location(const A &s) {
     return null(cen(s));
   }
 
-  template <class A>
-  static constexpr typename A::space::point loc(const A& s) {
+  template <class A> static constexpr typename A::space::point loc(const A &s) {
     return location(s);
   }
 
@@ -646,27 +611,23 @@ struct Round {
      direct sphere)
       @param dual duality flag
   */
-  template <class A>
-  static VSR_PRECISION size(const A& r, bool dual) {
+  template <class A> static VSR_PRECISION size(const A &r, bool dual) {
     auto s = typename A::space::infinity(1) <= r;
     return ((r * r.inv()) / (s * s) * ((dual) ? -1.0 : 1.0))[0];
   }
   /*! Radius of Round
   */
-  template <class T>
-  static constexpr VSR_PRECISION radius(const T& s) {
+  template <class T> static constexpr VSR_PRECISION radius(const T &s) {
     return sqrt(fabs(size(s, false)));
   }
-  template <class T>
-  static constexpr VSR_PRECISION rad(const T& t) {
+  template <class T> static constexpr VSR_PRECISION rad(const T &t) {
     return radius(t);
   }
 
   /*! Curvature of Round
       @param s a Round Element
   */
-  template <class A>
-  static VSR_PRECISION curvature(const A& s) {
+  template <class A> static VSR_PRECISION curvature(const A &s) {
     VSR_PRECISION r = rad(s);
     return (r == 0) ? 10000 : 1.0 / rad(s);
   }
@@ -675,38 +636,36 @@ struct Round {
       @param t a Round Element
   */
 
-  template <class T>
-  static constexpr VSR_PRECISION cur(const T& t) {
+  template <class T> static constexpr VSR_PRECISION cur(const T &t) {
     return curvature(t);
   }
 
   /*! Squared Size of Normalized Dual Sphere (faster than general case)
       @param Normalized Dual Sphere
   */
-  template <class A>
-  static constexpr VSR_PRECISION dsize(const GAPnt<A>& dls) {
+  template <class A> static constexpr VSR_PRECISION dsize(const GAPnt<A> &dls) {
     return (dls * dls)[0];
   }
 
   /*! Squared distance between two points
   */
   template <class A>
-  static constexpr VSR_PRECISION squaredDistance(const GAPnt<A>& a,
+  static constexpr VSR_PRECISION squaredDistance(const GAPnt<A> &a,
                                                  const GAPnt<A> b) {
     return ((a <= b)[0]) * -2.0;
   }
   template <class A>
-  static constexpr VSR_PRECISION sqd(const A& a, const A& b) {
+  static constexpr VSR_PRECISION sqd(const A &a, const A &b) {
     return squaredDistance(a, b);
   }
 
   /*! Distance between points a and b */
   template <class A>
-  static constexpr VSR_PRECISION distance(const GAPnt<A>& a, const GAPnt<A> b) {
+  static constexpr VSR_PRECISION distance(const GAPnt<A> &a, const GAPnt<A> b) {
     return sqrt(fabs(sqd(a, b)));
   }
   template <class A>
-  static constexpr VSR_PRECISION dist(const A& a, const A& b) {
+  static constexpr VSR_PRECISION dist(const A &a, const A &b) {
     return distance(a, b);
   }
 
@@ -714,8 +673,7 @@ struct Round {
       @param PointPair input
       returns a vector<Pnt>
   */
-  template <class A>
-  static std::vector<GAPnt<A>> split(const GAPar<A>& pp) {
+  template <class A> static std::vector<GAPnt<A>> split(const GAPar<A> &pp) {
     std::vector<GAPnt<A>> pair;
 
     VSR_PRECISION r = sqrt(fabs((pp <= pp)[0]));
@@ -747,9 +705,10 @@ struct Round {
       returns a vector<Pnt>
   */
   template <class A>
-  static std::vector<GAPnt<A>> splitLocation(const GAPar<A>& pp) {
+  static std::vector<GAPnt<A>> splitLocation(const GAPar<A> &pp) {
     auto tp = split(pp);
-    for (auto& i : tp) i = location(i);
+    for (auto &i : tp)
+      i = location(i);
     return tp;
   }
 
@@ -758,8 +717,7 @@ struct Round {
    * @param Point Pair
    * @param bool which one
    * */
-  template <class A>
-  static GAPnt<A> split(const GAPar<A>& pp, bool bFirst) {
+  template <class A> static GAPnt<A> split(const GAPar<A> &pp, bool bFirst) {
     VSR_PRECISION r = sqrt(fabs((pp <= pp)[0]));
 
     auto d = GAInf<A>(-1) <= pp;
@@ -772,8 +730,7 @@ struct Round {
   /*!
    * Split A Circle into its dual point pair poles
   */
-  template <class A>
-  static std::vector<GAPnt<A>> split(const GACir<A>& nc) {
+  template <class A> static std::vector<GAPnt<A>> split(const GACir<A> &nc) {
     return split(nc.dual());
   }
 
@@ -781,50 +738,50 @@ struct Round {
        @param Direct Round
    */
   template <class A>
-  static constexpr auto direction(const A& s)
+  static constexpr auto direction(const A &s)
       RETURNS(((typename A::space::infinity(-1) <= s) ^
                typename A::space::infinity(1)))
       /*! Direction of Round Element (shorthand)
           @param Direct Round
       */
       template <class A>
-      static constexpr auto dir(const A& s) RETURNS(direction(s))
+      static constexpr auto dir(const A &s) RETURNS(direction(s))
 
       /*! Carrier Flat of Direct Round Element
            @param Direct Round
        * */
       template <class A>
-      static constexpr auto carrier(const A& s)
+      static constexpr auto carrier(const A &s)
           RETURNS(s ^ typename A::space::infinity(1))
       /*! Carrier Flat of Direct? Round Element (Shorthand)
       */
       template <class A>
-      static constexpr auto car(const A& s) RETURNS(carrier(s))
+      static constexpr auto car(const A &s) RETURNS(carrier(s))
 
       /*! Dual Surround of a Direct or Dual Round Element */
       template <class A>
-      static constexpr typename A::space::dual_sphere surround(const A& s) {
+      static constexpr typename A::space::dual_sphere surround(const A &s) {
     return typename A::space::dual_sphere(s /
                                           (s ^ typename A::space::infinity(1)));
   }
 
   /*! Dual Surround of a Direct or Dual Round Element (Shorthand) */
   template <class A>
-  static constexpr auto sur(const A& s) RETURNS(surround(s))
+  static constexpr auto sur(const A &s) RETURNS(surround(s))
 
       /*!
        Direct Round From Dual Sphere and Euclidean Bivector
        Note: round will be imaginary if dual sphere is real . . .
        */
       template <class A, class S>
-      static constexpr auto produce(const A& dls, const S& flat) RETURNS(
+      static constexpr auto produce(const A &dls, const S &flat) RETURNS(
           dls ^ ((dls <= (flat.inv() * typename A::space::infinity(1))) * -1.0))
 
       /*!
         Creates a real round from an imaginary / real round
        */
       template <class A>
-      static constexpr auto real(const A& s)
+      static constexpr auto real(const A &s)
           RETURNS(produce(Round::dls(Round::loc(s), -Round::rad(Round::sur(s))),
                           typename A::space::origin(-1) <= Round::dir(s)))
 
@@ -832,7 +789,7 @@ struct Round {
         Creates an imaginary round from an real round
        */
       template <class A>
-      static constexpr auto imag(const A& s)
+      static constexpr auto imag(const A &s)
           RETURNS(produce(Round::dls(Round::loc(s), Round::rad(Round::sur(s))),
                           typename A::space::origin(-1) <= Round::dir(s)))
       /*!
@@ -841,7 +798,7 @@ struct Round {
          @param point on surface
        * */
       template <class A>
-      static constexpr GADls<A> at(const GADls<A>& c, const GADls<A>& p) {
+      static constexpr GADls<A> at(const GADls<A> &c, const GADls<A> &p) {
     return GADls<A>(p <= (c ^ GAInf<A>(1)));
   }
 
@@ -859,8 +816,8 @@ struct Round {
    Direct Point From Dual Sphere and Euclidean Carrier Flat
    */
   template <class A>
-  static constexpr GAPnt<A> pnt(const GADls<A>& dls, const GAVec<A>& flat) {
-    return split(produce(dls, flat), true);  // cout << "y" << endl;
+  static constexpr GAPnt<A> pnt(const GADls<A> &dls, const GAVec<A> &flat) {
+    return split(produce(dls, flat), true); // cout << "y" << endl;
   }
   /*!
    Direct Point From Dual Sphere and Euclidean Carrier Flat
@@ -871,7 +828,7 @@ struct Round {
       @include euclidean
   */
   template <class A>
-  static GAVec<A> vec(const GACir<A>& c, VSR_PRECISION theta = 0) {
+  static GAVec<A> vec(const GACir<A> &c, VSR_PRECISION theta = 0) {
     using TBIV = GABiv<A>;
 
     GADll<A> axis = (GAInf<A>(1) <= c).runit();
@@ -882,7 +839,7 @@ struct Round {
 
   /*! Point Pair on Direct Circle at angle t*/
   template <class A>
-  static GAPar<A> par_cir(const GACir<A>& c, VSR_PRECISION t) {
+  static GAPar<A> par_cir(const GACir<A> &c, VSR_PRECISION t) {
     using TBIV = GABiv<A>;
     using TVEC = GAVec<A>;
 
@@ -899,7 +856,7 @@ struct Round {
 
   /*! Point on Circle at angle t*/
   template <class A>
-  static GAPnt<A> pnt_cir(const GACir<A>& c, VSR_PRECISION t) {
+  static GAPnt<A> pnt_cir(const GACir<A> &c, VSR_PRECISION t) {
     return null(split(par_cir(c, t), true));
   }
 
@@ -927,14 +884,14 @@ struct Flat {
         @returns \direction
     */
   template <class A, class B>
-  static constexpr auto direction(const Multivector<A, B>& f)
+  static constexpr auto direction(const Multivector<A, B> &f)
       RETURNS(GAInf<A>(-1) <= f)
       /*! Direction of Direct Flat
             @param Direct Flat [ Plane (Pln) or Line (Lin) ]
             @returns \direction
         */
       template <class A, class B>
-      static constexpr auto dir(const Multivector<A, B>& f)
+      static constexpr auto dir(const Multivector<A, B> &f)
           RETURNS(direction(f))
 
       /*! Location of Flat A closest to Point p
@@ -948,7 +905,7 @@ struct Flat {
         */
       template <class A>
       static constexpr typename A::space::Pnt
-      location(const A& f, const typename A::space::Pnt& p, bool dual) {
+      location(const A &f, const typename A::space::Pnt &p, bool dual) {
     using TPnt = typename A::space::Pnt;
     return dual ? TPnt((p ^ f) / f) : TPnt((p <= f) / f);
   }
@@ -964,7 +921,7 @@ struct Flat {
   * @return
   */
   template <class A, class P>
-  static constexpr P loc(const A& f, const P& p, bool dual) {
+  static constexpr P loc(const A &f, const P &p, bool dual) {
     return location(f, p, dual);
   }
 
@@ -975,13 +932,13 @@ struct Flat {
        @param bDual boolean flag for whether first argument is a dual
    */
   template <class A>
-  static constexpr typename A::value_t wt(const A& f, bool bDual) {
+  static constexpr typename A::value_t wt(const A &f, bool bDual) {
     using TOri = typename A::space::origin;
     return bDual ? (TOri(1) <= dir(f.undual())).wt() : (TOri(1) <= dir(f)).wt();
   }
   /*! Dual Plane from Point and Direction */
   template <class A>
-  static constexpr auto dlp(const GAPnt<A>& pnt, const GADrv<A>& drv)
+  static constexpr auto dlp(const GAPnt<A> &pnt, const GADrv<A> &drv)
       RETURNS(pnt <= drv)
 
       /*! Direct Line at origin with coordinate v ... */
@@ -1024,8 +981,7 @@ struct Tangent {
 
       similar formulation to Rounds
   */
-  template <class A>
-  static constexpr typename A::space::point loc(const A& s) {
+  template <class A> static constexpr typename A::space::point loc(const A &s) {
     return (s / typename A::space::infinity(-1) <= s);
   }
 
@@ -1035,19 +991,19 @@ struct Tangent {
       @param p ND point e.g. vsr::cga::Point
   */
   template <class A>
-  static constexpr auto at(const A& r, const typename A::space::point& p)
+  static constexpr auto at(const A &r, const typename A::space::point &p)
       RETURNS(p <= r.inv())
 
       /*! Weight of Tangent Element
        */
       template <class A>
-      static typename A::value_t wt(const A& s) {
+      static typename A::value_t wt(const A &s) {
     using TOri = typename A::space::origin;
     return (TOri(1) <= Round::dir(s)).wt();
   }
 };
 
-}  // nga::
+} // nga::
 
 //------------------------------------------
 
@@ -1060,27 +1016,27 @@ Multivector<Algebra, B>::null() const {
 
 template <class Algebra, class B>
 template <class A>
-Multivector<Algebra, B> Multivector<Algebra, B>::rot(
-    const Multivector<Algebra, A>& t) const {
+Multivector<Algebra, B>
+Multivector<Algebra, B>::rot(const Multivector<Algebra, A> &t) const {
   return this->sp(nga::Gen::rot(t));
 }
 template <class Algebra, class B>
 template <class A>
-Multivector<Algebra, B> Multivector<Algebra, B>::rotate(
-    const Multivector<Algebra, A>& t) const {
+Multivector<Algebra, B>
+Multivector<Algebra, B>::rotate(const Multivector<Algebra, A> &t) const {
   return this->sp(nga::Gen::rot(t));
 }
 
 template <class Algebra, class B>
 template <class A>
-Multivector<Algebra, B> Multivector<Algebra, B>::trs(
-    const Multivector<Algebra, A>& t) const {
+Multivector<Algebra, B>
+Multivector<Algebra, B>::trs(const Multivector<Algebra, A> &t) const {
   return this->sp(nga::Gen::trs(t));
 }
 template <class Algebra, class B>
 template <class A>
-Multivector<Algebra, B> Multivector<Algebra, B>::translate(
-    const Multivector<Algebra, A>& t) const {
+Multivector<Algebra, B>
+Multivector<Algebra, B>::translate(const Multivector<Algebra, A> &t) const {
   return this->sp(nga::Gen::trs(t));
 }
 
@@ -1097,14 +1053,14 @@ Multivector<Algebra, B> Multivector<Algebra, B>::translate(Ts... v) const {
 
 template <class Algebra, class B>
 template <class A>
-Multivector<Algebra, B> Multivector<Algebra, B>::trv(
-    const Multivector<Algebra, A>& t) const {
+Multivector<Algebra, B>
+Multivector<Algebra, B>::trv(const Multivector<Algebra, A> &t) const {
   return this->sp(nga::Gen::trv(t));
 }
 template <class Algebra, class B>
 template <class A>
-Multivector<Algebra, B> Multivector<Algebra, B>::transverse(
-    const Multivector<Algebra, A>& t) const {
+Multivector<Algebra, B>
+Multivector<Algebra, B>::transverse(const Multivector<Algebra, A> &t) const {
   return this->sp(nga::Gen::trv(t));
 }
 
@@ -1121,30 +1077,32 @@ Multivector<Algebra, B> Multivector<Algebra, B>::transverse(Ts... v) const {
 
 template <class Algebra, class B>
 template <class A>
-Multivector<Algebra, B> Multivector<Algebra, B>::dil(
-    const Multivector<Algebra, A>& s, VSR_PRECISION t) const {
+Multivector<Algebra, B>
+Multivector<Algebra, B>::dil(const Multivector<Algebra, A> &s,
+                             VSR_PRECISION t) const {
   return this->sp(nga::Gen::dil(s, t));
 }
 template <class Algebra, class B>
 template <class A>
-Multivector<Algebra, B> Multivector<Algebra, B>::dilate(
-    const Multivector<Algebra, A>& s, VSR_PRECISION t) const {
+Multivector<Algebra, B>
+Multivector<Algebra, B>::dilate(const Multivector<Algebra, A> &s,
+                                VSR_PRECISION t) const {
   return this->sp(nga::Gen::dil(s, t));
 }
 
 template <class Algebra, class B>
 template <class A>
-Multivector<Algebra, B> Multivector<Algebra, B>::bst(
-    const Multivector<Algebra, A>& t) const {
+Multivector<Algebra, B>
+Multivector<Algebra, B>::bst(const Multivector<Algebra, A> &t) const {
   return this->sp(nga::Gen::bst(t));
 }
 template <class Algebra, class B>
 template <class A>
-Multivector<Algebra, B> Multivector<Algebra, B>::boost(
-    const Multivector<Algebra, A>& t) const {
+Multivector<Algebra, B>
+Multivector<Algebra, B>::boost(const Multivector<Algebra, A> &t) const {
   return this->sp(nga::Gen::bst(t));
 }
 
-}  // vsr::
+} // vsr::
 
-#endif  // VERSOR_VSR_DETAIL_GENERIC_OP_H_
+#endif // VERSOR_VSR_DETAIL_GENERIC_OP_H_

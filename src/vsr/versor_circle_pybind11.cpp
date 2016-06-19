@@ -1,4 +1,5 @@
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include "game/vsr/cga_op.h"
 #include "game/vsr/cga_types.h"
@@ -30,6 +31,17 @@ void AddCircle(py::module &m) {
              Biv b = Round::dir(self).copy<Biv>();
              Rot r = nga::Gen::ratio(Vec::z, Op::dle(b).unit());
              return r;
+           })
+      .def("rpo",
+           [](const Cir &self) {
+             Biv b = Round::dir(self).copy<Biv>();
+             Rot r = nga::Gen::ratio(Vec::z, Op::dle(b).unit());
+             Pnt location = Round::location(self);
+             double radius = Round::radius(self);
+             std::vector<double> quat_list{r[3], -r[2], r[1], r[0]};
+             std::vector<double> location_list{location[0], location[1],
+                                               location[2]};
+             return std::make_tuple(radius, location_list, quat_list);
            })
       .def("pnt", [](const Cir &self) { return Round::location(self); })
       .def("radius", [](const Cir &self) { return Round::radius(self); })

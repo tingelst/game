@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
 
-#include "game/vsr/cga_types.h"
 #include "game/vsr/cga_op.h"
+#include "game/vsr/cga_types.h"
 
 namespace vsr {
 
@@ -43,6 +43,6 @@ void AddRotor(py::module &m) {
       });
 }
 
-}  // namespace python
+} // namespace python
 
-}  // namespace vsr
+} // namespace vsr

@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
 
-#include "game/vsr/cga_types.h"
 #include "game/vsr/cga_op.h"
+#include "game/vsr/cga_types.h"
 
 namespace vsr {
 
@@ -15,6 +15,8 @@ void AddBivector(py::module &m) {
       .def(py::init<double, double, double>())
       .def("__getitem__", &Biv::at)
       .def("__setitem__", [](Biv &arg, int idx, double val) { arg[idx] = val; })
+      .def("norm", &Biv::norm)
+      .def("rnorm", &Biv::rnorm)
       .def("duale", &Biv::duale)
       .def("unduale", &Biv::unduale)
       .def("unit", &Biv::unit)
@@ -53,6 +55,6 @@ void AddBivector(py::module &m) {
       });
 }
 
-}  // namespace python
+} // namespace python
 
-}  // namespace vsr
+} // namespace vsr

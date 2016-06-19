@@ -23,6 +23,29 @@ void AddVector(py::module &m) {
       .def("duale", &Vec::duale)
       .def("unduale", &Vec::unduale)
       .def("trs", [](const Vec &arg) { return Gen::trs(arg); })
+      .def("reflect_in_line",
+           [](const Vec &self, const Vec &other) {
+             return Vec(other * self * other);
+           })
+      .def("reflect_in_plane",
+           [](const Vec &self, const Vec &other) {
+             return Vec(-other * self * other);
+           })
+      .def("reflect_in_plane",
+           [](const Vec &self, const Biv &other) {
+             Vec n = other.duale();
+             return Vec(n * self * n);
+           })
+      .def("project_onto",
+           [](const Vec &self, const Biv &biv) {
+             return Vec(vsr::nga::Op::project(self, biv));
+           })
+      .def("reject_from",
+           [](const Vec &self, const Biv &biv) {
+             return Vec(vsr::nga::Op::reject(self, biv));
+           })
+      .def("ratio", [](const Vec &self,
+                       const Vec &other) { return Gen::ratio(self, other); })
       .def("__neg__", [](const Vec &arg) { return -arg; })
       .def("__xor__", [](const Vec &lhs, const Vec &rhs) { return lhs ^ rhs; })
       .def("__mul__", [](const Vec &lhs, double rhs) { return lhs * rhs; })

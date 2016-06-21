@@ -19,6 +19,9 @@ void AddCircle(py::module &m) {
            [](Cir &instance, const Pnt &p, double radius, const Biv &biv) {
              new (&instance) Cir(Construct::circle(p, radius, biv));
            })
+      .def("__init__",
+           [](Cir &instance, const Pnt &arg1, const Pnt &arg2,
+              const Pnt &arg3) { new (&instance) Cir(arg1 ^ arg2 ^ arg3); })
       .def("duale", &Cir::duale)
       .def("unduale", &Cir::unduale)
       .def("dual", &Cir::dual)
@@ -29,7 +32,7 @@ void AddCircle(py::module &m) {
       .def("rot",
            [](const Cir &self) {
              Biv b = Round::dir(self).copy<Biv>();
-             Rot r = nga::Gen::ratio(Vec::z, Op::dle(b).unit());
+             Rot r = nga::Gen::ratio(Op::dle(b).unit(), Vec::z);
              return r;
            })
       .def("rpo",
@@ -46,6 +49,7 @@ void AddCircle(py::module &m) {
       .def("pnt", [](const Cir &self) { return Round::location(self); })
       .def("radius", [](const Cir &self) { return Round::radius(self); })
       .def("pln", [](const Cir &self) { return Round::carrier(self); })
+      .def("surround", [](const Cir &self) { return Round::surround(self); })
       .def("spin", (Cir (Cir::*)(const Mot &) const) & Cir::spin)
       .def("__mul__", [](const Cir &lhs, double rhs) { return lhs * rhs; })
       .def("__div__", [](const Cir &lhs, double rhs) { return lhs / rhs; })

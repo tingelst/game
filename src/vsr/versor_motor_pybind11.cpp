@@ -1,8 +1,8 @@
-#include <sstream>
 #include <pybind11/pybind11.h>
+#include <sstream>
 
-#include "game/vsr/cga_types.h"
 #include "game/vsr/cga_op.h"
+#include "game/vsr/cga_types.h"
 
 namespace vsr {
 
@@ -31,7 +31,19 @@ void AddMotor(py::module &m) {
            [](const Mot &lhs, const Mot &rhs) {
              return (lhs * rhs + rhs * lhs) * 0.5;
            })
-      .def("ratio", [](const Mot &lhs, const Mot &rhs, double t){ return Mot(Gen::log(lhs, rhs, t));})
+      .def("rot",
+           [](const Mot &self) {
+             Rot R{self[0], self[1], self[2], self[3]};
+             return R;
+           })
+      .def("trs",
+           [](const Mot &self) {
+             Rot R{self[0], self[1], self[2], self[3]};
+             Vec t = ((Ori(1.0) <= self) / R) * -2.0;
+             return t;
+           })
+      .def("ratio", [](const Mot &lhs, const Mot &rhs,
+                       double t) { return Mot(Gen::log(lhs, rhs, t)); })
       .def("__add__", [](const Mot &lhs, const Mot &rhs) { return lhs + rhs; })
       .def("__sub__", [](const Mot &lhs, const Mot &rhs) { return lhs - rhs; })
       .def("__mul__", [](const Mot &lhs, double rhs) { return lhs * rhs; })
@@ -55,6 +67,6 @@ void AddMotor(py::module &m) {
       });
 }
 
-}  // namespace python
+} // namespace python
 
-}  // namespace vsr
+} // namespace vsr

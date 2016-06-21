@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
 
-#include "game/vsr/cga_types.h"
 #include "game/vsr/cga_op.h"
+#include "game/vsr/cga_types.h"
 
 namespace vsr {
 
@@ -21,6 +21,8 @@ void AddDirectionVector(py::module &m) {
       .def("inv", &Drv::inverse)
       .def("duale", &Drv::duale)
       .def("unduale", &Drv::unduale)
+      .def("vec",
+           [](const Drv &self) { return Vec(self[0], self[1], self[2]); })
       .def("spin", (Drv (Drv::*)(const Rot &) const) & Drv::spin)
       .def("spin", (Drv (Drv::*)(const Mot &) const) & Drv::spin)
       .def("__repr__",
@@ -35,12 +37,12 @@ void AddDirectionVector(py::module &m) {
              return ss.str();
            })
       .def_buffer([](Drv &arg) -> py::buffer_info {
-        return py::buffer_info(arg.data(), sizeof(double),
-                               py::format_descriptor<double>::value(), 1,
-                               {static_cast<unsigned long>(arg.Num)}, {sizeof(double)});
+        return py::buffer_info(
+            arg.data(), sizeof(double), py::format_descriptor<double>::value(),
+            1, {static_cast<unsigned long>(arg.Num)}, {sizeof(double)});
       });
 }
 
-}  // namespace python
+} // namespace python
 
-}  // namespace vsr
+} // namespace vsr

@@ -19,6 +19,7 @@ void AddRotor(py::module &m) {
       .def("rev", &Rot::reverse)
       .def("inv", &Rot::inverse)
       .def("log", [](const Rot &arg) { return Gen::log(arg); })
+      .def("ratio", [](const Vec &a, const Vec &b) { return Gen::ratio(a, b); })
       .def("__neg__", [](const Rot &arg) { return -arg; })
       .def("__mul__", [](const Rot &lhs, double rhs) { return lhs * rhs; })
       .def("__mul__", [](const Rot &lhs, const Biv &rhs) { return lhs * rhs; })

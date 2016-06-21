@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
 
-#include "game/vsr/cga_types.h"
 #include "game/vsr/cga_op.h"
+#include "game/vsr/cga_types.h"
 
 namespace vsr {
 
@@ -13,6 +13,10 @@ using namespace vsr::cga;
 void AddDualPlane(py::module &m) {
   py::class_<Dlp>(m, "Dlp")
       .def(py::init<double, double, double, double>())
+      .def("__init__",
+           [](Dlp &instance, const Vec &arg1, double distance) {
+             new (&instance) Dlp(Construct::plane(arg1, distance));
+           })
       .def("duale", &Dlp::duale)
       .def("unduale", &Dlp::unduale)
       .def("dual", &Dlp::dual)
@@ -20,6 +24,15 @@ void AddDualPlane(py::module &m) {
       .def("unit", &Dlp::unit)
       .def("rev", &Dlp::reverse)
       .def("inv", &Dlp::inverse)
+      .def("loc",
+           [](const Dlp &arg, const Pnt &arg2) {
+             return Flat::location(arg, arg2, true);
+           })
+      .def("dir",
+           [](const Dlp &arg) {
+             Dlp dlp = arg.unit();
+             return Drv(dlp[0], dlp[1], dlp[2]);
+           })
       .def("spin", (Dlp (Dlp::*)(const Mot &) const) & Dlp::spin)
       .def("__mul__", [](const Dlp &lhs, const Dlp &rhs) { return lhs * rhs; })
       .def("__mul__", [](const Dlp &lhs, double rhs) { return lhs * rhs; })
@@ -38,12 +51,12 @@ void AddDualPlane(py::module &m) {
              return ss.str();
            })
       .def_buffer([](Dlp &arg) -> py::buffer_info {
-        return py::buffer_info(arg.data(), sizeof(double),
-                               py::format_descriptor<double>::value(), 1,
-                               {static_cast<unsigned long>(arg.Num)}, {sizeof(double)});
+        return py::buffer_info(
+            arg.data(), sizeof(double), py::format_descriptor<double>::value(),
+            1, {static_cast<unsigned long>(arg.Num)}, {sizeof(double)});
       });
 }
 
-}  // namespace python
+} // namespace python
 
-}  // namespace vsr
+} // namespace vsr

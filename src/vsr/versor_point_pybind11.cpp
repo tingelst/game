@@ -17,6 +17,8 @@ void AddPoint(py::module &m) {
           "__init__",
           [](Pnt &instance) { new (&instance) Pnt(Vec(0.0, 0.0, 0.0).null()); })
       .def("__getitem__", &Pnt::at)
+      .def("dual", &Pnt::dual)
+      .def("undual", &Pnt::undual)
       .def("vec", [](const Pnt &self) { return Vec(self); })
       .def("__xor__", [](const Pnt &lhs, const Pnt &rhs) { return lhs ^ rhs; })
       .def("spin", (Pnt (Pnt::*)(const Rot &) const) & Pnt::spin)

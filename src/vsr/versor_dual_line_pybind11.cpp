@@ -17,9 +17,17 @@ void AddDualLine(py::module &m) {
            [](Dll &instance, const Vec &arg1, const Vec &arg2) {
              new (&instance) Dll(Construct::line(arg1, arg2).dual());
            })
+      .def("__init__",
+           [](Dll &instance, const Pnt &arg1, const Pnt &arg2) {
+             new (&instance) Dll(Construct::line(arg1, arg2).dual());
+           })
 
       .def("__getitem__", &Dll::at)
       .def("__setitem__", [](Dll &arg, int idx, double val) { arg[idx] = val; })
+      .def("comm",
+           [](const Dll &lhs, const Dll &rhs) {
+             return Dll(lhs * rhs - rhs * lhs) * 0.5;
+           })
       .def("comm", [](const Dll &lhs,
                       const Mot &rhs) { return (lhs * rhs - rhs * lhs) * 0.5; })
       .def("acomm",
@@ -33,6 +41,10 @@ void AddDualLine(py::module &m) {
       .def("acomm",
            [](const Dll &lhs, const Pnt &rhs) {
              return Pnt((lhs * rhs + rhs * lhs) * 0.5);
+           })
+      .def("ratio",
+           [](const Dll &self, const Dll &other, double amount) {
+             return Gen::ratio(self, other, amount);
            })
       .def("duale", &Dll::duale)
       .def("unduale", &Dll::unduale)
@@ -49,6 +61,8 @@ void AddDualLine(py::module &m) {
            })
       .def("dir", [](const Dll &arg) { return Flat::direction(arg.undual()); })
       .def("__neg__", [](const Dll &arg) { return -arg; })
+      .def("__add__", [](const Dll &lhs, const Dll &rhs) { return lhs - rhs; })
+      .def("__sub__", [](const Dll &lhs, const Dll &rhs) { return lhs - rhs; })
       .def("__mul__", [](const Dll &lhs, const Mot &rhs) { return lhs * rhs; })
       .def("__mul__", [](const Dll &lhs, const Dll &rhs) { return lhs * rhs; })
       .def("__mul__", [](const Dll &lhs, double rhs) { return lhs * rhs; })

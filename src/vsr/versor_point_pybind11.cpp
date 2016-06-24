@@ -44,6 +44,14 @@ void AddPoint(py::module &m) {
            [](const Pnt &lhs, const Mot &rhs) {
              return Pnt((lhs * rhs + rhs * lhs) * 0.5);
            })
+      .def("reflect_in_line",
+           [](const Pnt &self, const Dll &arg) {
+             return Pnt(arg * self * !arg);
+           })
+      .def("reflect_in_plane",
+           [](const Pnt &self, const Dlp &arg) {
+             return Pnt( arg * self * arg);
+           })
       .def("__repr__",
            [](const Pnt &arg) {
              std::stringstream ss;

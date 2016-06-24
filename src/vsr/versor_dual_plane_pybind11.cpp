@@ -14,8 +14,8 @@ void AddDualPlane(py::module &m) {
   py::class_<Dlp>(m, "Dlp")
       .def(py::init<double, double, double, double>())
       .def("__init__",
-           [](Dlp &instance, const Vec &arg1, double distance) {
-             new (&instance) Dlp(Construct::plane(arg1, distance));
+           [](Dlp &instance, const Vec &arg, double distance) {
+             new (&instance) Dlp(arg[0], arg[1], arg[2], distance);
            })
       .def("duale", &Dlp::duale)
       .def("unduale", &Dlp::unduale)

@@ -13,6 +13,7 @@ sys.path.append('../../build/')
 
 import numpy as np
 from versor_pybind11 import *
+from . drawing import *
 
 Dls = Pnt
 
@@ -32,7 +33,7 @@ def to_array(self):
 def _quat(self):
     return np.array([self[3], -self[2], self[1], self[0]])
 
-Rot.quat = _quat                   
+Rot.quat = _quat
 
 Mot.matrix = to_array
 

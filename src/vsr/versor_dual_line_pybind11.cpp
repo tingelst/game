@@ -46,10 +46,13 @@ void AddDualLine(py::module &m) {
            [](const Dll &self, const Dll &other, double amount) {
              return Gen::ratio(self, other, amount);
            })
-      .def("duale", &Dll::duale)
-      .def("unduale", &Dll::unduale)
+
+      .def("meet", [](const Dll &self,
+                      const Dlp &dlp) { return Construct::meet(self, dlp); })
       .def("dual", &Dll::dual)
       .def("undual", &Dll::undual)
+      .def("drv", [](const Dll &arg) { return Drv(arg); })
+      .def("biv", [](const Dll &arg) { return Biv(arg); })
       .def("unit", &Dll::unit)
       .def("rev", &Dll::reverse)
       .def("inv", &Dll::inverse)

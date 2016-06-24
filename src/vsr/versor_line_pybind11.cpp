@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
 
-#include "game/vsr/cga_types.h"
 #include "game/vsr/cga_op.h"
+#include "game/vsr/cga_types.h"
 
 namespace vsr {
 
@@ -21,13 +21,16 @@ void AddLine(py::module &m) {
            [](Lin &instance, const Pnt &arg1, const Pnt &arg2) {
              new (&instance) Lin(Construct::line(arg1, arg2));
            })
-    .def("__init__",
-         [](Lin &instance, const Pnt &arg1, const Vec &arg2) {
-           new (&instance) Lin(arg1 ^ arg2 ^ Inf(1.0));
-         })
+      .def("__init__",
+           [](Lin &instance, const Pnt &arg1, const Vec &arg2) {
+             new (&instance) Lin(arg1 ^ arg2 ^ Inf(1.0));
+           })
+      .def("dir", [](const Lin &arg) { return -(Ori(1.0) ^ Inf(1.0)) <= arg; })
+    .def("biv", [](const Lin &arg) { return -(Ori(1.0) ^ Inf(1.0)) <= (arg ^ Ori(1.)); })
       .def("spin", (Lin (Lin::*)(const Rot &) const) & Lin::spin)
       .def("spin", (Lin (Lin::*)(const Mot &) const) & Lin::spin)
       .def("duale", &Lin::duale)
+      .def("__mul__", [](const Lin &lhs, const Lin &rhs) { return lhs * rhs; })
       .def("unduale", &Lin::unduale)
       .def("dual", &Lin::dual)
       .def("undual", &Lin::undual)
@@ -43,6 +46,6 @@ void AddLine(py::module &m) {
       });
 }
 
-}  // namespace python
+} // namespace python
 
-}  // namespace vsr
+} // namespace vsr

@@ -538,15 +538,15 @@ struct Round {
     return s;
   }
   template <class... T>
-  static auto dualSphere(VSR_PRECISION r, T... v) RETURNS(dls(r, v...))
+  static auto dualSphere(VSR_PRECISION r, T... v) RETURNS(dls(r, v...));
 
-      /*! Dual Sphere from Element FIRST and Radius
-          @param Any input Multivector v (function will take first 3 weights)
-          @param Radius (enter a negative radius for an imaginary sphere)
-      */
-      template <class A, class B>
-      static auto dls(const Multivector<A, B> &v, VSR_PRECISION r = 1.0)
-          -> GAPnt<A> {
+  /*! Dual Sphere from Element FIRST and Radius
+      @param Any input Multivector v (function will take first 3 weights)
+      @param Radius (enter a negative radius for an imaginary sphere)
+  */
+  template <class A, class B>
+  static auto dls(const Multivector<A, B> &v, VSR_PRECISION r = 1.0)
+      -> GAPnt<A> {
     auto s = null(v);
     (r > 0) ? s.template get<bits::infinity<A::dim>()>() -= .5 * (r * r)
             : s.template get<bits::infinity<A::dim>()>() += .5 * (r * r);
@@ -554,21 +554,21 @@ struct Round {
   }
 
   template <class T>
-  static auto dualSphere(const T &t, VSR_PRECISION r = 1.0) RETURNS(dls(t, r))
+  static auto dualSphere(const T &t, VSR_PRECISION r = 1.0) RETURNS(dls(t, r));
 
-      /*! Dual Sphere from Element FIRST and Radius
-          @param Any input Multivector v (function will take first 3 weights)
-          @param Radius (enter a negative radius for an imaginary sphere)
-      */
-      template <class S>
-      static auto sphere(const S &v, VSR_PRECISION r = 1.0) RETURNS(dls(v, r))
+  /*! Dual Sphere from Element FIRST and Radius
+      @param Any input Multivector v (function will take first 3 weights)
+      @param Radius (enter a negative radius for an imaginary sphere)
+  */
+  template <class S>
+  static auto sphere(const S &v, VSR_PRECISION r = 1.0) RETURNS(dls(v, r));
 
-      /*! Dual Sphere from Point and Radius (faster)
-          @param Point
-          @param Radius (enter a negative radius for an imaginary sphere)
-      */
-      template <class A>
-      static GADls<A> dls_pnt(const GAPnt<A> &p, VSR_PRECISION r = 1.0) {
+  /*! Dual Sphere from Point and Radius (faster)
+      @param Point
+      @param Radius (enter a negative radius for an imaginary sphere)
+  */
+  template <class A>
+  static GADls<A> dls_pnt(const GAPnt<A> &p, VSR_PRECISION r = 1.0) {
     GAPnt<A> s = p;
     (r > 0) ? s.template get<bits::infinity<A::dim>()>() -= .5 * (r * r)
             : s.template get<bits::infinity<A::dim>()>() += .5 * (r * r);
@@ -740,65 +740,64 @@ struct Round {
   template <class A>
   static constexpr auto direction(const A &s)
       RETURNS(((typename A::space::infinity(-1) <= s) ^
-               typename A::space::infinity(1)))
-      /*! Direction of Round Element (shorthand)
-          @param Direct Round
-      */
-      template <class A>
-      static constexpr auto dir(const A &s) RETURNS(direction(s))
+               typename A::space::infinity(1)));
+  /*! Direction of Round Element (shorthand)
+      @param Direct Round
+  */
+  template <class A>
+  static constexpr auto dir(const A &s) RETURNS(direction(s));
 
-      /*! Carrier Flat of Direct Round Element
-           @param Direct Round
-       * */
-      template <class A>
-      static constexpr auto carrier(const A &s)
-          RETURNS(s ^ typename A::space::infinity(1))
-      /*! Carrier Flat of Direct? Round Element (Shorthand)
-      */
-      template <class A>
-      static constexpr auto car(const A &s) RETURNS(carrier(s))
+  /*! Carrier Flat of Direct Round Element
+       @param Direct Round
+   * */
+  template <class A>
+  static constexpr auto carrier(const A &s)
+      RETURNS(s ^ typename A::space::infinity(1));
+  /*! Carrier Flat of Direct? Round Element (Shorthand)
+  */
+  template <class A> static constexpr auto car(const A &s) RETURNS(carrier(s));
 
-      /*! Dual Surround of a Direct or Dual Round Element */
-      template <class A>
-      static constexpr typename A::space::dual_sphere surround(const A &s) {
+  /*! Dual Surround of a Direct or Dual Round Element */
+  template <class A>
+  static constexpr typename A::space::dual_sphere surround(const A &s) {
     return typename A::space::dual_sphere(s /
                                           (s ^ typename A::space::infinity(1)));
   }
 
   /*! Dual Surround of a Direct or Dual Round Element (Shorthand) */
+  template <class A> static constexpr auto sur(const A &s) RETURNS(surround(s));
+
+  /*!
+   Direct Round From Dual Sphere and Euclidean Bivector
+   Note: round will be imaginary if dual sphere is real . . .
+   */
+  template <class A, class S>
+  static constexpr auto produce(const A &dls, const S &flat)
+      RETURNS(dls ^
+              ((dls <= (flat.inv() * typename A::space::infinity(1))) * -1.0));
+
+  /*!
+    Creates a real round from an imaginary / real round
+   */
   template <class A>
-  static constexpr auto sur(const A &s) RETURNS(surround(s))
+  static constexpr auto real(const A &s)
+      RETURNS(produce(Round::dls(Round::loc(s), -Round::rad(Round::sur(s))),
+                      typename A::space::origin(-1) <= Round::dir(s)));
 
-      /*!
-       Direct Round From Dual Sphere and Euclidean Bivector
-       Note: round will be imaginary if dual sphere is real . . .
-       */
-      template <class A, class S>
-      static constexpr auto produce(const A &dls, const S &flat) RETURNS(
-          dls ^ ((dls <= (flat.inv() * typename A::space::infinity(1))) * -1.0))
-
-      /*!
-        Creates a real round from an imaginary / real round
-       */
-      template <class A>
-      static constexpr auto real(const A &s)
-          RETURNS(produce(Round::dls(Round::loc(s), -Round::rad(Round::sur(s))),
-                          typename A::space::origin(-1) <= Round::dir(s)))
-
-      /*!
-        Creates an imaginary round from an real round
-       */
-      template <class A>
-      static constexpr auto imag(const A &s)
-          RETURNS(produce(Round::dls(Round::loc(s), Round::rad(Round::sur(s))),
-                          typename A::space::origin(-1) <= Round::dir(s)))
-      /*!
-        Dual Round from Center and Point on Surface
-         @param Center
-         @param point on surface
-       * */
-      template <class A>
-      static constexpr GADls<A> at(const GADls<A> &c, const GADls<A> &p) {
+  /*!
+    Creates an imaginary round from an real round
+   */
+  template <class A>
+  static constexpr auto imag(const A &s)
+      RETURNS(produce(Round::dls(Round::loc(s), Round::rad(Round::sur(s))),
+                      typename A::space::origin(-1) <= Round::dir(s)));
+  /*!
+    Dual Round from Center and Point on Surface
+     @param Center
+     @param point on surface
+   * */
+  template <class A>
+  static constexpr GADls<A> at(const GADls<A> &c, const GADls<A> &p) {
     return GADls<A>(p <= (c ^ GAInf<A>(1)));
   }
 
@@ -885,27 +884,26 @@ struct Flat {
     */
   template <class A, class B>
   static constexpr auto direction(const Multivector<A, B> &f)
-      RETURNS(GAInf<A>(-1) <= f)
-      /*! Direction of Direct Flat
-            @param Direct Flat [ Plane (Pln) or Line (Lin) ]
-            @returns \direction
-        */
-      template <class A, class B>
-      static constexpr auto dir(const Multivector<A, B> &f)
-          RETURNS(direction(f))
+      RETURNS(GAInf<A>(-1) <= f);
+  /*! Direction of Direct Flat
+        @param Direct Flat [ Plane (Pln) or Line (Lin) ]
+        @returns \direction
+    */
+  template <class A, class B>
+  static constexpr auto dir(const Multivector<A, B> &f) RETURNS(direction(f));
 
-      /*! Location of Flat A closest to Point p
+  /*! Location of Flat A closest to Point p
 
-            @param f Dual or Direct Flat [ DualLine (Dll), Line (Lin), DualPlane
-         (Dlp), or Plane (Pln) ]
-            @param p a Conformal Point
-            @param dual Duality Flag
+        @param f Dual or Direct Flat [ DualLine (Dll), Line (Lin), DualPlane
+     (Dlp), or Plane (Pln) ]
+        @param p a Conformal Point
+        @param dual Duality Flag
 
-            @returns conformal point in same metric as f
-        */
-      template <class A>
-      static constexpr typename A::space::Pnt
-      location(const A &f, const typename A::space::Pnt &p, bool dual) {
+        @returns conformal point in same metric as f
+    */
+  template <class A>
+  static constexpr typename A::space::Pnt
+  location(const A &f, const typename A::space::Pnt &p, bool dual) {
     using TPnt = typename A::space::Pnt;
     return dual ? TPnt((p ^ f) / f) : TPnt((p <= f) / f);
   }
@@ -939,11 +937,11 @@ struct Flat {
   /*! Dual Plane from Point and Direction */
   template <class A>
   static constexpr auto dlp(const GAPnt<A> &pnt, const GADrv<A> &drv)
-      RETURNS(pnt <= drv)
+      RETURNS(pnt <= drv);
 
-      /*! Direct Line at origin with coordinate v ... */
-      template <typename... T>
-      static constexpr NLin<sizeof...(T) + 2> line(T... v) {
+  /*! Direct Line at origin with coordinate v ... */
+  template <typename... T>
+  static constexpr NLin<sizeof...(T) + 2> line(T... v) {
     return nga::Round::null(NVec<sizeof...(T) + 2>()) ^ nga::Round::null(v...) ^
            NInf<sizeof...(T) + 2>(1);
   }
@@ -992,12 +990,11 @@ struct Tangent {
   */
   template <class A>
   static constexpr auto at(const A &r, const typename A::space::point &p)
-      RETURNS(p <= r.inv())
+      RETURNS(p <= r.inv());
 
-      /*! Weight of Tangent Element
-       */
-      template <class A>
-      static typename A::value_t wt(const A &s) {
+  /*! Weight of Tangent Element
+   */
+  template <class A> static typename A::value_t wt(const A &s) {
     using TOri = typename A::space::origin;
     return (TOri(1) <= Round::dir(s)).wt();
   }

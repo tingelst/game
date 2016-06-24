@@ -1,8 +1,8 @@
 #include <pybind11/pybind11.h>
 
+#include "game/vsr/cga_op.h"
 #include "game/vsr/cga_types.h"
 #include "game/vsr/generic_op.h"
-#include "game/vsr/cga_op.h"
 
 namespace vsr {
 
@@ -19,6 +19,9 @@ void AddSphere(py::module &m) {
            [](Sph &instance, const Pnt &p, double radius) {
              new (&instance) Sph(nga::Round::sphere(p, radius).undual());
            })
+      .def("__init__",
+           [](Sph &instance, const Pnt &p1, const Pnt &p2, const Pnt &p3,
+              const Pnt &p4) { new (&instance) Sph(p1 ^ p2 ^ p3 ^ p4); })
       .def("duale", &Sph::duale)
       .def("unduale", &Sph::unduale)
       .def("dual", &Sph::dual)

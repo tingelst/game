@@ -20,8 +20,7 @@ def vector_mesh(vec, position=None, color='black', linewidth=2, arrow=False):
                     material=LambertMaterial(color=color))
         cone.position = [0, length - 0.1, 0]
         line.children = [cone]
-        line.quaternion = np.array(vec.unit().ratio(Vec(0, 1, 0)).quat(
-        )).tolist()
+    line.quaternion = np.array(vec.unit().ratio(Vec(0, 1, 0)).quat()).tolist()
     if position is not None:
         line.position = np.array(position)[:3].tolist()
     return line
@@ -109,12 +108,15 @@ def plane_mesh(plane, width=10, height=10, color='gray'):
                 material=LambertMaterial(color=color,
                                          transparent=True,
                                          opacity=0.75))
-    mesh.position = np.array(plane.loc(Vec(0, 0, 0).null()))[:3].tolist()
     if type(plane) == Pln:
         normal = plane.dual().dir().vec()
+        mesh.quaternion = np.array(normal.ratio(Vec(0, 0, 1)).quat()).tolist()
     else:
         normal = plane.dir().vec()
         mesh.quaternion = np.array(normal.ratio(Vec(0, 0, 1)).quat()).tolist()
+    # mesh.children = [vector_mesh(Vec(0, 0, 1).spin(normal.ratio(Vec(0, 0, 1))))
+    #                  ]
+    mesh.position = np.array(plane.loc(Vec(0, 0, 0).null()))[:3].tolist()
     return mesh
 
 

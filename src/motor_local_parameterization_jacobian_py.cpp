@@ -73,9 +73,54 @@ struct VectorCorrespondencesCostFunctor {
     return true;
   }
 
-private:
+ private:
   const Vec a_;
   const Vec b_;
+};
+
+struct LineCorrespondencesCostFunctor {
+  LineCorrespondencesCostFunctor(const Dll &a, const Dll &b) : a_(a), b_(b) {}
+
+  template <typename T>
+  auto operator()(const T *const motor, T *residual) const -> bool {
+    Motor<T> M(motor);
+    DualLine<T> a(a_);
+    DualLine<T> b(b_);
+    DualLine<T> c = a.spin(M);
+
+    for (int i = 0; i < 6; ++i) {
+      residual[i] = c[i] - b[i];
+    }
+
+    return true;
+  }
+
+ private:
+  const Dll a_;
+  const Dll b_;
+};
+
+struct LineCommutatorCostFunctor {
+  LineCommutatorCostFunctor(const Dll &a, const Dll &b) : a_(a), b_(b) {}
+
+  template <typename T>
+  auto operator()(const T *const motor, T *residual) const -> bool {
+    Motor<T> M(motor);
+    DualLine<T> a(a_);
+    DualLine<T> b(b_);
+    DualLine<T> c = a.spin(M);
+    DualLine<T> comm = (c * b - b * c) * Scalar<T>(0.5);
+
+    for (int i = 0; i < 6; ++i) {
+      residual[i] = comm[i];
+    }
+
+    return true;
+  }
+
+ private:
+  const Dll a_;
+  const Dll b_;
 };
 
 struct PointCorrespondencesCostFunctor {
@@ -95,7 +140,7 @@ struct PointCorrespondencesCostFunctor {
     return true;
   }
 
-private:
+ private:
   const Pnt a_;
   const Pnt b_;
 };
@@ -208,6 +253,54 @@ py::array_t<double> DiffRotorLocalParameterization(const Rot &rot) {
   return result;
 }
 
+py::array_t<double> DiffCostLinesComm(const Mot &mot, const Dll &a,
+                                      const Dll &b) {
+  auto result = py::array(py::buffer_info(
+      nullptr,        /* Pointer to data (nullptr -> ask NumPy to allocate!) */
+      sizeof(double), /* Size of one item */
+      py::format_descriptor<double>::value(), /* Buffer format */
+      2,                                      /* How many dimensions? */
+      {6, 8},                 /* Number of elements for each dimension */
+      {sizeof(double) * 6, 8} /* Strides for each dimension */
+      ));
+
+  auto buf = result.request();
+
+  const double *parameters[1] = {mot.begin()};
+  double *jacobian_array[1] = {static_cast<double *>(buf.ptr)};
+
+  double residuals[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+
+  ceres::AutoDiffCostFunction<LineCommutatorCostFunctor, 6, 8>(
+      new LineCommutatorCostFunctor(a, b))
+      .Evaluate(parameters, residuals, jacobian_array);
+
+  return result;
+}
+py::array_t<double> DiffCostLines(const Mot &mot, const Dll &a, const Dll &b) {
+  auto result = py::array(py::buffer_info(
+      nullptr,        /* Pointer to data (nullptr -> ask NumPy to allocate!) */
+      sizeof(double), /* Size of one item */
+      py::format_descriptor<double>::value(), /* Buffer format */
+      2,                                      /* How many dimensions? */
+      {6, 8},                 /* Number of elements for each dimension */
+      {sizeof(double) * 6, 8} /* Strides for each dimension */
+      ));
+
+  auto buf = result.request();
+
+  const double *parameters[1] = {mot.begin()};
+  double *jacobian_array[1] = {static_cast<double *>(buf.ptr)};
+
+  double residuals[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+
+  ceres::AutoDiffCostFunction<LineCorrespondencesCostFunctor, 6, 8>(
+      new LineCorrespondencesCostFunctor(a, b))
+      .Evaluate(parameters, residuals, jacobian_array);
+
+  return result;
+}
+
 py::array_t<double> DiffCost(const Mot &mot, const Pnt &a, const Pnt &b) {
   auto result = py::array(py::buffer_info(
       nullptr,        /* Pointer to data (nullptr -> ask NumPy to allocate!) */
@@ -248,8 +341,7 @@ struct TransformPoint {
 
     Point<T> p_prime = p.spin(M);
 
-    for (int i = 0; i < p.Num; ++i)
-      x_prime[i] = p_prime[i];
+    for (int i = 0; i < p.Num; ++i) x_prime[i] = p_prime[i];
 
     return true;
   }
@@ -344,6 +436,8 @@ PYBIND11_PLUGIN(motor_jacobian) {
       .def("jacobian_polar", &PolarJacobian)
       .def("diff_point", &DiffPoint)
       .def("diff_cost", &DiffCost)
+      .def("diff_cost_lines", &DiffCostLines)
+      .def("diff_cost_lines_comm", &DiffCostLinesComm)
       .def("diff_rotor_cost", &DiffRotorCost)
       .def("analytic_diff_rotor_cost", &AnalyticDiffRotorCost)
       .def("rotor_local_parameterization", &DiffRotorLocalParameterization);

@@ -26,6 +26,7 @@ void AddRotor(py::module &m) {
       .def("__mul__", [](const Rot &lhs, const Trs &rhs) { return lhs * rhs; })
       .def("__mul__", [](const Rot &lhs, const Rot &rhs) { return lhs * rhs; })
       .def("__getitem__", &Rot::at)
+      .def("__setitem__", [](Rot &arg, int idx, double val) { arg[idx] = val; })
       .def("__repr__",
            [](const Rot &arg) {
              std::stringstream ss;
@@ -44,6 +45,6 @@ void AddRotor(py::module &m) {
       });
 }
 
-} // namespace python
+}  // namespace python
 
-} // namespace vsr
+}  // namespace vsr

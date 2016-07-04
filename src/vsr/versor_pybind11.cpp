@@ -33,6 +33,9 @@ void AddSphere(py::module &m);
 void AddPointPair(py::module &m);
 void AddTrivector(py::module &m);
 void AddMultivectorDiff(py::module &m);
+void AddCGA(py::module &m);
+void AddEGA(py::module &m);
+void AddReciprocalMotor(py::module &m);
 
 PYBIND11_PLUGIN(versor_pybind11) {
   py::module m("versor_pybind11", "versor plugin");
@@ -56,6 +59,9 @@ PYBIND11_PLUGIN(versor_pybind11) {
   AddPointPair(m);
   AddTrivector(m);
   AddMultivectorDiff(m);
+  AddCGA(m);
+  AddEGA(m);
+  AddReciprocalMotor(m);
 
   return m.ptr();
 }

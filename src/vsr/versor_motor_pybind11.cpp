@@ -16,6 +16,7 @@ void AddMotor(py::module &m) {
       .def(py::init<double, double, double, double, double, double, double,
                     double>())
       .def("__getitem__", &Mot::at)
+      .def("__setitem__", [](Mot &arg, int idx, double val) { arg[idx] = val; })
       .def("rev", &Mot::reverse)
       .def("inv", &Mot::inverse)
       .def("log", [](const Mot &arg) { return Gen::log(arg); })
@@ -67,6 +68,6 @@ void AddMotor(py::module &m) {
       });
 }
 
-} // namespace python
+}  // namespace python
 
-} // namespace vsr
+}  // namespace vsr

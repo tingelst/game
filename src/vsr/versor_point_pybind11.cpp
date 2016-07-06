@@ -33,6 +33,8 @@ void AddPoint(py::module &m) {
       .def("vec", [](const Pnt &self) { return Vec(self); })
       .def("__xor__", [](const Pnt &lhs, const Pnt &rhs) { return lhs ^ rhs; })
       .def("spin", (Pnt (Pnt::*)(const Rot &) const) & Pnt::spin)
+      .def("spin", (Pnt (Pnt::*)(const Trs &) const) & Pnt::spin)
+      .def("spin", (Pnt (Pnt::*)(const Grt &) const) & Pnt::spin)
       .def("spin", (Pnt (Pnt::*)(const Mot &) const) & Pnt::spin)
       .def("__sub__", [](const Pnt &lhs, const Pnt &rhs) { return lhs - rhs; })
       .def("__add__", [](const Pnt &lhs, const Pnt &rhs) { return lhs + rhs; })
@@ -59,9 +61,10 @@ void AddPoint(py::module &m) {
            [](const Pnt &self, const Dll &arg) {
              return Pnt(arg * self * !arg);
            })
-      .def(
-          "reflect_in_plane",
-          [](const Pnt &self, const Dlp &arg) { return Pnt(arg * self * arg); })
+      .def("reflect_in_plane",
+           [](const Pnt &self, const Dlp &arg) {
+             return Pnt(-arg * self * arg);
+           })
       .def("__repr__",
            [](const Pnt &arg) {
              std::stringstream ss;
@@ -84,6 +87,6 @@ void AddPoint(py::module &m) {
       });
 }
 
-}  // namespace python
+} // namespace python
 
-}  // namespace vsr
+} // namespace vsr

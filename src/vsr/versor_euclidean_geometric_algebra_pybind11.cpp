@@ -49,6 +49,10 @@ void AddEGA(py::module &m) {
            [](const EGA &lhs, const EGA &rhs) { return EGA(lhs - rhs); })
       .def("__mul__",
            [](const EGA &lhs, const EGA &rhs) { return EGA(lhs * rhs); })
+      .def("__mul__",
+           [](const EGA &lhs, double &rhs) { return EGA(lhs * rhs); })
+      .def("__rmul__",
+           [](const EGA &lhs, double &rhs) { return EGA(lhs * rhs); })
       .def("__le__",
            [](const EGA &lhs, const EGA &rhs) { return EGA(lhs <= rhs); })
       .def("__xor__",

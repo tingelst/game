@@ -41,6 +41,9 @@ else (BUILD_EXAMPLES)
   message("-- Do not build any example.")
 endif (BUILD_EXAMPLES)
 
+add_executable(ga63 src/ga63.cpp)
+
+
 add_library(adept SHARED 
   third_party/Adept/adept/adept.cpp 
   third_party/Adept/adept/adept_openmp.cpp

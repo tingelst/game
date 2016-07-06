@@ -50,6 +50,7 @@ void AddMotor(py::module &m) {
       .def("__mul__", [](const Mot &lhs, double rhs) { return lhs * rhs; })
       .def("__mul__", [](const Mot &lhs, const Mot &rhs) { return lhs * rhs; })
       .def("__mul__", [](const Mot &lhs, const Dll &rhs) { return lhs * rhs; })
+      .def("__mul__", [](const Mot &lhs, const Trs &rhs) { return lhs * rhs; })
       .def("__repr__",
            [](const Mot &arg) {
              std::stringstream ss;
@@ -68,6 +69,6 @@ void AddMotor(py::module &m) {
       });
 }
 
-}  // namespace python
+} // namespace python
 
-}  // namespace vsr
+} // namespace vsr

@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
 
-#include "game/vsr/cga_types.h"
 #include "game/vsr/cga_op.h"
+#include "game/vsr/cga_types.h"
 
 namespace vsr {
 
@@ -26,6 +26,7 @@ void AddTrivector(py::module &m) {
       .def("__xor__", [](const Tri &lhs, const Tri &rhs) { return lhs ^ rhs; })
       .def("__mul__", [](const Tri &lhs, double rhs) { return lhs * rhs; })
       .def("__mul__", [](const Tri &lhs, const Tri &rhs) { return lhs * rhs; })
+      .def("__mul__", [](const Tri &lhs, const Biv &rhs) { return lhs * rhs; })
       .def("__sub__", [](const Tri &lhs, const Tri &rhs) { return lhs - rhs; })
       .def("__add__", [](const Tri &lhs, const Tri &rhs) { return lhs + rhs; })
       .def("spin", (Tri (Tri::*)(const Rot &) const) & Tri::spin)
@@ -48,6 +49,6 @@ void AddTrivector(py::module &m) {
       });
 }
 
-}  // namespace python
+} // namespace python
 
-}  // namespace vsr
+} // namespace vsr

@@ -2,6 +2,8 @@ FROM ubuntu:16.04
 
 MAINTAINER Lars Tingelstad <lars.tingelstad@ntnu.no>
 
+USER root
+
 RUN apt-get update && apt-get -y install \
     wget \
     curl \

@@ -91,6 +91,16 @@ target_link_libraries(motor_estimation_valkenburg_dorst
 set_target_properties(motor_estimation_valkenburg_dorst PROPERTIES PREFIX "")
 set_target_properties(motor_estimation_valkenburg_dorst PROPERTIES SUFFIX ".so")
 
+add_library(autodiff_multivector SHARED
+  src/autodiff_multivector.cpp)
+target_link_libraries(autodiff_multivector
+  adept
+  ${PYTHON_LIBRARIES}
+  ${CERES_LIBRARIES}
+  )
+set_target_properties(autodiff_multivector PROPERTIES PREFIX "")
+set_target_properties(autodiff_multivector PROPERTIES SUFFIX ".so")
+
 
 add_library(versor_pybind11 SHARED
   src/vsr/versor_pybind11.cpp

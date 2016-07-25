@@ -14,8 +14,6 @@ using Eigen::Dynamic;
 
 #include <adept.h>
 
-#include <stan/math.hpp>
-
 #include <game/vsr/cga_op.h>
 
 #include <iostream>
@@ -164,48 +162,10 @@ py::list CeresDiffInnerProductVectorBivector(const Vec &vec, const Biv &biv) {
   return list;
 }
 
-py::list StanDiffInnerProductVectorBivector(const Vec &vec, const Biv &biv) {
-  auto py_array_jac = py::array(py::buffer_info(
-      nullptr, sizeof(double), py::format_descriptor<double>::value(), 2,
-      {3, 3}, {sizeof(double) * 3, sizeof(double)}));
-
-  auto py_array_result = py::array(py::buffer_info(
-      nullptr, sizeof(double), py::format_descriptor<double>::value(), 2,
-      {3, 1}, {sizeof(double) * 3, sizeof(double)}));
-
-  auto buf_jac = py_array_jac.request();
-  auto buf_res = py_array_result.request();
-
-  std::array<stan::math::var, 3> vector{vec[0], vec[1], vec[2]};
-  std::array<stan::math::var, 3> bivector{biv[0], biv[1], biv[2]};
-  std::array<stan::math::var, 3> vec_ip_biv{0.0, 0.0, 0.0};
-
-  InnerProductVectorBivector(vector.begin(), bivector.begin(),
-                             vec_ip_biv.begin());
-
-  auto res = static_cast<double *>(buf_res.ptr);
-  for (int i = 0; i < 3; ++i) res[i] = vec_ip_biv[i].val();
-
-  auto jac = static_cast<double *>(buf_jac.ptr);
-  for (int i = 0; i < 3; ++i) {
-    if (i > 0) stan::math::set_zero_all_adjoints();
-    vec_ip_biv[i].grad();
-    for (int j = 0; j < 3; ++j) jac[3 * i + j] = vector[j].adj();
-  }
-
-  py::list list;
-  list.append(py_array_result);
-  list.append(py_array_jac);
-
-  return list;
-}
-
 PYBIND11_PLUGIN(autodiff_multivector) {
   py::module m("autodiff_multivector", "autodiff_multivector");
   m.def("diff_adept", &AdeptDiffInnerProductVectorBivector);
   m.def("diff_ceres", &CeresDiffInnerProductVectorBivector);
   m.def("diff_ceres2", &CeresDiffInnerProductVectorVector);
-  m.def("diff_stan", &StanDiffInnerProductVectorBivector);
-
   return m.ptr();
 }

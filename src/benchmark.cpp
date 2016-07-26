@@ -1,8 +1,8 @@
-#include <benchmark/benchmark.h>
 #include <adept.h>
+#include <benchmark/benchmark.h>
 #include <ceres/autodiff_cost_function.h>
-#include <glog/logging.h>
 #include <game/vsr/cga_op.h>
+#include <glog/logging.h>
 
 using namespace vsr::cga;
 
@@ -20,7 +20,8 @@ void InnerProductVectorBivector(const T *vec, const T *biv, T *res) {
   Vector<T> vector(vec);
   Bivector<T> bivector(biv);
   Vector<T> result = vector <= bivector;
-  for (int i = 0; i < 3; ++i) res[i] = result[i];
+  for (int i = 0; i < 3; ++i)
+    res[i] = result[i];
 }
 
 struct InnerProductVectorBivectorFunctor {
@@ -46,18 +47,34 @@ struct InnerProductVectorBivectorFunctor2 {
   }
 };
 
-template <typename T>
-void MotorSpinPoint(const T *mot, const T *pnt, T *res) {
+template <typename T> void MotorSpinPoint(const T *mot, const T *pnt, T *res) {
   Motor<T> motor(mot);
   Point<T> point(pnt);
   Point<T> result = point.spin(motor);
-  for (int i = 0; i < 5; ++i) res[i] = result[i];
+  for (int i = 0; i < 5; ++i)
+    res[i] = result[i];
 }
 
 struct MotorSpinPointFunctor {
   template <typename T>
   bool operator()(const T *mot, const T *pnt, T *res) const {
     MotorSpinPoint(mot, pnt, res);
+    return true;
+  }
+};
+
+template <typename T> void RotorSpinPoint(const T *rot, const T *pnt, T *res) {
+  Rotor<T> rotor(rot);
+  Vector<T> point(pnt);
+  Vector<T> result = point.spin(rotor);
+  for (int i = 0; i < 3; ++i)
+    res[i] = result[i];
+}
+
+struct RotorSpinPointFunctor {
+  template <typename T>
+  bool operator()(const T *rot, const T *pnt, T *res) const {
+    RotorSpinPoint(rot, pnt, res);
     return true;
   }
 };
@@ -211,6 +228,24 @@ static void BM_AdeptMotorSpinPointJacobianForward(benchmark::State &state) {
     g_stack.jacobian_forward(jac);
   }
 }
+
+static void BM_AdeptRotorSpinPointJacobianForward(benchmark::State &state) {
+  while (state.KeepRunning()) {
+    double jac[3 * 4];
+    adept::adouble motor[4];
+    adept::set_values(motor, 4, g_motor);
+    adept::adouble point[3];
+    adept::set_values(point, 3, g_point);
+    g_stack.new_recording();
+    adept::adouble res[3] = {0.0, 0.0, 0.0};
+    RotorSpinPoint(motor, point, res);
+
+    g_stack.independent(motor, 4);
+    g_stack.dependent(res, 3);
+    g_stack.jacobian_reverse(jac, true);
+  }
+}
+
 static void BM_CeresMotorSpinPointJacobian(benchmark::State &state) {
   while (state.KeepRunning()) {
     double jac[5 * 8];
@@ -219,6 +254,17 @@ static void BM_CeresMotorSpinPointJacobian(benchmark::State &state) {
 
     ceres::AutoDiffCostFunction<MotorSpinPointFunctor, 5, 8, 5>(
         new MotorSpinPointFunctor())
+        .Evaluate(parameters, &g_point_spin_motor[0], jacobians);
+  }
+}
+
+static void BM_CeresRotorSpinPointJacobian(benchmark::State &state) {
+  double jac[3 * 4];
+  const double *parameters[2] = {&g_motor[0], &g_point[0]};
+  double *jacobians[2] = {jac, nullptr};
+  while (state.KeepRunning()) {
+    ceres::AutoDiffCostFunction<RotorSpinPointFunctor, 3, 4, 3>(
+        new RotorSpinPointFunctor())
         .Evaluate(parameters, &g_point_spin_motor[0], jacobians);
   }
 }
@@ -235,5 +281,7 @@ BENCHMARK(BM_MotorSpinPoint);
 BENCHMARK(BM_AdeptMotorSpinPointJacobianForward);
 BENCHMARK(BM_AdeptMotorSpinPointJacobianReverse);
 BENCHMARK(BM_CeresMotorSpinPointJacobian);
+BENCHMARK(BM_CeresRotorSpinPointJacobian);
+BENCHMARK(BM_AdeptRotorSpinPointJacobianForward);
 
 BENCHMARK_MAIN()

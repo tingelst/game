@@ -383,7 +383,6 @@ public:
         : motor_(motor), list_(list) {}
     virtual ceres::CallbackReturnType
     operator()(const ceres::IterationSummary &summary) {
-      std::cout << *motor_ << std::endl;
       list_->push_back(Mot(*motor_));
       return ceres::SOLVER_CONTINUE;
     }
@@ -441,7 +440,7 @@ PYBIND11_PLUGIN(motor_estimation) {
                     [](MotorEstimationSolver &instance, int arg) {
                       instance.options_.num_threads = arg;
                     })
-      .def_property("num_linear_solve_threads",
+      .def_property("num_linear_solver_threads",
                     [](MotorEstimationSolver &instance) {
                       return instance.options_.num_linear_solver_threads;
                     },

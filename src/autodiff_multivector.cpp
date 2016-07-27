@@ -16,6 +16,8 @@ using Eigen::Dynamic;
 
 #include <game/vsr/cga_op.h>
 
+#include <hep/ga.hpp>
+
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -201,6 +203,9 @@ struct DiffRotorMatrixFunctor {
         cos(T(0.5) * th[0]) * s<T>() + sin(T(0.5) * th[0]) * e1<T>() * e2<T>();
     Matrix4<T> vec_a = a[0] * e1<T>() + a[1] * e2<T>() + a[2] * e3<T>();
     Matrix4<T> vec_b = rotor * vec_a * rotor_inv;
+    b[0] = vec_b(0, 3); // e1
+    b[1] = vec_b(0, 2); // e2
+    b[2] = vec_b(0, 0); // e3
     return true;
   }
 };
@@ -303,6 +308,9 @@ py::list AdeptDiffRotorMatrix(const double theta, const Vec &vec) {
   list.append(py_array_result);
   list.append(py_array_jac);
   list.append(py::str(ss.str().c_str()));
+  std::stringstream sstatus;
+  stack.print_status(sstatus);
+  list.append(py::str(sstatus.str().c_str()));
 
   return list;
 }
@@ -343,6 +351,92 @@ py::list AdeptDiffRotorVersor(const double theta, const Vec &vec) {
   list.append(py_array_result);
   list.append(py_array_jac);
   list.append(py::str(ss.str().c_str()));
+  std::stringstream sstatus;
+  stack.print_status(sstatus);
+  list.append(py::str(sstatus.str().c_str()));
+
+  return list;
+}
+
+struct DiffRotorHepGAFunctor {
+  template <typename T> bool operator()(const T *th, const T *a, T *b) const {
+    using Algebra = hep::algebra<T, 3, 0>;
+    using Rotor = hep::multi_vector<Algebra, hep::list<0, 3, 5, 6>>;
+    using Vector = hep::multi_vector<Algebra, hep::list<1, 2, 4>>;
+    Rotor rotor{cos(T(0.5) * th[0]), -sin(T(0.5) * th[0]), T(0.0), T(0.0)};
+    Vector pnt_a{a[0], a[1], a[2]};
+    Vector pnt_b = hep::grade<1>(rotor * pnt_a * ~rotor);
+    for (int i = 0; i < 3; ++i)
+      b[i] = pnt_b[i];
+    return true;
+  }
+};
+
+py::list AdeptDiffRotorHepGA(const double theta, const Vec &vec) {
+  auto py_array_jac = py::array(py::buffer_info(
+      nullptr, sizeof(double), py::format_descriptor<double>::value(), 2,
+      {3, 1}, {sizeof(double), sizeof(double)}));
+
+  auto py_array_result = py::array(py::buffer_info(
+      nullptr, sizeof(double), py::format_descriptor<double>::value(), 2,
+      {3, 1}, {sizeof(double), sizeof(double)}));
+
+  auto buf_jac = py_array_jac.request();
+  auto buf_res = py_array_result.request();
+
+  adept::Stack stack;
+  adept::adouble th{theta};
+  std::array<adept::adouble, 3> a{vec[0], vec[1], vec[2]};
+  stack.new_recording();
+  std::array<adept::adouble, 3> b{0.0, 0.0, 0.0};
+  DiffRotorHepGAFunctor()(&th, a.begin(), b.begin());
+  stack.independent(&th, 1);
+  stack.dependent(b.begin(), 3);
+
+  // stack.jacobian(static_cast<double *>(buf_jac.ptr), true);
+  // stack.jacobian_reverse(static_cast<double *>(buf_jac.ptr), true);
+  stack.jacobian_forward(static_cast<double *>(buf_jac.ptr), true);
+
+  std::stringstream ss;
+  stack.print_statements(ss);
+
+  auto res_ptr = static_cast<double *>(buf_res.ptr);
+  for (int i = 0; i < 3; ++i)
+    res_ptr[i] = b[i].value();
+
+  py::list list;
+  list.append(py_array_result);
+  list.append(py_array_jac);
+  list.append(py::str(ss.str().c_str()));
+  std::stringstream sstatus;
+  stack.print_status(sstatus);
+  list.append(py::str(sstatus.str().c_str()));
+
+  return list;
+}
+
+py::list CeresDiffRotorHepGA(const double theta, const Vec &a) {
+  auto py_array_jac = py::array(py::buffer_info(
+      nullptr, sizeof(double), py::format_descriptor<double>::value(), 2,
+      {3, 1}, {sizeof(double), sizeof(double)}));
+
+  auto py_array_result = py::array(py::buffer_info(
+      nullptr, sizeof(double), py::format_descriptor<double>::value(), 2,
+      {3, 1}, {sizeof(double), sizeof(double)}));
+
+  auto buf_jac = py_array_jac.request();
+  auto buf_res = py_array_result.request();
+
+  const double *parameters[2] = {&theta, a.begin()};
+  double *jacobians[2] = {static_cast<double *>(buf_jac.ptr), nullptr};
+
+  ceres::AutoDiffCostFunction<DiffRotorHepGAFunctor, 3, 1, 3>(
+      new DiffRotorHepGAFunctor())
+      .Evaluate(parameters, static_cast<double *>(buf_res.ptr), jacobians);
+
+  py::list list;
+  list.append(py_array_result);
+  list.append(py_array_jac);
 
   return list;
 }
@@ -356,5 +450,7 @@ PYBIND11_PLUGIN(autodiff_multivector) {
   m.def("diff_adept_rotor_versor", &AdeptDiffRotorVersor);
   m.def("diff_ceres_rotor_matrix", &CeresDiffRotorMatrix);
   m.def("diff_adept_rotor_matrix", &AdeptDiffRotorMatrix);
+  m.def("diff_ceres_rotor_hepga", &CeresDiffRotorHepGA);
+  m.def("diff_adept_rotor_hepga", &AdeptDiffRotorHepGA);
   return m.ptr();
 }

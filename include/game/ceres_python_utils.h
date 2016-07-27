@@ -69,22 +69,27 @@ auto SummaryToDict(const ceres::Solver::Summary &summary) -> py::dict {
   summary_dict[py::str("initial_cost")] = py::float_(summary.initial_cost);
   summary_dict[py::str("final_cost")] = py::float_(summary.final_cost);
   summary_dict[py::str("preprocessor_time_in_seconds")] =
-    py::float_(summary.preprocessor_time_in_seconds);
+      py::float_(summary.preprocessor_time_in_seconds);
   summary_dict[py::str("postprocessor_time_in_seconds")] =
-    py::float_(summary.postprocessor_time_in_seconds);
+      py::float_(summary.postprocessor_time_in_seconds);
   summary_dict[py::str("total_time_in_seconds")] =
       py::float_(summary.total_time_in_seconds);
   summary_dict[py::str("minimizer_time_in_seconds")] =
-    py::float_(summary.minimizer_time_in_seconds);
+      py::float_(summary.minimizer_time_in_seconds);
   summary_dict[py::str("linear_solver_time_in_seconds")] =
       py::float_(summary.linear_solver_time_in_seconds);
   summary_dict[py::str("residual_evaluation_time_in_seconds")] =
-    py::float_(summary.residual_evaluation_time_in_seconds);
+      py::float_(summary.residual_evaluation_time_in_seconds);
   summary_dict[py::str("jacobian_evaluation_time_in_seconds")] =
-    py::float_(summary.jacobian_evaluation_time_in_seconds);
+      py::float_(summary.jacobian_evaluation_time_in_seconds);
   summary_dict[py::str("num_parameter_blocks")] =
       py::int_(summary.num_parameter_blocks);
   summary_dict[py::str("num_parameters")] = py::int_(summary.num_parameters);
+  summary_dict[py::str("num_residuals")] = py::int_(summary.num_residuals);
+  summary_dict[py::str("num_residual_blocks")] =
+      py::int_(summary.num_residual_blocks);
+  summary_dict[py::str("num_effective_parameters")] =
+      py::int_(summary.num_effective_parameters);
   summary_dict[py::str("num_residual_blocks")] =
       py::int_(summary.num_residual_blocks);
   summary_dict[py::str("num_residuals")] = py::int_(summary.num_residuals);
@@ -93,6 +98,16 @@ auto SummaryToDict(const ceres::Solver::Summary &summary) -> py::dict {
           summary.trust_region_strategy_type));
   summary_dict[py::str("minimizer_type")] =
       py::str(ceres::MinimizerTypeToString(summary.minimizer_type));
+
+  summary_dict[py::str("message")] = py::str(summary.message.c_str());
+  summary_dict[py::str("num_threads_given")] =
+      py::int_(summary.num_threads_given);
+  summary_dict[py::str("num_threads_used")] =
+      py::int_(summary.num_threads_used);
+  summary_dict[py::str("num_linear_solver_threads_given")] =
+      py::int_(summary.num_linear_solver_threads_given);
+  summary_dict[py::str("num_linear_solver_threads_used")] =
+      py::int_(summary.num_linear_solver_threads_used);
 
   py::list iterations;
   auto its = summary.iterations;
@@ -127,7 +142,7 @@ auto SummaryToDict(const ceres::Solver::Summary &summary) -> py::dict {
 //[>     std::cout << a.first << " " << a.second << std::endl; <]
 
 //[>
-//ceres::StringToLinearSolverType(std::string(py::str(solver_options[py::str("linear_solver_type")])),
+// ceres::StringToLinearSolverType(std::string(py::str(solver_options[py::str("linear_solver_type")])),
 //<]
 //[>                                 &options.linear_solver_type); <]
 
@@ -141,16 +156,16 @@ auto SummaryToDict(const ceres::Solver::Summary &summary) -> py::dict {
 // options.parameter_tolerance = parameter_tolerance;
 
 //[> options.function_tolerance =
-//py::object(solver_options["function_tolerance"]).cast<double>(); <]
+// py::object(solver_options["function_tolerance"]).cast<double>(); <]
 //[> options.gradient_tolerance = solver_options["gradient_tolerance"]; <]
 
 //[>
-//ceres::StringToTrustRegionStrategyType(std::string(py::str(solver_options["trust_region_strategy_type"])),
+// ceres::StringToTrustRegionStrategyType(std::string(py::str(solver_options["trust_region_strategy_type"])),
 //<]
 //[> &options.trust_region_strategy_type); <]
 
 //[> options.minimizer_progress_to_stdout =
-//solver_options["minimizer_progress_to_stdout"]; <]
+// solver_options["minimizer_progress_to_stdout"]; <]
 
 //[> ceres::StringToMinimizerType( <]
 //[>     std::string(py::str(solver_options["minimizer_type"])),

@@ -28,6 +28,7 @@ include_directories(
         third_party/Adept/include
         third_party/pybind11/include/
         third_party/vahlen/include/
+        third_party/hep-ga/include/
         ${PYTHON_INCLUDE_DIRS}
         ${EIGEN_INCLUDE_DIRS}
         ${CERES_INCLUDE_DIRS}

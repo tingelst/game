@@ -51,6 +51,8 @@ void AddMotor(py::module &m) {
       .def("__mul__", [](const Mot &lhs, const Mot &rhs) { return lhs * rhs; })
       .def("__mul__", [](const Mot &lhs, const Dll &rhs) { return lhs * rhs; })
       .def("__mul__", [](const Mot &lhs, const Trs &rhs) { return lhs * rhs; })
+      .def("__le__",
+           [](const Mot &lhs, const Mot &rhs) { return (lhs <= rhs)[0]; })
       .def("__repr__",
            [](const Mot &arg) {
              std::stringstream ss;

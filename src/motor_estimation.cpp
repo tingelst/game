@@ -253,6 +253,54 @@ public:
     const Pnt b_;
   };
 
+  struct GaalopPointCorrespondencesCostFunctor {
+    GaalopPointCorrespondencesCostFunctor(const Pnt &a, const Pnt &b)
+        : a_(a), b_(b) {}
+
+    template <typename T>
+    void Calculate(const T &a1, const T &a2, const T &a3, const T &a4,
+                   const T &a5, const T &b1, const T &b2, const T &b3,
+                   const T &b4, const T &b5, const T &m1, const T &m2,
+                   const T &m3, const T &m4, const T &m5, const T &m6,
+                   const T &m7, const T &m8, T *residual) const {
+
+      residual[0] = ((((-(2.0 * a4 * m4 * m8)) - 2.0 * a4 * m3 * m7 -
+                       2.0 * a4 * m2 * m6 - 2.0 * a4 * m1 * m5 + a1 * m4 * m4 +
+                       (2.0 * a3 * m2 - 2.0 * a2 * m3) * m4) -
+                      a1 * m3 * m3 + 2.0 * a3 * m1 * m3) -
+                     a1 * m2 * m2 + 2.0 * a2 * m1 * m2 + a1 * m1 * m1) -
+                    b1; // e1
+      residual[1] = (((2.0 * a4 * m3 * m8 - 2.0 * a4 * m4 * m7 -
+                       2.0 * a4 * m1 * m6 + 2.0 * a4 * m2 * m5) -
+                      a2 * m4 * m4 + (2.0 * a3 * m1 - 2.0 * a1 * m3) * m4 +
+                      a2 * m3 * m3) -
+                     2.0 * a3 * m2 * m3 - a2 * m2 * m2 - 2.0 * a1 * m1 * m2 +
+                     a2 * m1 * m1) -
+                    b2; // e2
+      residual[2] = ((((-(2.0 * a4 * m2 * m8)) - 2.0 * a4 * m1 * m7 +
+                       2.0 * a4 * m4 * m6 + 2.0 * a4 * m3 * m5) -
+                      a3 * m4 * m4 + (2.0 * a1 * m2 - 2.0 * a2 * m1) * m4) -
+                     a3 * m3 * m3 + ((-(2.0 * a1 * m1)) - 2.0 * a2 * m2) * m3 +
+                     a3 * m2 * m2 + a3 * m1 * m1) -
+                    b3; // e3
+    }
+
+    template <typename T>
+    auto operator()(const T *const motor, T *residual) const -> bool {
+
+      Calculate(T(a_[0]), T(a_[1]), T(a_[2]), T(a_[3]), T(a_[4]), T(b_[0]),
+                T(b_[1]), T(b_[2]), T(b_[3]), T(b_[4]), T(motor[0]),
+                T(motor[1]), T(motor[2]), T(motor[3]), T(motor[4]), T(motor[5]),
+                T(motor[6]), T(motor[7]), residual);
+
+      return true;
+    }
+
+  private:
+    const Pnt a_;
+    const Pnt b_;
+  };
+
   struct PointCorrespondencesCostFunctor {
     PointCorrespondencesCostFunctor(const Pnt &a, const Pnt &b)
         : a_(a), b_(b) {}
@@ -326,6 +374,16 @@ public:
     ceres::CostFunction *cost_function =
         new ceres::AutoDiffCostFunction<PointCorrespondencesCostFunctor, 3, 8>(
             new PointCorrespondencesCostFunctor(a, b));
+    problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
+    return true;
+  }
+
+  auto AddGaalopPointCorrespondencesResidualBlock(const Pnt &a, const Pnt &b)
+      -> bool {
+    ceres::CostFunction *cost_function =
+        new ceres::AutoDiffCostFunction<GaalopPointCorrespondencesCostFunctor,
+                                        3, 8>(
+            new GaalopPointCorrespondencesCostFunctor(a, b));
     problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
     return true;
   }
@@ -426,6 +484,8 @@ PYBIND11_PLUGIN(motor_estimation) {
            &MotorEstimationSolver::AddLineAngleDistanceNormResidualBlock)
       .def("add_point_correspondences_residual_block",
            &MotorEstimationSolver::AddPointCorrespondencesResidualBlock)
+      .def("add_gaalop_point_correspondences_residual_block",
+           &MotorEstimationSolver::AddGaalopPointCorrespondencesResidualBlock)
       .def("add_adept_point_correspondences_residual_block",
            &MotorEstimationSolver::AddAdeptPointCorrespondencesResidualBlock)
       .def("add_point_distance_residual_block",

@@ -12,18 +12,22 @@ import getpass
 import hashlib
 import random
 
+
 # From: https://github.com/jupyter/notebook/blob/master/notebook/auth/security.py
 def no_code(x, encoding=None):
     return x
+
 
 def encode(u, encoding=None):
     encoding = encoding or DEFAULT_ENCODING
     return u.encode(encoding, "replace")
 
+
 def cast_bytes(s, encoding=None):
     if not isinstance(s, bytes):
         return encode(s, encoding)
     return s
+
 
 if sys.version_info[0] >= 3:
     str_to_bytes = encode
@@ -33,6 +37,8 @@ else:
 # Length of the salt in nr of hex chars, which implies salt_len * 4
 # bits of randomness.
 salt_len = 12
+
+
 def passwd(passphrase=None, algorithm='sha1'):
     """Generate hashed password and salt for use in notebook configuration.
     In the notebook configuration, set `c.NotebookApp.password` to
@@ -72,21 +78,34 @@ def passwd(passphrase=None, algorithm='sha1'):
 
     return ':'.join((algorithm, salt, h.hexdigest()))
 
+
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Geometric Algebra Multivector Estimation", prog='game')
+    parser = argparse.ArgumentParser(
+        description="Geometric Algebra Multivector Estimation",
+        prog='game')
     subparser = parser.add_subparsers(help='commands', dest='verb')
     run_parser = subparser.add_parser('run')
-    run_parser.add_argument('--use-password', default=True, help='Password protect notebook',
+    run_parser.add_argument('--use-password',
+                            default=True,
+                            help='Password protect notebook',
                             dest='usepassword')
-    run_parser.add_argument('--hostname', default="docker-game", help='Container host name')
+    run_parser.add_argument('--hostname',
+                            default="docker-game",
+                            help='Container host name')
+    run_parser.add_argument(
+        '--tag',
+        default='tingelst/game',
+        help='Name and optionally a tag in the "name:tag" format')
     build_parser = subparser.add_parser('build')
-    build_parser.add_argument('--tag',
-                              default='tingelst/game',
-                              help='Name and optionally a tag in the "name:tag" format')
+    build_parser.add_argument(
+        '--tag',
+        default='tingelst/game',
+        help='Name and optionally a tag in the "name:tag" format')
     build_container_parser = subparser.add_parser('build-container')
-    build_container_parser.add_argument('--tag',
-                              default='tingelst/game',
-                              help='Name and optionally a tag in the "name:tag" format')
+    build_container_parser.add_argument(
+        '--tag',
+        default='tingelst/game',
+        help='Name and optionally a tag in the "name:tag" format')
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -100,33 +119,27 @@ if __name__ == '__main__':
         if not os.path.isdir('build'):
             try:
                 os.makedirs('build')
-            except OSError as exc: # Python >2.5
+            except OSError as exc:  # Python >2.5
                 if exc.errno == errno.EEXIST and os.path.isdir('build'):
                     pass
-                else: raise
-            with subprocess.Popen(['docker', 'run',
-                                   '--volume',
-                                   '{pwd}:/home/game/game'.format(pwd=os.getcwd()),
-                                   '--workdir',
-                                   '/home/game/game/build',
-                                   args.tag,
-                                   'zsh',
-                                   '-c',
-                                   'source /home/game/python/bin/activate && cmake -GNinja ..']) as p:
+                else:
+                    raise
+            with subprocess.Popen(
+                ['docker', 'run', '--volume',
+                 '{pwd}:/home/game/game'.format(pwd=os.getcwd()), '--workdir',
+                 '/home/game/game/build', args.tag, 'zsh', '-c',
+                 'source /home/game/python/bin/activate && cmake -GNinja ..'
+                 ]) as p:
                 try:
                     p.wait()
                 except KeyboardInterrupt:
                     p.terminate()
 
-        with subprocess.Popen(['docker', 'run',
-                               '--volume',
-                               '{pwd}:/home/game/game'.format(pwd=os.getcwd()),
-                               '--workdir',
-                               '/home/game/game/build',
-                               args.tag,
-                               'zsh',
-                               '-c',
-                               'source /home/game/python/bin/activate && cmake --build .']) as p:
+        with subprocess.Popen(
+            ['docker', 'run', '--volume',
+             '{pwd}:/home/game/game'.format(pwd=os.getcwd()), '--workdir',
+             '/home/game/game/build', args.tag, 'zsh', '-c',
+             'source /home/game/python/bin/activate && cmake --build .']) as p:
             try:
                 p.wait()
             except KeyboardInterrupt:
@@ -135,17 +148,12 @@ if __name__ == '__main__':
     elif args.verb == 'run':
         if args.usepassword:
             h = passwd()
-        with subprocess.Popen(['docker', 'run',
-                               '-h', args.hostname,
-                               '-it',
-                               '--rm',
-                               '-v', '{pwd}:/home/game/game'.format(pwd=os.getcwd()),
-                               '-e', "USE_HTTPS=yes",
-                               '-e', "PASSWORD={}".format(h),
-                               '-p', '8888:8888',
-                               'tingelst/game']) as p:
+        with subprocess.Popen(
+            ['docker', 'run', '-h', args.hostname, '-it', '--rm', '-v',
+             '{pwd}:/home/game/game'.format(pwd=os.getcwd()), '-e',
+             "USE_HTTPS=yes", '-e', "PASSWORD={}".format(h), '-p', '8888:8888',
+             args.tag]) as p:
             try:
                 p.wait()
             except KeyboardInterrupt:
                 p.terminate()
-

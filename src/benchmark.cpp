@@ -465,6 +465,21 @@ static void BM_AdeptRotorMatrixJacobianReverse(benchmark::State &state) {
     g_stack.jacobian_reverse(jac, true);
   }
 }
+
+struct DiffRotorHandFunctor {
+  template <typename T> bool operator()(const T *th, const T *a, T *b) const {
+    T st = sin(th[0] / 2.0);
+    T ct = cos(th[0] / 2.0);
+    T stst = st * st;
+    T ctct = ct * ct;
+    T ctst = ct * st;
+    b[0] = (-(a[0] * stst)) - 2.0 * a[1] * ctst + a[0] * ctct; // e1
+    b[1] = (-(a[1] * stst)) + 2.0 * a[0] * ctst + a[1] * ctct; // e2
+    b[2] = a[2] * stst + a[2] * ctct;                          // e3
+    return true;
+  }
+};
+
 struct DiffRotorGaalopFunctor {
   template <typename T> bool operator()(const T *th, const T *a, T *b) const {
     b[0] = (-(a[0] * sin(th[0] / 2.0) * sin(th[0] / 2.0))) -
@@ -509,6 +524,49 @@ static void BM_AdeptRotorGaalopJacobianForward(benchmark::State &state) {
   }
 }
 
+static void BM_AdeptRotorHandJacobianReverse(benchmark::State &state) {
+  double jac[3];
+  adept::adouble theta{0.5};
+  adept::adouble point[3];
+  adept::set_values(point, 3, g_point);
+  while (state.KeepRunning()) {
+    g_stack.new_recording();
+    adept::adouble res[3] = {0.0, 0.0, 0.0};
+    DiffRotorHandFunctor()(&theta, &point[0], &res[0]);
+    g_stack.independent(&theta, 1);
+    g_stack.dependent(res, 3);
+    g_stack.jacobian_reverse(jac, true);
+  }
+}
+
+static void BM_AdeptRotorHandJacobianForward(benchmark::State &state) {
+  double jac[3];
+  adept::adouble theta{0.5};
+  adept::adouble point[3];
+  adept::set_values(point, 3, g_point);
+  while (state.KeepRunning()) {
+    g_stack.new_recording();
+    adept::adouble res[3] = {0.0, 0.0, 0.0};
+    DiffRotorHandFunctor()(&theta, &point[0], &res[0]);
+    g_stack.set_max_jacobian_threads(3);
+    g_stack.independent(&theta, 1);
+    g_stack.dependent(res, 3);
+    // g_stack.jacobian_forward_openmp(jac, true);
+    g_stack.jacobian_forward(jac, true);
+  }
+}
+
+static void BM_CeresRotorHandJacobian(benchmark::State &state) {
+  double theta = 0.5;
+  double jac[3];
+  const double *parameters[2] = {&theta, &g_point[0]};
+  double *jacobians[2] = {jac, nullptr};
+  while (state.KeepRunning()) {
+    ceres::AutoDiffCostFunction<DiffRotorHandFunctor, 3, 1, 3>(
+        new DiffRotorHandFunctor())
+        .Evaluate(parameters, &g_point_spin_motor[0], jacobians);
+  }
+}
 static void BM_CeresRotorGaalopJacobian(benchmark::State &state) {
   double theta = 0.5;
   double jac[3];
@@ -541,6 +599,7 @@ BENCHMARK(BM_CeresRotorMatrixJacobian);
 BENCHMARK(BM_CeresRotorVersorJacobian);
 BENCHMARK(BM_CeresRotorHepGAJacobian);
 BENCHMARK(BM_CeresRotorGaalopJacobian);
+BENCHMARK(BM_CeresRotorHandJacobian);
 BENCHMARK(BM_AdeptRotorMatrixJacobianForward);
 BENCHMARK(BM_AdeptRotorMatrixJacobianReverse);
 BENCHMARK(BM_AdeptRotorVersorJacobianForward);
@@ -549,5 +608,7 @@ BENCHMARK(BM_AdeptRotorHepGAJacobianForward);
 BENCHMARK(BM_AdeptRotorHepGAJacobianReverse);
 BENCHMARK(BM_AdeptRotorGaalopJacobianReverse);
 BENCHMARK(BM_AdeptRotorGaalopJacobianForward);
+BENCHMARK(BM_AdeptRotorHandJacobianReverse);
+BENCHMARK(BM_AdeptRotorHandJacobianForward);
 
 BENCHMARK_MAIN()

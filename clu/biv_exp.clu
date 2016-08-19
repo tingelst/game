@@ -1,0 +1,21 @@
+
+
+theta = sqrt( l1 * l1 + l2 * l2 + l3 * l3);
+
+sin_theta = sin(theta);
+sinc_theta = sin_theta / theta;
+cos_theta = cos(theta);
+
+biv = (l1 * e1 * e2 + l2 * e1 * e3 + l3 * e2 * e3) / theta;
+
+t = l4 * e1 + l5 * e2 + l6 * e3;
+tv = ((t . biv) / biv);
+tw = ((t ^ biv) / biv);
+?tt = cos_theta * tw + sinc_theta * tv;
+ts = sin_theta * biv * tw;
+
+m_delta = cos_theta + sin_theta * biv + cos_theta * tw * einf + sinc_theta * tv * einf + ts * einf;
+
+m_x = m1 + m2 * e1 * e2 + m3 * e1 * e3 + m4 * e2 * e3 + m5 * e1 * einf + m6 * e2 * einf + m7 * e3 * einf + m8 * e1 * e2 * e3 * einf;
+
+m = m_delta * m_x;

@@ -590,9 +590,9 @@ Multivector<Algebra, B> Multivector<Algebra, B>::twist(
   @ingroup cgaops
 * @{ */
 
-#define E1 e1(1)
-#define E2 e2(1)
-#define E3 e3(1)
+// #define E1 e1(1)
+// #define E2 e2(1)
+// #define E3 e3(1)
 
 /// A vsr::cga::Pnt at coordinates x,y,z
 #define PT(x, y, z) vsr::cga::Round::null(vsr::cga::Vec(x, y, z))

@@ -1,0 +1,3 @@
+vec = a1 * e1 + a2 * e2 + a3 * e3;
+biv = b1 * e2 * e3 + b2 * e3 * e1 + b3 * e1 * e2;
+?vec_ip_biv = vec . biv;

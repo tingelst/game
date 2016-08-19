@@ -1,6 +1,7 @@
 build
 build_gcc
 build-osx
+build-clang
 build2
 build3
 .idea

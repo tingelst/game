@@ -35,6 +35,7 @@ void AddDualPlane(py::module &m) {
            })
       .def("spin", (Dlp (Dlp::*)(const Mot &) const) & Dlp::spin)
       .def("__mul__", [](const Dlp &lhs, const Dlp &rhs) { return lhs * rhs; })
+      .def("__sub__", [](const Dlp &lhs, const Dlp &rhs) { return lhs - rhs; })
       .def("__mul__", [](const Dlp &lhs, double rhs) { return lhs * rhs; })
       .def("__div__", [](const Dlp &lhs, double rhs) { return lhs / rhs; })
       .def("__leq__", [](const Dlp &lhs, const Dlp &rhs) { return lhs <= rhs; })
@@ -57,6 +58,6 @@ void AddDualPlane(py::module &m) {
       });
 }
 
-} // namespace python
+}  // namespace python
 
-} // namespace vsr
+}  // namespace vsr

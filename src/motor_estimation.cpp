@@ -40,7 +40,7 @@ using vsr::nga::Op;
 namespace game {
 
 class MotorEstimationSolver {
-public:
+ public:
   MotorEstimationSolver() {}
   MotorEstimationSolver(const MotorEstimationSolver &motor_estimation_solver) {}
   MotorEstimationSolver(const Mot &motor) : motor_(motor) {}
@@ -76,7 +76,7 @@ public:
       return true;
     }
 
-  private:
+   private:
     const Tnv a_;
     const Tnv b_;
   };
@@ -121,7 +121,29 @@ public:
       return true;
     }
 
-  private:
+   private:
+    const Dlp a_;
+    const Dlp b_;
+  };
+
+  struct DualPlaneDifferenceFunctor {
+    DualPlaneDifferenceFunctor(const Dlp &a, const Dlp &b) : a_(a), b_(b) {}
+
+    template <typename T>
+    bool operator()(const T *const motor, T *residual) const {
+      Motor<T> M(motor);
+      DualPlane<T> a(a_);
+      DualPlane<T> b(b_);
+      DualPlane<T> c = a.spin(M);
+
+      for (int i = 0; i < 4; ++i) {
+        residual[i] = c[i] - b[i];
+      }
+
+      return true;
+    }
+
+   private:
     const Dlp a_;
     const Dlp b_;
   };
@@ -161,7 +183,7 @@ public:
       return true;
     }
 
-  private:
+   private:
     const Dll a_;
     const Dll b_;
   };
@@ -202,7 +224,7 @@ public:
       return true;
     }
 
-  private:
+   private:
     const Dll a_;
     const Dll b_;
   };
@@ -224,7 +246,7 @@ public:
       return true;
     }
 
-  private:
+   private:
     const Dll a_;
     const Dll b_;
   };
@@ -248,7 +270,7 @@ public:
       return true;
     }
 
-  private:
+   private:
     const Pnt a_;
     const Pnt b_;
   };
@@ -271,7 +293,7 @@ public:
       return true;
     }
 
-  private:
+   private:
     const Pnt a_;
     const Pnt b_;
   };
@@ -292,6 +314,14 @@ public:
     ceres::CostFunction *cost_function =
         new ceres::AutoDiffCostFunction<DualPlaneAngleErrorCostFunctor, 2, 8>(
             new DualPlaneAngleErrorCostFunctor(a, b));
+    problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
+    return true;
+  }
+
+  bool AddDualPlaneDifferenceResidualBlock(const Dlp &a, const Dlp &b) {
+    ceres::CostFunction *cost_function =
+        new ceres::AutoDiffCostFunction<DualPlaneDifferenceFunctor, 4, 8>(
+            new DualPlaneDifferenceFunctor(a, b));
     problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
     return true;
   }
@@ -378,16 +408,16 @@ public:
   }
 
   class UpdateMotorEachIterationCallback : public ceres::IterationCallback {
-  public:
+   public:
     UpdateMotorEachIterationCallback(const Mot *motor, std::vector<Mot> *list)
         : motor_(motor), list_(list) {}
-    virtual ceres::CallbackReturnType
-    operator()(const ceres::IterationSummary &summary) {
+    virtual ceres::CallbackReturnType operator()(
+        const ceres::IterationSummary &summary) {
       list_->push_back(Mot(*motor_));
       return ceres::SOLVER_CONTINUE;
     }
 
-  private:
+   private:
     std::vector<Mot> *list_;
     const Mot *motor_;
   };
@@ -418,6 +448,8 @@ PYBIND11_PLUGIN(motor_estimation) {
            &MotorEstimationSolver::AddTangentVectorPointAngleErrorResidualBlock)
       .def("add_dual_plane_angle_error_residual_block",
            &MotorEstimationSolver::AddDualPlaneAngleErrorResidualBlock)
+      .def("add_dual_plane_difference_residual_block",
+           &MotorEstimationSolver::AddDualPlaneDifferenceResidualBlock)
       .def("add_line_correspondences_residual_block",
            &MotorEstimationSolver::AddLineCorrespondencesResidualBlock)
       .def("add_line_angle_distance_residual_block",
@@ -520,4 +552,4 @@ PYBIND11_PLUGIN(motor_estimation) {
   return m.ptr();
 }
 
-} // namespace game
+}  // namespace game

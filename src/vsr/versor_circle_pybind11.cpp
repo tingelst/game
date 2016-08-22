@@ -46,6 +46,8 @@ void AddCircle(py::module &m) {
                                                location[2]};
              return std::make_tuple(radius, location_list, quat_list);
            })
+      .def("comm", [](const Cir &lhs,
+                      const Cir &rhs) { return (lhs * rhs - rhs * lhs) * 0.5; })
       .def("pnt", [](const Cir &self) { return Round::location(self); })
       .def("radius", [](const Cir &self) { return Round::radius(self); })
       .def("pln", [](const Cir &self) { return Round::carrier(self); })
@@ -71,6 +73,6 @@ void AddCircle(py::module &m) {
       });
 }
 
-} // namespace python
+}  // namespace python
 
-} // namespace vsr
+}  // namespace vsr

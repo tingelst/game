@@ -30,6 +30,8 @@ using vsr::cga::Origin;
 using vsr::cga::Infinity;
 using vsr::cga::TangentVector;
 using vsr::cga::DirectionVector;
+using vsr::cga::Circle;
+using vsr::cga::Cir;
 using vsr::cga::Pnt;
 using vsr::cga::Dll;
 using vsr::cga::Dlp;
@@ -124,6 +126,50 @@ class MotorEstimationSolver {
    private:
     const Dlp a_;
     const Dlp b_;
+  };
+
+  struct CircleCommutatorCostFunctor {
+    CircleCommutatorCostFunctor(const Cir &a, const Cir &b) : a_(a), b_(b) {}
+
+    template <typename T>
+    bool operator()(const T *const motor, T *residual) const {
+      Motor<T> M(motor);
+      Circle<T> a(a_);
+      Circle<T> b(b_);
+      Circle<T> c = a.spin(M);
+      Circle<T> d = (c * b - b * c) * Scalar<T>(0.5);
+
+      for (int i = 0; i < 10; ++i) {
+        residual[i] = d[i];
+      }
+
+      return true;
+    }
+
+   private:
+    const Cir a_;
+    const Cir b_;
+  };
+  struct CircleDifferenceCostFunctor {
+    CircleDifferenceCostFunctor(const Cir &a, const Cir &b) : a_(a), b_(b) {}
+
+    template <typename T>
+    bool operator()(const T *const motor, T *residual) const {
+      Motor<T> M(motor);
+      Circle<T> a(a_);
+      Circle<T> b(b_);
+      Circle<T> c = a.spin(M);
+
+      for (int i = 0; i < 10; ++i) {
+        residual[i] = c[i] - b[i];
+      }
+
+      return true;
+    }
+
+   private:
+    const Cir a_;
+    const Cir b_;
   };
 
   struct DualPlaneDifferenceFunctor {
@@ -285,31 +331,29 @@ class MotorEstimationSolver {
                    const T &b4, const T &b5, const T &m1, const T &m2,
                    const T &m3, const T &m4, const T &m5, const T &m6,
                    const T &m7, const T &m8, T *residual) const {
-
       residual[0] = ((((-(2.0 * a4 * m4 * m8)) - 2.0 * a4 * m3 * m7 -
                        2.0 * a4 * m2 * m6 - 2.0 * a4 * m1 * m5 + a1 * m4 * m4 +
                        (2.0 * a3 * m2 - 2.0 * a2 * m3) * m4) -
                       a1 * m3 * m3 + 2.0 * a3 * m1 * m3) -
                      a1 * m2 * m2 + 2.0 * a2 * m1 * m2 + a1 * m1 * m1) -
-                    b1; // e1
+                    b1;  // e1
       residual[1] = (((2.0 * a4 * m3 * m8 - 2.0 * a4 * m4 * m7 -
                        2.0 * a4 * m1 * m6 + 2.0 * a4 * m2 * m5) -
                       a2 * m4 * m4 + (2.0 * a3 * m1 - 2.0 * a1 * m3) * m4 +
                       a2 * m3 * m3) -
                      2.0 * a3 * m2 * m3 - a2 * m2 * m2 - 2.0 * a1 * m1 * m2 +
                      a2 * m1 * m1) -
-                    b2; // e2
+                    b2;  // e2
       residual[2] = ((((-(2.0 * a4 * m2 * m8)) - 2.0 * a4 * m1 * m7 +
                        2.0 * a4 * m4 * m6 + 2.0 * a4 * m3 * m5) -
                       a3 * m4 * m4 + (2.0 * a1 * m2 - 2.0 * a2 * m1) * m4) -
                      a3 * m3 * m3 + ((-(2.0 * a1 * m1)) - 2.0 * a2 * m2) * m3 +
                      a3 * m2 * m2 + a3 * m1 * m1) -
-                    b3; // e3
+                    b3;  // e3
     }
 
     template <typename T>
     auto operator()(const T *const motor, T *residual) const -> bool {
-
       Calculate(T(a_[0]), T(a_[1]), T(a_[2]), T(a_[3]), T(a_[4]), T(b_[0]),
                 T(b_[1]), T(b_[2]), T(b_[3]), T(b_[4]), T(motor[0]),
                 T(motor[1]), T(motor[2]), T(motor[3]), T(motor[4]), T(motor[5]),
@@ -318,7 +362,7 @@ class MotorEstimationSolver {
       return true;
     }
 
-  private:
+   private:
     const Pnt a_;
     const Pnt b_;
   };
@@ -362,6 +406,21 @@ class MotorEstimationSolver {
     ceres::CostFunction *cost_function =
         new ceres::AutoDiffCostFunction<DualPlaneAngleErrorCostFunctor, 2, 8>(
             new DualPlaneAngleErrorCostFunctor(a, b));
+    problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
+    return true;
+  }
+
+  bool AddCircleCommutatorResidualBlock(const Cir &a, const Cir &b) {
+    ceres::CostFunction *cost_function =
+        new ceres::AutoDiffCostFunction<CircleCommutatorCostFunctor, 10, 8>(
+            new CircleCommutatorCostFunctor(a, b));
+    problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
+    return true;
+  }
+  bool AddCircleDifferenceResidualBlock(const Cir &a, const Cir &b) {
+    ceres::CostFunction *cost_function =
+        new ceres::AutoDiffCostFunction<CircleDifferenceCostFunctor, 10, 8>(
+            new CircleDifferenceCostFunctor(a, b));
     problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
     return true;
   }
@@ -508,6 +567,10 @@ PYBIND11_PLUGIN(motor_estimation) {
            &MotorEstimationSolver::AddDualPlaneAngleErrorResidualBlock)
       .def("add_dual_plane_difference_residual_block",
            &MotorEstimationSolver::AddDualPlaneDifferenceResidualBlock)
+      .def("add_circle_difference_residual_block",
+           &MotorEstimationSolver::AddCircleDifferenceResidualBlock)
+      .def("add_circle_commutator_residual_block",
+           &MotorEstimationSolver::AddCircleCommutatorResidualBlock)
       .def("add_line_correspondences_residual_block",
            &MotorEstimationSolver::AddLineCorrespondencesResidualBlock)
       .def("add_line_angle_distance_residual_block",

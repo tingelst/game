@@ -4,6 +4,7 @@
 #include <game/vsr/cga_op.h>
 #include <glog/logging.h>
 #include <hep/ga.hpp>
+#include <vahlen/vahlen.h>
 
 using namespace vsr::cga;
 
@@ -44,6 +45,70 @@ struct InnerProductVectorBivectorFunctor2 {
   template <typename T>
   bool operator()(const T *vec, const T *biv, T *res) const {
     InnerProductVectorBivector2(vec, biv, res);
+    return true;
+  }
+};
+
+template <typename T>
+void GaalopCalculateMotorSpinPoint(const T m1, const T m2, const T m3,
+                                   const T m4, const T m5, const T m6,
+                                   const T m7, const T m8, const T p1,
+                                   const T p2, const T p3, const T p4,
+                                   const T p5, T *q) {
+
+  q[0] = ((-(2.0 * m1 * m5)) - 2.0 * m2 * m6 - 2.0 * m3 * m7 - 2.0 * m4 * m8) *
+             p4 +
+         (2.0 * m1 * m3 + 2.0 * m2 * m4) * p3 +
+         (2.0 * m1 * m2 - 2.0 * m3 * m4) * p2 +
+         (m1 * m1 - m2 * m2 - m3 * m3 + m4 * m4) * p1; // e1
+  q[1] = (2.0 * m2 * m5 - 2.0 * m1 * m6 - 2.0 * m4 * m7 + 2.0 * m3 * m8) * p4 +
+         (2.0 * m1 * m4 - 2.0 * m2 * m3) * p3 +
+         ((m1 * m1 - m2 * m2 + m3 * m3) - m4 * m4) * p2 +
+         ((-(2.0 * m1 * m2)) - 2.0 * m3 * m4) * p1; // e2
+  q[2] =
+      ((2.0 * m3 * m5 + 2.0 * m4 * m6) - 2.0 * m1 * m7 - 2.0 * m2 * m8) * p4 +
+      ((m1 * m1 + m2 * m2) - m3 * m3 - m4 * m4) * p3 +
+      ((-(2.0 * m2 * m3)) - 2.0 * m1 * m4) * p2 +
+      (2.0 * m2 * m4 - 2.0 * m1 * m3) * p1;            // e3
+  q[3] = (m4 * m4 + m3 * m3 + m2 * m2 + m1 * m1) * p4; // e0
+  q[4] =
+      (m1 * m1 + m2 * m2 + m3 * m3 + m4 * m4) * p5 +
+      (2.0 * m5 * m5 + 2.0 * m6 * m6 + 2.0 * m7 * m7 + 2.0 * m8 * m8) * p4 +
+      ((-(2.0 * m3 * m5)) - 2.0 * m4 * m6 - 2.0 * m1 * m7 - 2.0 * m2 * m8) *
+          p3 +
+      ((-(2.0 * m2 * m5)) - 2.0 * m1 * m6 + 2.0 * m4 * m7 + 2.0 * m3 * m8) *
+          p2 +
+      (((-(2.0 * m1 * m5)) + 2.0 * m2 * m6 + 2.0 * m3 * m7) - 2.0 * m4 * m8) *
+          p1; // einf
+}
+
+template <typename T>
+void GaalopMotorSpinPoint(const T *mot, const T *pnt, T *res) {
+  GaalopCalculateMotorSpinPoint(mot[0], mot[1], mot[2], mot[3], mot[4], mot[5],
+                                mot[6], mot[7], pnt[0], pnt[1], pnt[2], pnt[3],
+                                pnt[4], res);
+}
+
+struct GaalopMotorSpinPointFunctor {
+  template <typename T>
+  bool operator()(const T *mot, const T *pnt, T *res) const {
+    GaalopMotorSpinPoint(mot, pnt, res);
+    return true;
+  }
+};
+
+template <typename T>
+void VahlenMotorSpinPoint(const T *mot, const T *pnt, T *res) {
+  using Mat = vahlen::Matrix<T>;
+  Mat motor = vahlen::Motor<T>(mot);
+  Mat point = vahlen::Point<T>(pnt);
+  Mat result = motor * point * vahlen::Reverse(motor);
+}
+
+struct VahlenMotorSpinPointFunctor {
+  template <typename T>
+  bool operator()(const T *mot, const T *pnt, T *res) const {
+    VahlenMotorSpinPoint(mot, pnt, res);
     return true;
   }
 };
@@ -196,6 +261,18 @@ static void BM_MotorSpinPoint(benchmark::State &state) {
   }
 }
 
+static void BM_VahlenMotorSpinPoint(benchmark::State &state) {
+  while (state.KeepRunning()) {
+    VahlenMotorSpinPoint(g_motor, g_point, g_point_spin_motor);
+  }
+}
+
+static void BM_GaalopMotorSpinPoint(benchmark::State &state) {
+  while (state.KeepRunning()) {
+    GaalopMotorSpinPoint(g_motor, g_point, g_point_spin_motor);
+  }
+}
+
 static void BM_AdeptMotorSpinPointJacobianReverse(benchmark::State &state) {
   while (state.KeepRunning()) {
     double jac[5 * 8];
@@ -255,6 +332,18 @@ static void BM_CeresMotorSpinPointJacobian(benchmark::State &state) {
 
     ceres::AutoDiffCostFunction<MotorSpinPointFunctor, 5, 8, 5>(
         new MotorSpinPointFunctor())
+        .Evaluate(parameters, &g_point_spin_motor[0], jacobians);
+  }
+}
+
+static void BM_CeresGaalopMotorSpinPointJacobian(benchmark::State &state) {
+  while (state.KeepRunning()) {
+    double jac[5 * 8];
+    const double *parameters[2] = {&g_motor[0], &g_point[0]};
+    double *jacobians[2] = {jac, nullptr};
+
+    ceres::AutoDiffCostFunction<GaalopMotorSpinPointFunctor, 5, 8, 5>(
+        new GaalopMotorSpinPointFunctor())
         .Evaluate(parameters, &g_point_spin_motor[0], jacobians);
   }
 }
@@ -466,6 +555,161 @@ static void BM_AdeptRotorMatrixJacobianReverse(benchmark::State &state) {
   }
 }
 
+struct DiffRotorHandFunctor {
+  template <typename T> bool operator()(const T *th, const T *a, T *b) const {
+    T st = sin(th[0] / 2.0);
+    T ct = cos(th[0] / 2.0);
+    T stst = st * st;
+    T ctct = ct * ct;
+    T ctst = ct * st;
+    b[0] = (-(a[0] * stst)) - 2.0 * a[1] * ctst + a[0] * ctct; // e1
+    b[1] = (-(a[1] * stst)) + 2.0 * a[0] * ctst + a[1] * ctct; // e2
+    b[2] = a[2] * stst + a[2] * ctct;                          // e3
+    return true;
+  }
+};
+
+struct DiffRotorGaalopFunctor {
+  template <typename T> bool operator()(const T *th, const T *a, T *b) const {
+    b[0] = (-(a[0] * sin(th[0] / 2.0) * sin(th[0] / 2.0))) -
+           2.0 * a[1] * cos(th[0] / 2.0) * sin(th[0] / 2.0) +
+           a[0] * cos(th[0] / 2.0) * cos(th[0] / 2.0); // e1
+    b[1] = (-(a[1] * sin(th[0] / 2.0) * sin(th[0] / 2.0))) +
+           2.0 * a[0] * cos(th[0] / 2.0) * sin(th[0] / 2.0) +
+           a[1] * cos(th[0] / 2.0) * cos(th[0] / 2.0); // e2
+    b[2] = a[2] * sin(th[0] / 2.0) * sin(th[0] / 2.0) +
+           a[2] * cos(th[0] / 2.0) * cos(th[0] / 2.0); // e3
+    return true;
+  }
+};
+
+static void BM_AdeptRotorGaalopJacobianReverse(benchmark::State &state) {
+  double jac[3];
+  adept::adouble theta{0.5};
+  adept::adouble point[3];
+  adept::set_values(point, 3, g_point);
+  while (state.KeepRunning()) {
+    g_stack.new_recording();
+    adept::adouble res[3] = {0.0, 0.0, 0.0};
+    DiffRotorGaalopFunctor()(&theta, &point[0], &res[0]);
+    g_stack.independent(&theta, 1);
+    g_stack.dependent(res, 3);
+    g_stack.jacobian_reverse(jac, true);
+  }
+}
+
+static void BM_RotorMatrix(benchmark::State &state) {
+  double theta{0.5};
+  double point[3] = {1.0, 2.0, 3.0};
+  double res[3] = {0.0, 0.0, 0.0};
+  while (state.KeepRunning()) {
+    DiffRotorHandFunctor()(&theta, &point[0], &res[0]);
+  }
+}
+static void BM_RotorHand(benchmark::State &state) {
+  double theta{0.5};
+  double point[3] = {1.0, 2.0, 3.0};
+  double res[3] = {0.0, 0.0, 0.0};
+  while (state.KeepRunning()) {
+    DiffRotorHandFunctor()(&theta, &point[0], &res[0]);
+  }
+}
+static void BM_RotorGaalop(benchmark::State &state) {
+  double theta{0.5};
+  double point[3] = {1.0, 2.0, 3.0};
+  double res[3] = {0.0, 0.0, 0.0};
+  while (state.KeepRunning()) {
+    DiffRotorGaalopFunctor()(&theta, &point[0], &res[0]);
+  }
+}
+
+static void BM_RotorVersor(benchmark::State &state) {
+  double theta{0.5};
+  double point[3] = {1.0, 2.0, 3.0};
+  double res[3] = {0.0, 0.0, 0.0};
+  while (state.KeepRunning()) {
+    DiffRotorVersorFunctor()(&theta, &point[0], &res[0]);
+  }
+}
+
+static void BM_RotorHepGA(benchmark::State &state) {
+  double theta{0.5};
+  double point[3] = {1.0, 2.0, 3.0};
+  double res[3] = {0.0, 0.0, 0.0};
+  while (state.KeepRunning()) {
+    DiffRotorHepGAFunctor()(&theta, &point[0], &res[0]);
+  }
+}
+
+static void BM_AdeptRotorGaalopJacobianForward(benchmark::State &state) {
+  double jac[3];
+  adept::adouble theta{0.5};
+  adept::adouble point[3];
+  adept::set_values(point, 3, g_point);
+  while (state.KeepRunning()) {
+    g_stack.new_recording();
+    adept::adouble res[3] = {0.0, 0.0, 0.0};
+    DiffRotorGaalopFunctor()(&theta, &point[0], &res[0]);
+    g_stack.independent(&theta, 1);
+    g_stack.dependent(res, 3);
+    g_stack.jacobian_forward(jac, true);
+  }
+}
+
+static void BM_AdeptRotorHandJacobianReverse(benchmark::State &state) {
+  double jac[3];
+  adept::adouble theta{0.5};
+  adept::adouble point[3];
+  adept::set_values(point, 3, g_point);
+  while (state.KeepRunning()) {
+    g_stack.new_recording();
+    adept::adouble res[3] = {0.0, 0.0, 0.0};
+    DiffRotorHandFunctor()(&theta, &point[0], &res[0]);
+    g_stack.independent(&theta, 1);
+    g_stack.dependent(res, 3);
+    g_stack.jacobian_reverse(jac, true);
+  }
+}
+
+static void BM_AdeptRotorHandJacobianForward(benchmark::State &state) {
+  double jac[3];
+  adept::adouble theta{0.5};
+  adept::adouble point[3];
+  adept::set_values(point, 3, g_point);
+  while (state.KeepRunning()) {
+    g_stack.new_recording();
+    adept::adouble res[3] = {0.0, 0.0, 0.0};
+    DiffRotorHandFunctor()(&theta, &point[0], &res[0]);
+    g_stack.set_max_jacobian_threads(3);
+    g_stack.independent(&theta, 1);
+    g_stack.dependent(res, 3);
+    // g_stack.jacobian_forward_openmp(jac, true);
+    g_stack.jacobian_forward(jac, true);
+  }
+}
+
+static void BM_CeresRotorHandJacobian(benchmark::State &state) {
+  double theta = 0.5;
+  double jac[3];
+  const double *parameters[2] = {&theta, &g_point[0]};
+  double *jacobians[2] = {jac, nullptr};
+  while (state.KeepRunning()) {
+    ceres::AutoDiffCostFunction<DiffRotorHandFunctor, 3, 1, 3>(
+        new DiffRotorHandFunctor())
+        .Evaluate(parameters, &g_point_spin_motor[0], jacobians);
+  }
+}
+static void BM_CeresRotorGaalopJacobian(benchmark::State &state) {
+  double theta = 0.5;
+  double jac[3];
+  const double *parameters[2] = {&theta, &g_point[0]};
+  double *jacobians[2] = {jac, nullptr};
+  while (state.KeepRunning()) {
+    ceres::AutoDiffCostFunction<DiffRotorGaalopFunctor, 3, 1, 3>(
+        new DiffRotorGaalopFunctor())
+        .Evaluate(parameters, &g_point_spin_motor[0], jacobians);
+  }
+}
 
 BENCHMARK(BM_InnerProductVectorBivector);
 BENCHMARK(BM_AdeptJacobianForward);
@@ -476,21 +720,36 @@ BENCHMARK(BM_AdeptJacobianForward2);
 BENCHMARK(BM_AdeptJacobianReverse2);
 BENCHMARK(BM_CeresJacobian2);
 BENCHMARK(BM_MotorSpinPoint);
+BENCHMARK(BM_VahlenMotorSpinPoint);
+BENCHMARK(BM_GaalopMotorSpinPoint);
 BENCHMARK(BM_AdeptMotorSpinPointJacobianForward);
 BENCHMARK(BM_AdeptMotorSpinPointJacobianReverse);
+BENCHMARK(BM_CeresGaalopMotorSpinPointJacobian);
 BENCHMARK(BM_CeresMotorSpinPointJacobian);
 BENCHMARK(BM_CeresRotorSpinPointJacobian);
 BENCHMARK(BM_AdeptRotorSpinPointJacobianForward);
 
-// AMDO paper 
+// AMDO paper
 BENCHMARK(BM_CeresRotorMatrixJacobian);
 BENCHMARK(BM_CeresRotorVersorJacobian);
 BENCHMARK(BM_CeresRotorHepGAJacobian);
+BENCHMARK(BM_CeresRotorGaalopJacobian);
+BENCHMARK(BM_CeresRotorHandJacobian);
 BENCHMARK(BM_AdeptRotorMatrixJacobianForward);
 BENCHMARK(BM_AdeptRotorMatrixJacobianReverse);
 BENCHMARK(BM_AdeptRotorVersorJacobianForward);
 BENCHMARK(BM_AdeptRotorVersorJacobianReverse);
 BENCHMARK(BM_AdeptRotorHepGAJacobianForward);
 BENCHMARK(BM_AdeptRotorHepGAJacobianReverse);
+BENCHMARK(BM_AdeptRotorGaalopJacobianReverse);
+BENCHMARK(BM_AdeptRotorGaalopJacobianForward);
+BENCHMARK(BM_AdeptRotorHandJacobianReverse);
+BENCHMARK(BM_AdeptRotorHandJacobianForward);
+
+BENCHMARK(BM_RotorHand);
+BENCHMARK(BM_RotorGaalop);
+BENCHMARK(BM_RotorVersor);
+BENCHMARK(BM_RotorMatrix);
+BENCHMARK(BM_RotorHepGA);
 
 BENCHMARK_MAIN()

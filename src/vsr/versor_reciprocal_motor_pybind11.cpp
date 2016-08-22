@@ -29,6 +29,8 @@ void AddReciprocalMotor(py::module &m) {
       .def("__init__",
            [](MotRec &instance, CGA &arg) { new (&instance) MotRec(arg); })
       .def("__getitem__", &MotRec::at)
+      .def("__setitem__",
+           [](MotRec &arg, int idx, double val) { arg[idx] = val; })
       .def("rev", &MotRec::reverse)
       .def("inv", &MotRec::inverse)
       .def("comm", [](const MotRec &lhs,
@@ -52,6 +54,8 @@ void AddReciprocalMotor(py::module &m) {
       .def("__mul__", [](const MotRec &lhs, double rhs) { return lhs * rhs; })
       .def("__mul__",
            [](const MotRec &lhs, const MotRec &rhs) { return lhs * rhs; })
+      .def("__mul__",
+           [](const MotRec &lhs, const Mot &rhs) { return lhs * rhs; })
       .def("__mul__",
            [](const MotRec &lhs, const Dll &rhs) { return lhs * rhs; })
       .def("__repr__",

@@ -68,6 +68,8 @@ void AddDualLine(py::module &m) {
       .def("__sub__", [](const Dll &lhs, const Dll &rhs) { return lhs - rhs; })
       .def("__mul__", [](const Dll &lhs, const Mot &rhs) { return lhs * rhs; })
       .def("__mul__", [](const Dll &lhs, const Dll &rhs) { return lhs * rhs; })
+      .def("__le__",
+           [](const Dll &lhs, const Dll &rhs) { return (lhs <= rhs)[0]; })
       .def("__mul__", [](const Dll &lhs, double rhs) { return lhs * rhs; })
       .def("__div__", [](const Dll &lhs, double rhs) { return lhs / rhs; })
       .def("__repr__",

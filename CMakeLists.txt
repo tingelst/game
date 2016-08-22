@@ -54,6 +54,7 @@ add_executable(benchmark
   )
 target_link_libraries(benchmark
   adept
+  pthread
   ${CERES_LIBRARIES}
   ${BENCHMARK_LIBRARY}
   )

@@ -569,6 +569,46 @@ py::list CeresDiffRotorHepGA(const double theta, const Vec &a) {
 
   return list;
 }
+struct DiffRotorGaalopFunctor {
+  template <typename T>
+  bool operator()(const T *th, const T *a, T *b) const {
+    b[0] = (-(a[0] * sin(th[0] / 2.0) * sin(th[0] / 2.0))) -
+           2.0 * a[1] * cos(th[0] / 2.0) * sin(th[0] / 2.0) +
+           a[0] * cos(th[0] / 2.0) * cos(th[0] / 2.0); // e1
+    b[1] = (-(a[1] * sin(th[0] / 2.0) * sin(th[0] / 2.0))) +
+           2.0 * a[0] * cos(th[0] / 2.0) * sin(th[0] / 2.0) +
+           a[1] * cos(th[0] / 2.0) * cos(th[0] / 2.0); // e2
+    b[2] = a[2] * sin(th[0] / 2.0) * sin(th[0] / 2.0) +
+           a[2] * cos(th[0] / 2.0) * cos(th[0] / 2.0); // e3
+    return true;
+  }
+};
+
+py::list CeresDiffRotorGaalop(const double theta, const Vec &a) {
+  auto py_array_jac = py::array(py::buffer_info(
+      nullptr, sizeof(double), py::format_descriptor<double>::value(), 2,
+      {3, 1}, {sizeof(double), sizeof(double)}));
+
+  auto py_array_result = py::array(py::buffer_info(
+      nullptr, sizeof(double), py::format_descriptor<double>::value(), 2,
+      {3, 1}, {sizeof(double), sizeof(double)}));
+
+  auto buf_jac = py_array_jac.request();
+  auto buf_res = py_array_result.request();
+
+  const double *parameters[2] = {&theta, a.begin()};
+  double *jacobians[2] = {static_cast<double *>(buf_jac.ptr), nullptr};
+
+  ceres::AutoDiffCostFunction<DiffRotorGaalopFunctor, 3, 1, 3>(
+      new DiffRotorGaalopFunctor())
+      .Evaluate(parameters, static_cast<double *>(buf_res.ptr), jacobians);
+
+  py::list list;
+  list.append(py_array_result);
+  list.append(py_array_jac);
+
+  return list;
+}
 
 PYBIND11_PLUGIN(autodiff_multivector) {
   py::module m("autodiff_multivector", "autodiff_multivector");
@@ -582,6 +622,7 @@ PYBIND11_PLUGIN(autodiff_multivector) {
   m.def("diff_adept_rotor_matrix_forward", &AdeptDiffRotorMatrixForward);
   m.def("diff_adept_rotor_matrix_reverse", &AdeptDiffRotorMatrixReverse);
   m.def("diff_ceres_rotor_hepga", &CeresDiffRotorHepGA);
+  m.def("diff_ceres_rotor_gaalop", &CeresDiffRotorGaalop);
   m.def("diff_adept_rotor_hepga_forward", &AdeptDiffRotorHepGAForward);
   m.def("diff_adept_rotor_hepga_reverse", &AdeptDiffRotorHepGAReverse);
   return m.ptr();

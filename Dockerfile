@@ -23,6 +23,9 @@ RUN apt-get update && apt-get -y install \
     clang-3.8 \
     && rm -rf /var/lib/apt/lists/*
 
+ENV CC clang-3.8
+ENV CXX clang++-3.8
+
 RUN pip install --upgrade \
     pip \
     virtualenv

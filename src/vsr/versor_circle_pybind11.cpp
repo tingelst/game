@@ -23,6 +23,7 @@ void AddCircle(py::module &m) {
            [](Cir &instance, const Pnt &arg1, const Pnt &arg2,
               const Pnt &arg3) { new (&instance) Cir(arg1 ^ arg2 ^ arg3); })
       .def("duale", &Cir::duale)
+      .def("__sub__", [](const Cir &lhs, const Cir &rhs) { return lhs - rhs; })
       .def("unduale", &Cir::unduale)
       .def("dual", &Cir::dual)
       .def("undual", &Cir::undual)

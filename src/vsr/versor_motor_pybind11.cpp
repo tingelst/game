@@ -4,12 +4,30 @@
 #include "game/vsr/cga_op.h"
 #include "game/vsr/cga_types.h"
 
+
 namespace vsr {
 
 namespace python {
 
 namespace py = pybind11;
 using namespace vsr::cga;
+
+
+template <typename T> DualLine<T> log(const Motor<T> &m) {
+  DualLine<T> q(m);
+  T ac = acos(m[0]);
+  T den = sin(ac) / ac;
+  T den2 = ac * ac * den;
+
+  if (den2 > T(0.0)) {
+    DualLine<T> b = Bivector<T>(m) / den;
+    DualLine<T> c_perp = -b * DirectionTrivector<T>(m) / den2;
+    DualLine<T> c_para = -b * DualLine<T>(b * q) / den2;
+    return b + c_perp + c_para;
+  } else {
+    return q;
+  }
+}
 
 void AddMotor(py::module &m) {
   py::class_<Mot>(m, "Mot")
@@ -20,6 +38,7 @@ void AddMotor(py::module &m) {
       .def("rev", &Mot::reverse)
       .def("inv", &Mot::inverse)
       .def("log", [](const Mot &arg) { return Gen::log(arg); })
+      .def("log2", [](const Mot &arg) { return log<double>(arg); })
       .def("comm", [](const Mot &lhs,
                       const Dll &rhs) { return (lhs * rhs - rhs * lhs) * 0.5; })
       .def("acomm",

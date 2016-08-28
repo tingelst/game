@@ -3,6 +3,7 @@
 #include "game/vsr/cga_op.h"
 #include "game/vsr/cga_types.h"
 
+#include "game/motor_parameterization.h"
 namespace vsr {
 
 namespace python {
@@ -10,15 +11,27 @@ namespace python {
 namespace py = pybind11;
 using namespace vsr::cga;
 
+template <typename T> Motor<T> exp(const DualLine<T> &l) {
+  const T m0_arr[8] = {T(1.0), T(0.0), T(0.0), T(0.0),
+                       T(0.0), T(0.0), T(0.0), T(0.0)};
+  Motor<T> m;
+  game::MotorFromBivectorGenerator()(&m0_arr[0], l.begin(), m.data());
+  return m;
+}
+
 void AddDualLine(py::module &m) {
   py::class_<Dll>(m, "Dll")
       .def(py::init<double, double, double, double, double, double>())
+      // .def("__init__",
+      //      [](Dll &instance, const Vec &arg1, const Vec &arg2) {
+      //        new (&instance) Dll(Construct::line(arg1, arg2).dual());
+      //      })
       .def("__init__",
-           [](Dll &instance, const Vec &arg1, const Vec &arg2) {
+           [](Dll &instance, const Pnt &arg1, const Pnt &arg2) {
              new (&instance) Dll(Construct::line(arg1, arg2).dual());
            })
       .def("__init__",
-           [](Dll &instance, const Pnt &arg1, const Pnt &arg2) {
+           [](Dll &instance, const Pnt &arg1, const Vec &arg2) {
              new (&instance) Dll(Construct::line(arg1, arg2).dual());
            })
 
@@ -49,15 +62,20 @@ void AddDualLine(py::module &m) {
 
       .def("meet", [](const Dll &self,
                       const Dlp &dlp) { return Construct::meet(self, dlp); })
+
+      .def("meet", [](const Dll &self,
+                      const Dll &dll) { return Construct::meet(self, dll); })
       .def("dual", &Dll::dual)
       .def("undual", &Dll::undual)
       .def("drv", [](const Dll &arg) { return Drv(arg); })
       .def("biv", [](const Dll &arg) { return Biv(arg); })
       .def("unit", &Dll::unit)
+      .def("runit", &Dll::runit)
       .def("rev", &Dll::reverse)
       .def("inv", &Dll::inverse)
       .def("spin", (Dll (Dll::*)(const Mot &) const) & Dll::spin)
       .def("exp", [](const Dll &arg) { return Gen::motor(arg); })
+      .def("exp2", [](const Dll &arg) { return exp<double>(arg); })
       .def("loc",
            [](const Dll &arg, const Pnt &arg2) {
              return Flat::location(arg, arg2, true);

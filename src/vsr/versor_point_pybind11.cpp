@@ -36,7 +36,8 @@ void AddPoint(py::module &m) {
       .def("spin", (Pnt (Pnt::*)(const Trs &) const) & Pnt::spin)
       .def("spin", (Pnt (Pnt::*)(const Grt &) const) & Pnt::spin)
       .def("spin", (Pnt (Pnt::*)(const Mot &) const) & Pnt::spin)
-      .def("__sub__", [](const Pnt &lhs, const Pnt &rhs) { return lhs - rhs; })
+      .def("__sub__",
+           [](const Pnt &lhs, const Pnt &rhs) { return Dlp(lhs - rhs); })
       .def("__add__", [](const Pnt &lhs, const Pnt &rhs) { return lhs + rhs; })
       .def("__le__",
            [](const Pnt &lhs, const Pnt &rhs) { return (lhs <= rhs)[0]; })

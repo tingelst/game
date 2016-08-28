@@ -23,6 +23,7 @@ void AddVector(py::module &m) {
       .def("duale", &Vec::duale)
       .def("unduale", &Vec::unduale)
       .def("trs", [](const Vec &arg) { return Gen::trs(arg); })
+      .def("drv", [](const Vec &arg) { return arg * Inf(1.0); })
       .def("reflect_in_line",
            [](const Vec &self, const Vec &other) {
              return Vec(other * self * other);

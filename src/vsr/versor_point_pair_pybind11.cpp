@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
 
-#include "game/vsr/cga_types.h"
 #include "game/vsr/cga_op.h"
+#include "game/vsr/cga_types.h"
 
 namespace vsr {
 
@@ -16,6 +16,14 @@ void AddPointPair(py::module &m) {
                     double, double, double>())
       .def("__init__", [](Par &instance, const Pnt &a,
                           const Pnt &b) { new (&instance) Par(a ^ b); })
+      .def("__init__",
+           [](Par &instance, const Pnt &p, const Vec &v) {
+             new (&instance) Par(p ^ (-p <= (-v * Inf(1.0))));
+           })
+      .def("comm",
+           [](const Par &lhs, const Par &rhs) {
+             return Par(lhs * rhs - rhs * lhs) * 0.5;
+           })
       .def("duale", &Par::duale)
       .def("unduale", &Par::unduale)
       .def("dual", &Par::dual)
@@ -23,19 +31,33 @@ void AddPointPair(py::module &m) {
       .def("unit", &Par::unit)
       .def("rev", &Par::reverse)
       .def("inv", &Par::inverse)
+      .def("rot",
+           [](const Par &self) {
+             Biv b = Round::dir(self).copy<Biv>();
+             Rot r = nga::Gen::ratio(Op::dle(b).unit(), Vec::z);
+             return r;
+           })
+      .def("dir", [](const Par &self) { return Round::direction(self); })
       .def("pnt", [](const Par &self) { return Round::location(self); })
       .def("radius", [](const Par &self) { return Round::radius(self); })
       .def("lin", [](const Par &self) { return Round::carrier(self); })
       .def("pnt_a", [](const Par &self) { return Round::split(self)[0]; })
       .def("pnt_b", [](const Par &self) { return Round::split(self)[1]; })
       .def("spin", (Par (Par::*)(const Mot &) const) & Par::spin)
+      .def("__add__", [](const Par &lhs, const Par &rhs) { return lhs + rhs; })
+      .def("__sub__", [](const Par &lhs, const Par &rhs) { return lhs - rhs; })
       .def("__mul__", [](const Par &lhs, double rhs) { return lhs * rhs; })
       .def("__div__", [](const Par &lhs, double rhs) { return lhs / rhs; })
+      .def("__print_debug_info_console", [](Par &self) { self.print(); })
       .def("__repr__",
            [](const Par &arg) {
              std::stringstream ss;
              ss.precision(4);
-             ss << "Par: [";
+             if (Round::radius(arg) > 0.00000001) {
+               ss << "Par: [";
+             } else {
+               ss << "Tnv: [";
+             }
              for (int i = 0; i < arg.Num; ++i) {
                ss << " " << arg[i];
              }
@@ -49,6 +71,6 @@ void AddPointPair(py::module &m) {
       });
 }
 
-}  // namespace python
+} // namespace python
 
-}  // namespace vsr
+} // namespace vsr

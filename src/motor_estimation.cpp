@@ -30,9 +30,11 @@ using vsr::cga::Origin;
 using vsr::cga::Infinity;
 using vsr::cga::TangentVector;
 using vsr::cga::DirectionVector;
+using vsr::cga::DirectionTrivector;
 using vsr::cga::Circle;
 using vsr::cga::Cir;
 using vsr::cga::Pnt;
+using vsr::cga::Drv;
 using vsr::cga::Dll;
 using vsr::cga::Dlp;
 using vsr::cga::Mot;
@@ -42,7 +44,7 @@ using vsr::nga::Op;
 namespace game {
 
 class MotorEstimationSolver {
- public:
+public:
   MotorEstimationSolver() {}
   MotorEstimationSolver(const MotorEstimationSolver &motor_estimation_solver) {}
   MotorEstimationSolver(const Mot &motor) : motor_(motor) {}
@@ -78,7 +80,7 @@ class MotorEstimationSolver {
       return true;
     }
 
-   private:
+  private:
     const Tnv a_;
     const Tnv b_;
   };
@@ -96,34 +98,34 @@ class MotorEstimationSolver {
       Origin<T> no{T(1.0)};
       Infinity<T> ni{T(1.0)};
 
-      Motor<T> X = Scalar<T>{0.5} * (c / b);
+      Motor<T> X = exp(Scalar<T>{0.5} * log(c / b));
       Rotor<T> R{X[0], X[1], X[2], X[3]};
       Vector<T> t = Scalar<T>{-2.0} * (no <= X) / R;
-      T distance = t.norm();
 
-      // T distance;
-      // if (abs(T(1.0) - X[0]) > T(0.0)) {
-      //   Bivector<T> B{R[1], R[2], R[3]};
-      //   B = B.unit();
-      //   Vector<T> w = Op::reject(t, B);
-      //   distance = w.norm();
-      //   residual[0] = distance;
-      // } else {
-      //   distance = t.norm();
-      //   residual[0] = distance;
-      // }
+      T scale{T(1.0)};
+      if (abs(T(1.0) - X[0]) > T(0.0)) {
+        Bivector<T> B{R[1], R[2], R[3]};
+        B = B.unit();
+        Vector<T> v = Op::project(t, B);
+        residual[0] = v[0];
+        residual[1] = v[1];
+        residual[2] = v[2];
+      } else {
+        residual[0] = t[0];
+        residual[1] = t[1];
+        residual[2] = t[2];
+      }
 
-      // residual[1] = T(1.0) - X[0];
+      residual[3] = T(1.0) - X[0]; // 1 - cos(theta)
 
-      Scalar<T> cos_theta = c <= b;
-
-      residual[0] = X[0];
-      residual[1] = distance;
+      // residual[0] = X[0];
+      // T distance = t.norm();
+      // residual[1] = distance;
 
       return true;
     }
 
-   private:
+  private:
     const Dlp a_;
     const Dlp b_;
   };
@@ -137,7 +139,9 @@ class MotorEstimationSolver {
       Circle<T> a(a_);
       Circle<T> b(b_);
       Circle<T> c = a.spin(M);
-      Circle<T> d = (c * b - b * c) * Scalar<T>(0.5);
+      Circle<T> d =
+          ((c.dual() * b.dual() - b.dual() * c.dual()) * Scalar<T>(0.5))
+              .undual();
 
       for (int i = 0; i < 10; ++i) {
         residual[i] = d[i];
@@ -146,10 +150,11 @@ class MotorEstimationSolver {
       return true;
     }
 
-   private:
+  private:
     const Cir a_;
     const Cir b_;
   };
+
   struct CircleDifferenceCostFunctor {
     CircleDifferenceCostFunctor(const Cir &a, const Cir &b) : a_(a), b_(b) {}
 
@@ -167,9 +172,31 @@ class MotorEstimationSolver {
       return true;
     }
 
-   private:
+  private:
     const Cir a_;
     const Cir b_;
+  };
+
+  struct DirectionVectorInnerProductCostFunctor {
+    DirectionVectorInnerProductCostFunctor(const Drv &a, const Drv &b)
+        : a_(a), b_(b) {}
+
+    template <typename T>
+    bool operator()(const T *const motor, T *residual) const {
+      Motor<T> M(motor);
+      DirectionVector<T> a(a_);
+      DirectionVector<T> b(b_);
+      DirectionVector<T> c = a.spin(M);
+
+      residual[0] =
+          T(1.0) - ((Origin<T>{T(1.0)} <= b) * ~(Origin<T>{T(1.0)} <= c))[0];
+
+      return true;
+    }
+
+  private:
+    const Drv a_;
+    const Drv b_;
   };
 
   struct DualPlaneDifferenceFunctor {
@@ -189,9 +216,68 @@ class MotorEstimationSolver {
       return true;
     }
 
-   private:
+  private:
     const Dlp a_;
     const Dlp b_;
+  };
+
+  struct DualPlaneInnerProductCostFunctor {
+    DualPlaneInnerProductCostFunctor(const Dll &a, const Dll &b)
+        : a_(a), b_(b) {}
+
+    template <typename T>
+    auto operator()(const T *const motor, T *residual) const -> bool {
+      Motor<T> M(motor);
+      DualPlane<T> a(a_);
+      DualPlane<T> b(b_);
+      DualPlane<T> c = a.spin(M);
+      residual[0] = T(1.0) - (b * ~c)[0];
+      return true;
+    }
+
+  private:
+    const Dlp a_;
+    const Dlp b_;
+  };
+
+  struct LineInnerProductCostFunctor {
+    LineInnerProductCostFunctor(const Dll &a, const Dll &b) : a_(a), b_(b) {}
+
+    template <typename T>
+    auto operator()(const T *const motor, T *residual) const -> bool {
+      Motor<T> M(motor);
+      DualLine<T> a(a_);
+      DualLine<T> b(b_);
+      DualLine<T> c = a.spin(M);
+      // residual[0] = T(1.0) - (b * ~c)[0];
+      return true;
+    }
+
+  private:
+    const Dll a_;
+    const Dll b_;
+  };
+
+  struct LineCommutatorCostFunctor {
+    LineCommutatorCostFunctor(const Dll &a, const Dll &b) : a_(a), b_(b) {}
+
+    template <typename T>
+    auto operator()(const T *const motor, T *residual) const -> bool {
+      Motor<T> M(motor);
+      DualLine<T> a(a_);
+      DualLine<T> b(b_);
+      DualLine<T> c = a.spin(M);
+      DualLine<T> d = (b * c - c * b) * Scalar<T>{0.5};
+
+      for (int i = 0; i < 6; ++i) {
+        residual[i] = d[i];
+      }
+      return true;
+    }
+
+  private:
+    const Dll a_;
+    const Dll b_;
   };
 
   struct LineAngleDistanceNormCostFunctor {
@@ -208,7 +294,7 @@ class MotorEstimationSolver {
       Origin<T> no{T(1.0)};
       Infinity<T> ni{T(1.0)};
 
-      Motor<T> X = Scalar<T>{0.5} * (c / b);
+      Motor<T> X = exp(Scalar<T>{0.5} * log(c / b));
       Rotor<T> R{X[0], X[1], X[2], X[3]};
       Vector<T> t = Scalar<T>{-2.0} * (no <= X) / R;
 
@@ -225,14 +311,41 @@ class MotorEstimationSolver {
       }
 
       residual[1] = T(1.0) - X[0];
+      // Bivector<T> biv{R[1], R[2], R[3]};
+      // T theta = atan2(R[0], biv.norm());
+      // residual[1] = theta;
 
       return true;
     }
 
-   private:
+  private:
     const Dll a_;
     const Dll b_;
   };
+
+  template <typename T> static DualLine<T> log(const Motor<T> &m) {
+    DualLine<T> q(m);
+    Scalar<T> ac{acos(m[0])};
+    Scalar<T> den{sin(ac[0]) / ac[0]};
+    Scalar<T> den2{ac * ac * den};
+
+    if (den2[0] > T(0.0)) {
+      DualLine<T> b = Bivector<T>(m) / den;
+      DualLine<T> c_perp = -b * DirectionTrivector<T>(m) / den2;
+      DualLine<T> c_para = -b * DualLine<T>(b * q) / den2;
+      return b + c_perp + c_para;
+    } else {
+      return q;
+    }
+  }
+
+  template <typename T> static Motor<T> exp(const DualLine<T> &l) {
+    const T m0_arr[8] = {T(1.0), T(0.0), T(0.0), T(0.0),
+                         T(0.0), T(0.0), T(0.0), T(0.0)};
+    Motor<T> m;
+    game::MotorFromBivectorGenerator()(&m0_arr[0], l.begin(), m.data());
+    return m;
+  }
 
   struct LineAngleDistanceCostFunctor {
     LineAngleDistanceCostFunctor(const Dll &a, const Dll &b) : a_(a), b_(b) {}
@@ -247,7 +360,8 @@ class MotorEstimationSolver {
       Origin<T> no{T(1.0)};
       Infinity<T> ni{T(1.0)};
 
-      Motor<T> X = Scalar<T>{0.5} * (c / b);
+      // Motor<T> X = Scalar<T>{0.5} * (c / b);
+      Motor<T> X = exp(Scalar<T>{0.5} * log(c / b));
       Rotor<T> R{X[0], X[1], X[2], X[3]};
       Vector<T> t = Scalar<T>{-2.0} * (no <= X) / R;
 
@@ -265,12 +379,16 @@ class MotorEstimationSolver {
         residual[2] = t[2];
       }
 
-      residual[3] = T(1.0) - X[0];
+      residual[3] = T(1.0) - X[0]; // 1 - cos(theta)
+
+      // Bivector<T> biv{R[1], R[2], R[3]};
+      // T theta = atan2(R[0], biv.norm());
+      // residual[3] = T(0.5) * theta;
 
       return true;
     }
 
-   private:
+  private:
     const Dll a_;
     const Dll b_;
   };
@@ -292,7 +410,7 @@ class MotorEstimationSolver {
       return true;
     }
 
-   private:
+  private:
     const Dll a_;
     const Dll b_;
   };
@@ -316,7 +434,7 @@ class MotorEstimationSolver {
       return true;
     }
 
-   private:
+  private:
     const Pnt a_;
     const Pnt b_;
   };
@@ -336,20 +454,20 @@ class MotorEstimationSolver {
                        (2.0 * a3 * m2 - 2.0 * a2 * m3) * m4) -
                       a1 * m3 * m3 + 2.0 * a3 * m1 * m3) -
                      a1 * m2 * m2 + 2.0 * a2 * m1 * m2 + a1 * m1 * m1) -
-                    b1;  // e1
+                    b1; // e1
       residual[1] = (((2.0 * a4 * m3 * m8 - 2.0 * a4 * m4 * m7 -
                        2.0 * a4 * m1 * m6 + 2.0 * a4 * m2 * m5) -
                       a2 * m4 * m4 + (2.0 * a3 * m1 - 2.0 * a1 * m3) * m4 +
                       a2 * m3 * m3) -
                      2.0 * a3 * m2 * m3 - a2 * m2 * m2 - 2.0 * a1 * m1 * m2 +
                      a2 * m1 * m1) -
-                    b2;  // e2
+                    b2; // e2
       residual[2] = ((((-(2.0 * a4 * m2 * m8)) - 2.0 * a4 * m1 * m7 +
                        2.0 * a4 * m4 * m6 + 2.0 * a4 * m3 * m5) -
                       a3 * m4 * m4 + (2.0 * a1 * m2 - 2.0 * a2 * m1) * m4) -
                      a3 * m3 * m3 + ((-(2.0 * a1 * m1)) - 2.0 * a2 * m2) * m3 +
                      a3 * m2 * m2 + a3 * m1 * m1) -
-                    b3;  // e3
+                    b3; // e3
     }
 
     template <typename T>
@@ -362,7 +480,29 @@ class MotorEstimationSolver {
       return true;
     }
 
-   private:
+  private:
+    const Pnt a_;
+    const Pnt b_;
+  };
+
+  struct PointDifferenceCostFunctor {
+    PointDifferenceCostFunctor(const Pnt &a, const Pnt &b) : a_(a), b_(b) {}
+
+    template <typename T>
+    auto operator()(const T *const motor, T *residual) const -> bool {
+      Motor<T> M(motor);
+      Point<T> a(a_);
+      Point<T> b(b_);
+      Point<T> c = a.spin(M);
+
+      for (int i = 0; i < 5; ++i) {
+        residual[i] = c[i] - b[i];
+      }
+
+      return true;
+    }
+
+  private:
     const Pnt a_;
     const Pnt b_;
   };
@@ -385,7 +525,7 @@ class MotorEstimationSolver {
       return true;
     }
 
-   private:
+  private:
     const Pnt a_;
     const Pnt b_;
   };
@@ -404,7 +544,7 @@ class MotorEstimationSolver {
 
   bool AddDualPlaneAngleErrorResidualBlock(const Dlp &a, const Dlp &b) {
     ceres::CostFunction *cost_function =
-        new ceres::AutoDiffCostFunction<DualPlaneAngleErrorCostFunctor, 2, 8>(
+        new ceres::AutoDiffCostFunction<DualPlaneAngleErrorCostFunctor, 4, 8>(
             new DualPlaneAngleErrorCostFunctor(a, b));
     problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
     return true;
@@ -425,6 +565,15 @@ class MotorEstimationSolver {
     return true;
   }
 
+  bool AddDirectionVectorInnerProductResidualBlock(const Drv &a, const Drv &b) {
+    ceres::CostFunction *cost_function =
+        new ceres::AutoDiffCostFunction<DirectionVectorInnerProductCostFunctor,
+                                        1, 8>(
+            new DirectionVectorInnerProductCostFunctor(a, b));
+    problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
+    return true;
+  }
+
   bool AddDualPlaneDifferenceResidualBlock(const Dlp &a, const Dlp &b) {
     ceres::CostFunction *cost_function =
         new ceres::AutoDiffCostFunction<DualPlaneDifferenceFunctor, 4, 8>(
@@ -433,6 +582,29 @@ class MotorEstimationSolver {
     return true;
   }
 
+  auto AddDualPlaneInnerProductResidualBlock(const Dlp &a, const Dlp &b)
+      -> bool {
+    ceres::CostFunction *cost_function =
+        new ceres::AutoDiffCostFunction<DualPlaneInnerProductCostFunctor, 1, 8>(
+            new DualPlaneInnerProductCostFunctor(a, b));
+    problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
+    return true;
+  }
+  auto AddLineInnerProductResidualBlock(const Dll &a, const Dll &b) -> bool {
+    ceres::CostFunction *cost_function =
+        new ceres::AutoDiffCostFunction<LineInnerProductCostFunctor, 1, 8>(
+            new LineInnerProductCostFunctor(a, b));
+    problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
+    return true;
+  }
+
+  auto AddLineCommutatorResidualBlock(const Dll &a, const Dll &b) -> bool {
+    ceres::CostFunction *cost_function =
+        new ceres::AutoDiffCostFunction<LineCommutatorCostFunctor, 6, 8>(
+            new LineCommutatorCostFunctor(a, b));
+    problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
+    return true;
+  }
   auto AddLineCorrespondencesResidualBlock(const Dll &a, const Dll &b) -> bool {
     ceres::CostFunction *cost_function =
         new ceres::AutoDiffCostFunction<LineCorrespondencesCostFunctor, 6, 8>(
@@ -486,6 +658,14 @@ class MotorEstimationSolver {
     return true;
   }
 
+  auto AddPointDifferenceResidualBlock(const Pnt &a, const Pnt &b) -> bool {
+    ceres::CostFunction *cost_function =
+        new ceres::AutoDiffCostFunction<PointDifferenceCostFunctor, 5, 8>(
+            new PointDifferenceCostFunctor(a, b));
+    problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
+    return true;
+  }
+
   auto AddPointDistanceResidualBlock(const Pnt &a, const Pnt &b) -> bool {
     ceres::CostFunction *cost_function =
         new ceres::AutoDiffCostFunction<PointDistanceCostFunctor, 1, 8>(
@@ -525,16 +705,16 @@ class MotorEstimationSolver {
   }
 
   class UpdateMotorEachIterationCallback : public ceres::IterationCallback {
-   public:
+  public:
     UpdateMotorEachIterationCallback(const Mot *motor, std::vector<Mot> *list)
         : motor_(motor), list_(list) {}
-    virtual ceres::CallbackReturnType operator()(
-        const ceres::IterationSummary &summary) {
+    virtual ceres::CallbackReturnType
+    operator()(const ceres::IterationSummary &summary) {
       list_->push_back(Mot(*motor_));
       return ceres::SOLVER_CONTINUE;
     }
 
-   private:
+  private:
     std::vector<Mot> *list_;
     const Mot *motor_;
   };
@@ -577,6 +757,16 @@ PYBIND11_PLUGIN(motor_estimation) {
            &MotorEstimationSolver::AddLineAngleDistanceResidualBlock)
       .def("add_line_angle_distance_norm_residual_block",
            &MotorEstimationSolver::AddLineAngleDistanceNormResidualBlock)
+      .def("add_line_commutator_residual_block",
+           &MotorEstimationSolver::AddLineCommutatorResidualBlock)
+      .def("add_line_inner_product_residual_block",
+           &MotorEstimationSolver::AddLineInnerProductResidualBlock)
+      .def("add_dual_plane_inner_product_residual_block",
+           &MotorEstimationSolver::AddDualPlaneInnerProductResidualBlock)
+      .def("add_direction_vector_inner_product_residual_block",
+           &MotorEstimationSolver::AddDirectionVectorInnerProductResidualBlock)
+      .def("add_point_difference_residual_block",
+           &MotorEstimationSolver::AddPointDifferenceResidualBlock)
       .def("add_point_correspondences_residual_block",
            &MotorEstimationSolver::AddPointCorrespondencesResidualBlock)
       .def("add_gaalop_point_correspondences_residual_block",
@@ -675,4 +865,4 @@ PYBIND11_PLUGIN(motor_estimation) {
   return m.ptr();
 }
 
-}  // namespace game
+} // namespace game

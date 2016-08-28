@@ -25,11 +25,15 @@ void AddCircle(py::module &m) {
       .def("duale", &Cir::duale)
       .def("__sub__", [](const Cir &lhs, const Cir &rhs) { return lhs - rhs; })
       .def("unduale", &Cir::unduale)
+      .def("axis", [](const Cir &cir) { return Construct::axis(cir); })
       .def("dual", &Cir::dual)
       .def("undual", &Cir::undual)
       .def("unit", &Cir::unit)
       .def("rev", &Cir::reverse)
       .def("inv", &Cir::inverse)
+      .def("dir",
+           [](const Cir &self) { return Round::direction(self).copy<Biv>(); })
+      .def("__print_debug_info_console", [](Cir &self) { self.print(); })
       .def("rot",
            [](const Cir &self) {
              Biv b = Round::dir(self).copy<Biv>();
@@ -74,6 +78,6 @@ void AddCircle(py::module &m) {
       });
 }
 
-}  // namespace python
+} // namespace python
 
-}  // namespace vsr
+} // namespace vsr

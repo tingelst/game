@@ -25,12 +25,27 @@ void AddLine(py::module &m) {
            [](Lin &instance, const Pnt &arg1, const Vec &arg2) {
              new (&instance) Lin(arg1 ^ arg2 ^ Inf(1.0));
            })
+      .def("__init__", [](Lin &instance,
+                          const Cir &circle) { new (&instance) Dll(circle); })
       .def("dir", [](const Lin &arg) { return -(Ori(1.0) ^ Inf(1.0)) <= arg; })
-    .def("biv", [](const Lin &arg) { return -(Ori(1.0) ^ Inf(1.0)) <= (arg ^ Ori(1.)); })
+      .def("meet", [](const Lin &self,
+                      const Lin &lin) { return Construct::meet(self, lin); })
+      .def("biv",
+           [](const Lin &arg) {
+             return -(Ori(1.0) ^ Inf(1.0)) <= (arg ^ Ori(1.));
+           })
+      .def("loc",
+           [](const Lin &arg, const Pnt &arg2) {
+             return Flat::location(arg, arg2, false);
+           })
+      .def("inv", &Lin::inverse)
+      .def("reflect_in_line",
+           [](const Lin &self, const Lin &other) { return self.reflect(other); })
       .def("spin", (Lin (Lin::*)(const Rot &) const) & Lin::spin)
       .def("spin", (Lin (Lin::*)(const Mot &) const) & Lin::spin)
       .def("duale", &Lin::duale)
       .def("__mul__", [](const Lin &lhs, const Lin &rhs) { return lhs * rhs; })
+      .def("__print_debug_info_console", [](Lin &self) { self.print(); })
       .def("unduale", &Lin::unduale)
       .def("dual", &Lin::dual)
       .def("undual", &Lin::undual)

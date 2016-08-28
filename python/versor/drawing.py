@@ -56,17 +56,15 @@ def trivector_mesh(tri, color='gray'):
 
 
 def sphere_mesh(sph, color='violet'):
-    if type(sph) == Dls:
-        sph = sph.undual()
-        radius = sph.radius()
-        geometry = SphereGeometry(radius=radius,
-                                  widthSegments=64,
-                                  heightSegments=64)
-        material = LambertMaterial(color=color)
-        material.transparent = True
-        material.opacity = 0.75
-        mesh = Mesh(geometry=geometry, material=material)
-        mesh.position = np.array(sph.pnt())[:3].tolist()
+    radius = sph.radius()
+    geometry = SphereGeometry(radius=radius,
+                              widthSegments=64,
+                              heightSegments=64)
+    material = LambertMaterial(color=color)
+    material.transparent = True
+    material.opacity = 0.75
+    mesh = Mesh(geometry=geometry, material=material)
+    mesh.position = np.array(sph.pnt())[:3].tolist()
     return mesh
 
 
@@ -143,3 +141,17 @@ def frame_mesh(position=None, quaternion=None, size=1, linewidth=2):
     if quaternion is not None:
         frame.quaternion = quaternion
     return frame
+
+
+class Colors:
+    RED = 'red'
+    GREEN = 'green'
+    BLUE = 'blue'
+    HOTPINK = 'hotpink'
+    LIGHTSKYBLUE = 'lightskyblue'
+    AQUAMARINE = 'aquamarine'
+    GRAY = 'gray'
+    LIGHTGRAY = 'lightgray'
+    BLACK = 'black'
+    DEEPPINK = 'deeppink'
+    DEEPSKYBLUE = 'deepskyblue'

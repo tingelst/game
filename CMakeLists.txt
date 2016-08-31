@@ -59,6 +59,16 @@ target_link_libraries(benchmark
   ${BENCHMARK_LIBRARY}
   )
 
+
+add_library(cylinder_estimation SHARED 
+  src/cylinder_estimation.cpp
+  )
+target_link_libraries(cylinder_estimation
+  ${PYTHON_LIBRARIES}
+  ${CERES_LIBRARIES})
+set_target_properties(cylinder_estimation PROPERTIES PREFIX "")
+set_target_properties(cylinder_estimation PROPERTIES SUFFIX ".so")
+
 add_library(motor_estimation SHARED 
   src/motor_estimation.cpp
   )

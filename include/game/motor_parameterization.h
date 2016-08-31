@@ -243,6 +243,42 @@ struct MotorPolarDecomposition {
   }
 };
 
+struct MotorTangentSpacePolarDecomposition {
+  template <typename T>
+  bool operator()(const T *x, const T *delta, T *x_plus_delta) const {
+    using vsr::cga::Scalar;
+    using vsr::cga::Motor;
+    using vsr::cga::DirectionTrivector;
+
+    Motor<T> X{x[0],
+               x[1] + delta[0],
+               x[2] + delta[1],
+               x[3] + delta[2],
+               x[4] + delta[3],
+               x[5] + delta[4],
+               x[6] + delta[5],
+               x[7]};
+
+    T norm = X.norm();
+
+    Motor<T> b = X * ~X;
+
+    T s0 = b[0];
+    T s4 = b[7];
+
+    auto Sinv =
+        Scalar<T>{T(1.0) / norm} *
+        (Scalar<T>{T(1.0)} + DirectionTrivector<T>{-(s4 / (T(2.0) * s0))});
+    Motor<T> M = X * Sinv;
+
+    for (int i = 0; i < 8; ++i) {
+      x_plus_delta[i] = M[i];
+    }
+
+    return true;
+  }
+};
+
 template <typename T> static void NormalizeRotor(T *array) {
   auto scale =
       static_cast<T>(1.0) / sqrt(array[0] * array[0] + array[1] * array[1] +

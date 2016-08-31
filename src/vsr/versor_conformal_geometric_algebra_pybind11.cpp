@@ -44,6 +44,8 @@ void AddCGA(py::module &m) {
       .def("__init__",
            [](CGA &instance, Cir &arg) { new (&instance) CGA(arg); })
       .def("__init__",
+           [](CGA &instance, Par &arg) { new (&instance) CGA(arg); })
+      .def("__init__",
            [](CGA &instance, Pnt &arg) { new (&instance) CGA(arg); })
       .def("__getitem__", &CGA::at)
       .def("__setitem__", [](CGA &arg, int idx, double val) { arg[idx] = val; })

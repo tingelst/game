@@ -676,18 +676,19 @@ public:
 
   auto SetMotorParameterizationTypeFromString(const std::string &type) -> void {
     if (type == "NORMALIZE") {
-      std::cout << "game:: Using rotor normalization." << std::endl;
       problem_.SetParameterization(
           &motor_[0],
           new ceres::AutoDiffLocalParameterization<MotorNormalizeRotor, 8, 8>);
     } else if (type == "POLAR_DECOMPOSITION") {
-      std::cout << "game:: Using polar decomposition." << std::endl;
       problem_.SetParameterization(
           &motor_[0],
           new ceres::AutoDiffLocalParameterization<MotorPolarDecomposition, 8,
                                                    8>);
+    } else if (type == "POLAR_DECOMPOSITION_TANGENT") {
+      problem_.SetParameterization(
+          &motor_[0], new ceres::AutoDiffLocalParameterization<
+                          MotorTangentSpacePolarDecomposition, 8, 6>);
     } else if (type == "BIVECTOR_GENERATOR") {
-      std::cout << "game:: Using bivector generator (Versor)." << std::endl;
       problem_.SetParameterization(
           &motor_[0],
           new ceres::AutoDiffLocalParameterization<MotorFromBivectorGenerator,
@@ -848,6 +849,41 @@ PYBIND11_PLUGIN(motor_estimation) {
             ceres::StringToLinearSolverType(
                 arg, &instance.options_.linear_solver_type);
           })
+      .def_property(
+          "line_search_type",
+          [](MotorEstimationSolver &instance) {
+            return ceres::LineSearchTypeToString(
+                instance.options_.line_search_type);
+          },
+          [](MotorEstimationSolver &instance, const std::string &arg) {
+            ceres::StringToLineSearchType(arg,
+                                          &instance.options_.line_search_type);
+          },
+          "Default: WOLFE\n\nChoices are ARMIJO and WOLFE (strong Wolfe "
+          "conditions). Note that in order for the assumptions underlying the "
+          "BFGS and LBFGS line search direction algorithms to be guaranteed to "
+          "be satisifed, the WOLFE line search should be used.")
+      .def_property(
+          "line_search_direction_type",
+          [](MotorEstimationSolver &instance) {
+            return ceres::LineSearchDirectionTypeToString(
+                instance.options_.line_search_direction_type);
+          },
+          [](MotorEstimationSolver &instance, const std::string &arg) {
+            ceres::StringToLineSearchDirectionType(
+                arg, &instance.options_.line_search_direction_type);
+          })
+      .def_property(
+          "nonlinear_conjugate_gradient_type",
+          [](MotorEstimationSolver &instance) {
+            return ceres::NonlinearConjugateGradientTypeToString(
+                instance.options_.nonlinear_conjugate_gradient_type);
+          },
+          [](MotorEstimationSolver &instance, const std::string &arg) {
+            ceres::StringToNonlinearConjugateGradientType(
+                arg, &instance.options_.nonlinear_conjugate_gradient_type);
+          })
+
       // .def_property(
       //     "trust_region_minimizer_iterations_to_dump",
       //     [](MotorEstimationSolver &instance) {

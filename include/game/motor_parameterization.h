@@ -243,6 +243,7 @@ struct MotorPolarDecomposition {
   }
 };
 
+
 struct MotorTangentSpacePolarDecomposition {
   template <typename T>
   bool operator()(const T *x, const T *delta, T *x_plus_delta) const {

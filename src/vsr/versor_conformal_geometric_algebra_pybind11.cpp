@@ -70,6 +70,10 @@ void AddCGA(py::module &m) {
            [](const CGA &lhs, const CGA &rhs) { return CGA(lhs - rhs); })
       .def("__mul__",
            [](const CGA &lhs, const CGA &rhs) { return (lhs * rhs); })
+      .def("__mul__",
+           [](const CGA &lhs, const double &rhs) { return (lhs * rhs); })
+      .def("__rmul__",
+           [](const CGA &lhs, const double &rhs) { return (lhs * rhs); })
       .def("spin", (CGA (CGA::*)(const CGA &) const) & CGA::spin)
       .def("__repr__",
            [](const CGA &arg) {

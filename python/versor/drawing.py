@@ -101,7 +101,7 @@ def line_mesh(line, arrow=True, length=100, color='gray'):
     return mesh
 
 
-def plane_mesh(plane, width=10, height=10, color='gray'):
+def plane_mesh(plane, width=10, height=10, position=None, color='gray'):
     mesh = Mesh(geometry=PlaneGeometry(width=width, height=height),
                 material=LambertMaterial(color=color,
                                          transparent=True,
@@ -114,7 +114,11 @@ def plane_mesh(plane, width=10, height=10, color='gray'):
         mesh.quaternion = np.array(normal.ratio(Vec(0, 0, 1)).quat()).tolist()
     # mesh.children = [vector_mesh(Vec(0, 0, 1).spin(normal.ratio(Vec(0, 0, 1))))
     #                  ]
-    mesh.position = np.array(plane.loc(Vec(0, 0, 0).null()))[:3].tolist()
+    if position is not None:
+        mesh.position = np.array(position)[:3].tolist() 
+    else:
+        mesh.position = np.array(plane.loc(Vec(0, 0, 0).null()))[:3].tolist()
+
     return mesh
 
 

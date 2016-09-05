@@ -1,0 +1,4 @@
+M = m1 + m2 * e2 * e3 + m3 * e3 * e1 + m4 * e1 * e2 + m5 * e1 * einf + m6 * e2 * einf + m7 * e3 * einf + m8 * e1 * e2 * e3 * einf;
+D =      d1 * e2 * e3 + d2 * e3 * e1 + d3 * e1 * e2 + d4 * e1 * einf + d5 * e2 * einf + d6 * e3 * einf;
+
+? C = -0.5 * D * M;

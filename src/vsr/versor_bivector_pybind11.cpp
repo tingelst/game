@@ -26,6 +26,7 @@ void AddBivector(py::module &m) {
       .def("exp", [](const Biv &biv) { return Gen::rotor(biv); })
       .def("__le__", [](const Biv &lhs, const Tri &rhs) { return lhs <= rhs; })
       .def("__xor__", [](const Biv &lhs, const Vec &rhs) { return lhs ^ rhs; })
+      .def("__add__", [](const Biv &lhs, const Drv &rhs) { return Dll(lhs + rhs); })
       .def("__mul__", [](const Biv &lhs, const Vec &rhs) { return lhs * rhs; })
       .def("__mul__", [](const Biv &lhs, const Biv &rhs) { return lhs * rhs; })
       .def("__mul__", [](const Biv &lhs, double rhs) { return lhs * rhs; })
@@ -54,6 +55,11 @@ void AddBivector(py::module &m) {
         }
         ss << " ]";
         return ss.str();
+      })
+      .def_buffer([](Biv &arg) -> py::buffer_info {
+        return py::buffer_info(
+            arg.data(), sizeof(double), py::format_descriptor<double>::value(),
+            1, {static_cast<unsigned long>(arg.Num)}, {sizeof(double)});
       });
 }
 

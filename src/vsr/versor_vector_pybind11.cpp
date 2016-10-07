@@ -24,6 +24,10 @@ void AddVector(py::module &m) {
       .def("unduale", &Vec::unduale)
       .def("trs", [](const Vec &arg) { return Gen::trs(arg); })
       .def("drv", [](const Vec &arg) { return arg * Inf(1.0); })
+      .def("comm",
+           [](const Vec &lhs, const Biv &rhs) {
+             return Vec(lhs * rhs - rhs * lhs) * 0.5;
+           })
       .def("reflect_in_line",
            [](const Vec &self, const Vec &other) {
              return Vec(other * self * other);
@@ -49,6 +53,7 @@ void AddVector(py::module &m) {
                        const Vec &other) { return Gen::ratio(self, other); })
       .def("__neg__", [](const Vec &arg) { return -arg; })
       .def("__xor__", [](const Vec &lhs, const Vec &rhs) { return lhs ^ rhs; })
+      .def("__xor__", [](const Vec &lhs, const Biv &rhs) { return lhs ^ rhs; })
       .def("__mul__", [](const Vec &lhs, double rhs) { return lhs * rhs; })
       .def("__rmul__", [](const Vec &lhs, double rhs) { return lhs * rhs; })
       .def("__mul__", [](const Vec &lhs, const Vec &rhs) { return lhs * rhs; })

@@ -4,14 +4,12 @@
 #include "game/vsr/cga_op.h"
 #include "game/vsr/cga_types.h"
 
-
 namespace vsr {
 
 namespace python {
 
 namespace py = pybind11;
 using namespace vsr::cga;
-
 
 template <typename T> DualLine<T> log(const Motor<T> &m) {
   DualLine<T> q(m);
@@ -37,6 +35,7 @@ void AddMotor(py::module &m) {
       .def("__setitem__", [](Mot &arg, int idx, double val) { arg[idx] = val; })
       .def("rev", &Mot::reverse)
       .def("inv", &Mot::inverse)
+      .def("dll", [](const Mot &arg) { return Dll(arg); })
       .def("log", [](const Mot &arg) { return Gen::log(arg); })
       .def("log2", [](const Mot &arg) { return log<double>(arg); })
       .def("comm", [](const Mot &lhs,

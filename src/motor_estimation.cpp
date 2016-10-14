@@ -146,7 +146,6 @@ public:
           ((c.dual() * b.dual() - b.dual() * c.dual()) * Scalar<T>(0.5))
               .undual();
 
-
       for (int i = 0; i < 10; ++i) {
         residual[i] = d[i];
       }
@@ -536,7 +535,6 @@ public:
 
   auto Summary() const -> py::dict { return game::SummaryToDict(summary_); }
 
-
   bool AddTangentVectorPointAngleErrorResidualBlock(const Tnv &a,
                                                     const Tnv &b) {
     ceres::CostFunction *cost_function =
@@ -689,6 +687,11 @@ public:
           &motor_[0],
           new ceres::AutoDiffLocalParameterization<MotorPolarDecomposition, 8,
                                                    8>);
+    } else if (type == "RETRACT_FIRST_ORDER") {
+      problem_.SetParameterization(
+          &motor_[0],
+          new ceres::AutoDiffLocalParameterization<MotorRetractFirstOrder, 8,
+                                                   6>);
     } else if (type == "POLAR_DECOMPOSITION_TANGENT") {
       problem_.SetParameterization(
           &motor_[0], new ceres::AutoDiffLocalParameterization<

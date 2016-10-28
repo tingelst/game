@@ -14,6 +14,7 @@ void AddDirectionVector(py::module &m) {
   py::class_<Drv>(m, "Drv")
       .def(py::init<double, double, double>())
       .def("__getitem__", &Drv::at)
+      .def("__setitem__", [](Drv &arg, int idx, double val) { arg[idx] = val; })
       .def("norm", &Drv::norm)
       .def("rnorm", &Drv::rnorm)
       .def("unit", &Drv::unit)
@@ -25,6 +26,8 @@ void AddDirectionVector(py::module &m) {
            [](const Drv &self) { return Vec(self[0], self[1], self[2]); })
       .def("spin", (Drv (Drv::*)(const Rot &) const) & Drv::spin)
       .def("spin", (Drv (Drv::*)(const Mot &) const) & Drv::spin)
+      .def("comm", [](const Drv &lhs,
+                      const Pnt &rhs) { return Pnt(lhs * rhs - rhs * lhs) * 0.5; })
       .def("__repr__",
            [](const Drv &arg) {
              std::stringstream ss;

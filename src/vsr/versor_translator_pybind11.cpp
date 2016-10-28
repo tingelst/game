@@ -14,6 +14,7 @@ void AddTranslator(py::module &m) {
   py::class_<Trs>(m, "Trs")
       .def(py::init<double, double, double, double>())
       .def("__getitem__", &Trs::at)
+      .def("__setitem__", [](Trs &arg, int idx, double val) { arg[idx] = val; })
       .def("rev", &Trs::reverse)
       .def("inv", &Trs::inverse)
       .def("__mul__", [](const Trs &lhs, const Rot &rhs) { return lhs * rhs; })

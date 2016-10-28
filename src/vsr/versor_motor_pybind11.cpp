@@ -40,6 +40,8 @@ void AddMotor(py::module &m) {
       .def("log2", [](const Mot &arg) { return log<double>(arg); })
       .def("comm", [](const Mot &lhs,
                       const Dll &rhs) { return (lhs * rhs - rhs * lhs) * 0.5; })
+      .def("comm", [](const Mot &lhs,
+                      const Pnt &rhs) { return (lhs * rhs - rhs * lhs) * 0.5; })
       .def("acomm",
            [](const Mot &lhs, const Dll &rhs) {
              return (lhs * rhs + rhs * lhs) * 0.5;

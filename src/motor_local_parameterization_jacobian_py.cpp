@@ -370,6 +370,44 @@ py::array_t<double> DiffPoint(const Mot &mot, const Pnt &p) {
   return result;
 }
 
+struct OuterProductJac {
+  OuterProductJac(const Vec& a, const Vec& b) : a_(a), b_(b) {}
+
+  template <typename T>
+  bool operator()(const T* const r, T* res) const {
+    Rotor<T> R(r);
+    Rotor<T> B = Vector<T>(a_).spin(R) ^ Vector<T>(b_);
+    for (int i = 0; i < B.Num; ++i) res[i] = B[i];
+    return true;
+  }
+
+private:
+  Vec a_;
+  Vec b_;
+};
+
+py::array_t<double> DiffOuterProd(const Vec &a, const Vec& b, const Rot &r) {
+  auto result = py::array(py::buffer_info(
+                                          nullptr,        /* Pointer to data (nullptr -> ask NumPy to allocate!) */
+                                          sizeof(double), /* Size of one item */
+                                          py::format_descriptor<double>::value(), /* Buffer format */
+                                          2,                                      /* How many dimensions? */
+                                          {3, 4},                 /* Number of elements for each dimension */
+                                          {sizeof(double) * 3, sizeof(double)} /* Strides for each dimension */
+                                          ));
+
+  auto buf = result.request();
+
+  const double *parameters[1] = {r.begin()};
+  double *jacobian_array[1] = {static_cast<double *>(buf.ptr)};
+  double residuals[3] = {0.0, 0.0, 0.0};
+
+  ceres::AutoDiffCostFunction<OuterProductJac, 3, 4>(new OuterProductJac(a, b))
+    .Evaluate(parameters, residuals, jacobian_array);
+
+  return result;
+}
+
 py::array_t<double> PolarJacobian(const Mot &mot1, const Mot &mot2) {
   const int kGlobalSize = 8;
   const int kLocalSize = 8;
@@ -440,7 +478,8 @@ PYBIND11_PLUGIN(motor_jacobian) {
       .def("diff_cost_lines_comm", &DiffCostLinesComm)
       .def("diff_rotor_cost", &DiffRotorCost)
       .def("analytic_diff_rotor_cost", &AnalyticDiffRotorCost)
-      .def("rotor_local_parameterization", &DiffRotorLocalParameterization);
+      .def("rotor_local_parameterization", &DiffRotorLocalParameterization)
+    .def("outer_product", &DiffOuterProd);
 
   return m.ptr();
 }

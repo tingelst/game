@@ -2,9 +2,6 @@
 	path = third_party/Adept
         url = https://github.com/tingelst/Adept.git
 	branch = jacobian-row-major-output
-[submodule "third_party/pybind11"]
-	path = third_party/pybind11
-	url = https://github.com/wjakob/pybind11.git
 [submodule "third_party/pymath3d"]
 	path = third_party/pymath3d
 	url = http://git.automatics.dyndns.dk/pymath3d.git

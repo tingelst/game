@@ -16,7 +16,7 @@ from versor_pybind11 import *
 from .drawing import *
 
 Dls = Pnt
-Tnv = Par
+# Tnv = Par
 
 
 def __split_point_pair(self):

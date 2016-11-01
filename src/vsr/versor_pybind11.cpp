@@ -27,7 +27,7 @@ void AddDirectionVector(py::module &m);
 void AddDualPlane(py::module &m);
 void AddPlane(py::module &m);
 void AddGeneralRotor(py::module &m);
-void AddTangentVector(py::module &m);
+// void AddTangentVector(py::module &m);
 void AddCircle(py::module &m);
 void AddSphere(py::module &m);
 void AddPointPair(py::module &m);
@@ -53,7 +53,7 @@ PYBIND11_PLUGIN(versor_pybind11) {
   AddDualPlane(m);
   AddPlane(m);
   AddGeneralRotor(m);
-  AddTangentVector(m);
+  // AddTangentVector(m);
   AddCircle(m);
   AddSphere(m);
   AddPointPair(m);

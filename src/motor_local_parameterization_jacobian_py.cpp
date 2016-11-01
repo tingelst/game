@@ -73,7 +73,7 @@ struct VectorCorrespondencesCostFunctor {
     return true;
   }
 
- private:
+private:
   const Vec a_;
   const Vec b_;
 };
@@ -95,7 +95,7 @@ struct LineCorrespondencesCostFunctor {
     return true;
   }
 
- private:
+private:
   const Dll a_;
   const Dll b_;
 };
@@ -118,7 +118,7 @@ struct LineCommutatorCostFunctor {
     return true;
   }
 
- private:
+private:
   const Dll a_;
   const Dll b_;
 };
@@ -140,7 +140,7 @@ struct PointCorrespondencesCostFunctor {
     return true;
   }
 
- private:
+private:
   const Pnt a_;
   const Pnt b_;
 };
@@ -341,7 +341,8 @@ struct TransformPoint {
 
     Point<T> p_prime = p.spin(M);
 
-    for (int i = 0; i < p.Num; ++i) x_prime[i] = p_prime[i];
+    for (int i = 0; i < p.Num; ++i)
+      x_prime[i] = p_prime[i];
 
     return true;
   }
@@ -371,13 +372,13 @@ py::array_t<double> DiffPoint(const Mot &mot, const Pnt &p) {
 }
 
 struct OuterProductJac {
-  OuterProductJac(const Vec& a, const Vec& b) : a_(a), b_(b) {}
+  OuterProductJac(const Vec &a, const Vec &b) : a_(a), b_(b) {}
 
-  template <typename T>
-  bool operator()(const T* const r, T* res) const {
+  template <typename T> bool operator()(const T *const r, T *res) const {
     Rotor<T> R(r);
     Rotor<T> B = Vector<T>(a_).spin(R) ^ Vector<T>(b_);
-    for (int i = 0; i < B.Num; ++i) res[i] = B[i];
+    for (int i = 0; i < B.Num; ++i)
+      res[i] = B[i];
     return true;
   }
 
@@ -386,15 +387,15 @@ private:
   Vec b_;
 };
 
-py::array_t<double> DiffOuterProd(const Vec &a, const Vec& b, const Rot &r) {
+py::array_t<double> DiffOuterProd(const Vec &a, const Vec &b, const Rot &r) {
   auto result = py::array(py::buffer_info(
-                                          nullptr,        /* Pointer to data (nullptr -> ask NumPy to allocate!) */
-                                          sizeof(double), /* Size of one item */
-                                          py::format_descriptor<double>::value(), /* Buffer format */
-                                          2,                                      /* How many dimensions? */
-                                          {3, 4},                 /* Number of elements for each dimension */
-                                          {sizeof(double) * 3, sizeof(double)} /* Strides for each dimension */
-                                          ));
+      nullptr,        /* Pointer to data (nullptr -> ask NumPy to allocate!) */
+      sizeof(double), /* Size of one item */
+      py::format_descriptor<double>::value(), /* Buffer format */
+      2,                                      /* How many dimensions? */
+      {3, 4}, /* Number of elements for each dimension */
+      {sizeof(double) * 3, sizeof(double)} /* Strides for each dimension */
+      ));
 
   auto buf = result.request();
 
@@ -403,7 +404,7 @@ py::array_t<double> DiffOuterProd(const Vec &a, const Vec& b, const Rot &r) {
   double residuals[3] = {0.0, 0.0, 0.0};
 
   ceres::AutoDiffCostFunction<OuterProductJac, 3, 4>(new OuterProductJac(a, b))
-    .Evaluate(parameters, residuals, jacobian_array);
+      .Evaluate(parameters, residuals, jacobian_array);
 
   return result;
 }
@@ -479,7 +480,7 @@ PYBIND11_PLUGIN(motor_jacobian) {
       .def("diff_rotor_cost", &DiffRotorCost)
       .def("analytic_diff_rotor_cost", &AnalyticDiffRotorCost)
       .def("rotor_local_parameterization", &DiffRotorLocalParameterization)
-    .def("outer_product", &DiffOuterProd);
+      .def("outer_product", &DiffOuterProd);
 
   return m.ptr();
 }

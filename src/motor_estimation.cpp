@@ -687,11 +687,12 @@ public:
           &motor_[0],
           new ceres::AutoDiffLocalParameterization<MotorPolarDecomposition, 8,
                                                    8>);
-    } else if (type == "RETRACT_FIRST_ORDER") {
-      problem_.SetParameterization(
-          &motor_[0],
-          new ceres::AutoDiffLocalParameterization<MotorRetractFirstOrder, 8,
-                                                   6>);
+      // } else if (type == "RETRACT_FIRST_ORDER") {
+      //   problem_.SetParameterization(
+      //       &motor_[0],
+      //       new ceres::AutoDiffLocalParameterization<MotorRetractFirstOrder,
+      //       8,
+      //                                                6>);
     } else if (type == "POLAR_DECOMPOSITION_TANGENT") {
       problem_.SetParameterization(
           &motor_[0], new ceres::AutoDiffLocalParameterization<

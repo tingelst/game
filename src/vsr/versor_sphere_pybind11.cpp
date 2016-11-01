@@ -50,7 +50,7 @@ void AddSphere(py::module &m) {
            })
       .def_buffer([](Sph &arg) -> py::buffer_info {
         return py::buffer_info(
-            arg.data(), sizeof(double), py::format_descriptor<double>::value(),
+            arg.data(), sizeof(double), py::format_descriptor<double>::format(),
             1, {static_cast<unsigned long>(arg.Num)}, {sizeof(double)});
       });
 }

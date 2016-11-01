@@ -49,15 +49,15 @@ add_library(adept SHARED
   third_party/Adept/adept/adept_openmp.cpp
   )
 
-add_executable(benchmark 
-  src/benchmark.cpp
-  )
-target_link_libraries(benchmark
-  adept
-  pthread
-  ${CERES_LIBRARIES}
-  ${BENCHMARK_LIBRARY}
-  )
+# add_executable(benchmark 
+#   src/benchmark.cpp
+#   )
+# target_link_libraries(benchmark
+#   adept
+#   pthread
+#   ${CERES_LIBRARIES}
+#   ${BENCHMARK_LIBRARY}
+#   )
 
 
 add_library(cylinder_estimation SHARED 
@@ -112,6 +112,13 @@ target_link_libraries(autodiff_multivector
 set_target_properties(autodiff_multivector PROPERTIES PREFIX "")
 set_target_properties(autodiff_multivector PROPERTIES SUFFIX ".so")
 
+add_library(hyperdual SHARED
+  src/test_hyperdual_hessian.cpp)
+target_link_libraries(hyperdual
+  ${PYTHON_LIBRARIES}
+  )
+set_target_properties(hyperdual PROPERTIES PREFIX "")
+set_target_properties(hyperdual PROPERTIES SUFFIX ".so")
 
 add_library(versor_pybind11 SHARED
   src/vsr/versor_pybind11.cpp

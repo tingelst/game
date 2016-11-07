@@ -19,6 +19,8 @@ void AddEGA(py::module &m) {
       .def(py::init<double, double, double, double, double, double, double,
                     double>())
       .def("__init__",
+           [](EGA &instance, EGA &arg) { new (&instance) EGA(arg); })
+      .def("__init__",
            [](EGA &instance, Vec &arg) { new (&instance) EGA(arg); })
       .def("__init__",
            [](EGA &instance, Biv &arg) { new (&instance) EGA(arg); })

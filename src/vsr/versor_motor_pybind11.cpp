@@ -36,6 +36,17 @@ void AddMotor(py::module &m) {
       .def("rev", &Mot::reverse)
       .def("inv", &Mot::inverse)
       .def("dll", [](const Mot &arg) { return Dll(arg); })
+      .def("retract",
+           [](const Mot &arg) {
+             double norm = arg.norm();
+             Mot b = arg * ~arg;
+             double s0 = b[0];
+             double s4 = b[7];
+             auto Sinv = Scalar<double>{(1.0) / norm} *
+                         (Scalar<double>{(1.0)} +
+                          DirectionTrivector<double>{-(s4 / (2.0 * s0))});
+             return arg * Sinv;
+           })
       .def("log", [](const Mot &arg) { return Gen::log(arg); })
       .def("log2", [](const Mot &arg) { return log<double>(arg); })
       .def("comm", [](const Mot &lhs,

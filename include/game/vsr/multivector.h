@@ -1,8 +1,6 @@
 #ifndef VERSOR_VSR_DETAIL_MULTIVECTOR_H_
 #define VERSOR_VSR_DETAIL_MULTIVECTOR_H_
 
-#include <adept.h>
-
 #include "algebra.h"
 
 #include <math.h>

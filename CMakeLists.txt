@@ -120,6 +120,14 @@ target_link_libraries(hyperdual
 set_target_properties(hyperdual PROPERTIES PREFIX "")
 set_target_properties(hyperdual PROPERTIES SUFFIX ".so")
 
+add_library(hyperdual_lines SHARED
+  src/hyperdual_lines.cpp)
+target_link_libraries(hyperdual_lines
+  ${PYTHON_LIBRARIES}
+  )
+set_target_properties(hyperdual_lines PROPERTIES PREFIX "")
+set_target_properties(hyperdual_lines PROPERTIES SUFFIX ".so")
+
 add_library(versor_pybind11 SHARED
   src/vsr/versor_pybind11.cpp
   src/vsr/versor_vector_pybind11.cpp

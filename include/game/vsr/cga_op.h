@@ -242,8 +242,8 @@ struct Gen {
   /*!  Generate Conformal Transformation from circle a to circle b
        uses square root method of Dorst et Valkenburg, 2011
   */
-  static Con ratio(const Cir& a, const Cir& b, bool bFlip = false,
-                   float theta = 0);
+  // static Con ratio(const Cir& a, const Cir& b, bool bFlip = false,
+  //                  float theta = 0);
 
   /*!  Generate Conformal Transformation from pair a to pair b
        uses square root method of Dorst et Valkenburg, 2011

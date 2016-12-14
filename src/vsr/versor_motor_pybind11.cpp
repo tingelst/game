@@ -77,11 +77,18 @@ void AddMotor(py::module &m) {
       .def("ratio", [](const Mot &lhs, const Mot &rhs,
                        double t) { return Mot(Gen::log(lhs, rhs, t)); })
       .def("__add__", [](const Mot &lhs, const Mot &rhs) { return lhs + rhs; })
+      .def("__add__",
+           [](const Mot &lhs, const double &rhs) { return lhs + rhs; })
+      .def("__radd__",
+           [](const Mot &lhs, const double &rhs) { return lhs + rhs; })
+      .def("__add__", [](const Mot &lhs, const Dll &rhs) { return lhs + rhs; })
+      .def("__radd__", [](const Mot &lhs, const Dll &rhs) { return lhs + rhs; })
       .def("__sub__", [](const Mot &lhs, const Mot &rhs) { return lhs - rhs; })
       .def("__mul__", [](const Mot &lhs, double rhs) { return lhs * rhs; })
       .def("__mul__", [](const Mot &lhs, const Mot &rhs) { return lhs * rhs; })
       .def("__mul__", [](const Mot &lhs, const Dll &rhs) { return lhs * rhs; })
       .def("__mul__", [](const Mot &lhs, const Trs &rhs) { return lhs * rhs; })
+    .def("__xor__", [](const Mot &lhs, const Dll &rhs) { return Mot(lhs ^ rhs); })
       .def("__le__",
            [](const Mot &lhs, const Mot &rhs) { return (lhs <= rhs)[0]; })
       .def("__repr__",

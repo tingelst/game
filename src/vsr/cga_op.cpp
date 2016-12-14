@@ -212,62 +212,62 @@ Par Gen::log(const Bst &b, bool bCW) { return atanh2(Par(b), b[0], bCW); }
 /*!  Generate Conformal Transformation from circle a to circle b
      uses square root method of Dorst et Valkenburg, 2011
 */
-Con Gen::ratio(const Cir &a, const Cir &b, bool bFlip, float theta) {
-  Con trot = (b / a).runit();
-  // planar?
-  //  float planarity = (Round::carrier(a).dual().unit() ^
-  //  Round::carrier(b).dual().unit()).wt();
-  if (bFlip && trot[0] < 0) { // fabs(planarity)<=.000009 )  {
-    trot = -trot;             // restrict to positive <R> only if coplanar
-  }
+// Con Gen::ratio(const Cir &a, const Cir &b, bool bFlip, float theta) {
+//   Con trot = (b / a).runit();
+//   // planar?
+//   //  float planarity = (Round::carrier(a).dual().unit() ^
+//   //  Round::carrier(b).dual().unit()).wt();
+//   if (bFlip && trot[0] < 0) { // fabs(planarity)<=.000009 )  {
+//     trot = -trot;             // restrict to positive <R> only if coplanar
+//   }
 
-  auto rotone = trot + 1;
+//   auto rotone = trot + 1;
 
-  VSR_PRECISION sca = 1 + trot[0];
-  VSR_PRECISION sca2 = sca * sca;
+//   VSR_PRECISION sca = 1 + trot[0];
+//   VSR_PRECISION sca2 = sca * sca;
 
-  Sph sph(trot);
-  auto sph2 = sph.wt();
+//   Sph sph(trot);
+//   auto sph2 = sph.wt();
 
-  if (FERROR(sca2 - sph2)) {
-    // printf("infinity of roots . . .  \n");
-    auto rotneg = (-trot) + 1;
+//   if (FERROR(sca2 - sph2)) {
+//     // printf("infinity of roots . . .  \n");
+//     auto rotneg = (-trot) + 1;
 
-    Vec vec;
+//     Vec vec;
 
-    auto sizeB = nga::Round::size(b, false);
-    if (sizeB < 1000 && !FERROR(sizeB))
-      vec = Vec(Round::location(b) - Round::location(a)).unit();
-    else
-      vec = Round::vec(a, theta).unit();
+//     auto sizeB = nga::Round::size(b, false);
+//     if (sizeB < 1000 && !FERROR(sizeB))
+//       vec = Vec(Round::location(b) - Round::location(a)).unit();
+//     else
+//       vec = Round::vec(a, theta).unit();
 
-    auto dls = sph.dual();
+//     auto dls = sph.dual();
 
-    auto biv = (Par(vec.copy<Tnv>()).trs(Round::location(a)) ^ dls)
-                   .undual(); //.trs(1,0,0);
+//     auto biv = (Par(vec.copy<Tnv>()).trs(Round::location(a)) ^ dls)
+//                    .undual(); //.trs(1,0,0);
 
-    biv = biv.runit();
+//     biv = biv.runit();
 
-    auto test = (biv * sph - sph * biv).wt();
+//     auto test = (biv * sph - sph * biv).wt();
 
-    if (!FERROR((biv <= biv)[0] + 1) || (!FERROR(test))) {
-      printf("HEY NOW NOT COMMUTING\n");
-    }
+//     if (!FERROR((biv <= biv)[0] + 1) || (!FERROR(test))) {
+//       printf("HEY NOW NOT COMMUTING\n");
+//     }
 
-    auto ret = rotone / 2.0 + (biv * (rotneg / 2.0));
-    return ret;
-  }
+//     auto ret = rotone / 2.0 + (biv * (rotneg / 2.0));
+//     return ret;
+//   }
 
-  auto sca3 = sca2 - sph2;
-  auto sqsca3 = sqrt(sca3);
+//   auto sca3 = sca2 - sph2;
+//   auto sqsca3 = sqrt(sca3);
 
-  //   cout << sca2 << " " << sph2 << " " << sca << " " << sqsca3 << endl;
-  //   sca = fabs(sca);  //<--* added this fabs in
-  auto v1 = (-sph + sca) / (2 * sca3);
-  auto v2 = (sph + (sca + sqsca3)) / sqrt(sca + sqsca3);
+//   //   cout << sca2 << " " << sph2 << " " << sca << " " << sqsca3 << endl;
+//   //   sca = fabs(sca);  //<--* added this fabs in
+//   auto v1 = (-sph + sca) / (2 * sca3);
+//   auto v2 = (sph + (sca + sqsca3)) / sqrt(sca + sqsca3);
 
-  return rotone * v1 * v2;
-}
+//   return rotone * v1 * v2;
+// }
 
 /*!  Generate Conformal Transformation from Par a to Par b
      uses square root method of Dorst et Valkenburg, 2011

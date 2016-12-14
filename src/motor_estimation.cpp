@@ -85,6 +85,30 @@ public:
     const Tnv b_;
   };
 
+  template <typename T> static DualLine<T> log(const Motor<T> &m) {
+    DualLine<T> q(m);
+    Scalar<T> ac{acos(m[0])};
+    Scalar<T> den{sin(ac[0]) / ac[0]};
+    Scalar<T> den2{ac * ac * den};
+
+    if (den2[0] > T(0.0)) {
+      DualLine<T> b = Bivector<T>(m) / den;
+      DualLine<T> c_perp = -b * DirectionTrivector<T>(m) / den2;
+      DualLine<T> c_para = -b * DualLine<T>(b * q) / den2;
+      return b + c_perp + c_para;
+    } else {
+      return q;
+    }
+  }
+
+  template <typename T> static Motor<T> exp(const DualLine<T> &l) {
+    const T m0_arr[8] = {T(1.0), T(0.0), T(0.0), T(0.0),
+                         T(0.0), T(0.0), T(0.0), T(0.0)};
+    Motor<T> m;
+    game::MotorFromBivectorGenerator()(&m0_arr[0], l.begin(), m.data());
+    return m;
+  }
+
   struct DualPlaneAngleErrorCostFunctor {
     DualPlaneAngleErrorCostFunctor(const Dlp &a, const Dlp &b) : a_(a), b_(b) {}
 
@@ -98,7 +122,7 @@ public:
       Origin<T> no{T(1.0)};
       Infinity<T> ni{T(1.0)};
 
-      Motor<T> X = exp(Scalar<T>{0.5} * log(c / b));
+      Motor<T> X = exp(Scalar<T>{0.5} * log(Motor<T>(c / b)));
       Rotor<T> R{X[0], X[1], X[2], X[3]};
       Vector<T> t = Scalar<T>{-2.0} * (no <= X) / R;
 
@@ -325,30 +349,6 @@ public:
     const Dll a_;
     const Dll b_;
   };
-
-  template <typename T> static DualLine<T> log(const Motor<T> &m) {
-    DualLine<T> q(m);
-    Scalar<T> ac{acos(m[0])};
-    Scalar<T> den{sin(ac[0]) / ac[0]};
-    Scalar<T> den2{ac * ac * den};
-
-    if (den2[0] > T(0.0)) {
-      DualLine<T> b = Bivector<T>(m) / den;
-      DualLine<T> c_perp = -b * DirectionTrivector<T>(m) / den2;
-      DualLine<T> c_para = -b * DualLine<T>(b * q) / den2;
-      return b + c_perp + c_para;
-    } else {
-      return q;
-    }
-  }
-
-  template <typename T> static Motor<T> exp(const DualLine<T> &l) {
-    const T m0_arr[8] = {T(1.0), T(0.0), T(0.0), T(0.0),
-                         T(0.0), T(0.0), T(0.0), T(0.0)};
-    Motor<T> m;
-    game::MotorFromBivectorGenerator()(&m0_arr[0], l.begin(), m.data());
-    return m;
-  }
 
   struct LineAngleDistanceCostFunctor {
     LineAngleDistanceCostFunctor(const Dll &a, const Dll &b) : a_(a), b_(b) {}
@@ -697,6 +697,9 @@ public:
       problem_.SetParameterization(
           &motor_[0], new ceres::AutoDiffLocalParameterization<
                           MotorTangentSpacePolarDecomposition, 8, 6>);
+    } else if (type == "CAYLEY") {
+      problem_.SetParameterization(
+          &motor_[0], new ceres::AutoDiffLocalParameterization<Cayley, 8, 6>);
     } else if (type == "BIVECTOR_GENERATOR") {
       problem_.SetParameterization(
           &motor_[0],

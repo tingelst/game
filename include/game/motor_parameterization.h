@@ -214,6 +214,38 @@ struct MotorPolarDecomposition {
   bool operator()(const T *x, const T *delta, T *x_plus_delta) const {
     using vsr::cga::Scalar;
     using vsr::cga::Motor;
+    using vsr::cga::DualLine;
+    using vsr::cga::DirectionTrivector;
+
+    T a[8];
+    for (int i = 0; i < 8; ++i) {
+      a[i] = x[i] + delta[i];
+    }
+
+    DualLine<T> B(delta);
+    Motor<T> BB = B * B;
+    Scalar<T> S = BB;
+    DirectionTrivector<T> S4 = BB;
+    Scalar<T> one{1.0};
+
+    Motor<T> C = (one + B + B + BB) * (one - S + S4) / ((one - S) * (one - S));
+
+    Motor<T> M = C * Motor<T>(x);
+
+    for (int i = 0; i < 8; ++i) {
+      x_plus_delta[i] = M[i];
+    }
+
+    return true;
+  }
+};
+
+struct Cayley {
+  template <typename T>
+  bool operator()(const T *x, const T *delta, T *x_plus_delta) const {
+    using vsr::cga::Scalar;
+    using vsr::cga::Motor;
+    using vsr::cga::DualLine;
     using vsr::cga::DirectionTrivector;
 
     T a[8];
@@ -242,7 +274,6 @@ struct MotorPolarDecomposition {
     return true;
   }
 };
-
 
 struct MotorTangentSpacePolarDecomposition {
   template <typename T>

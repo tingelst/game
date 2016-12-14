@@ -73,7 +73,7 @@ void AddDualLine(py::module &m) {
       .def("runit", &Dll::runit)
       .def("rev", &Dll::reverse)
       .def("inv", &Dll::inverse)
-      .def("spin", (Dll (Dll::*)(const Mot &) const) & Dll::spin)
+      .def("spin", (Dll(Dll::*)(const Mot &) const) & Dll::spin)
       .def("exp", [](const Dll &arg) { return Gen::motor(arg); })
       .def("exp2", [](const Dll &arg) { return exp<double>(arg); })
       .def("loc",
@@ -88,6 +88,8 @@ void AddDualLine(py::module &m) {
       .def("__mul__", [](const Dll &lhs, const Dll &rhs) { return lhs * rhs; })
       .def("__le__",
            [](const Dll &lhs, const Dll &rhs) { return (lhs <= rhs)[0]; })
+      .def("__xor__",
+           [](const Dll &lhs, const Dll &rhs) { return Mot(lhs ^ rhs); })
       .def("__mul__", [](const Dll &lhs, double rhs) { return lhs * rhs; })
       .def("__div__", [](const Dll &lhs, double rhs) { return lhs / rhs; })
       .def("__repr__",

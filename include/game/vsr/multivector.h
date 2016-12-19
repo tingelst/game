@@ -3,8 +3,8 @@
 
 #include "algebra.h"
 
-#include <math.h>
-#include <iostream>
+//#include <iostream>
+#include <cmath>
 
 namespace vsr {
 

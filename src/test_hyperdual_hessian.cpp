@@ -30,7 +30,7 @@ struct VectorCorrespondencesCostFunctor {
     return true;
   }
 
-private:
+ private:
   const Vec a_;
   const Vec b_;
 };
@@ -437,12 +437,13 @@ PYBIND11_PLUGIN(hyperdual) {
     Rotor<hyperdual> Rh(R);
     Vector<hyperdual> ch;
     Rotor<hyperdual> Rhd;
-    Eigen::Matrix<double, 4,1> grad;
-    Eigen::Matrix3d J;
-    Eigen::Matrix3d H;
+    Eigen::Matrix<double, 4, 1> grad;
+    Eigen::Matrix<double, 4, 4> H;
+    // Eigen::Matrix3d J;
+    // Eigen::Matrix3d H;
     hyperdual ans;
 
-    Rhd[0].setvalues(1, 0, 0, 0);
+    Rhd[0].setvalues(0, 0, 0, 0);
     Rhd[1].setvalues(0, 0, 0, 0);
     Rhd[2].setvalues(0, 0, 0, 0);
     Rhd[3].setvalues(0, 0, 0, 0);
@@ -451,72 +452,86 @@ PYBIND11_PLUGIN(hyperdual) {
     grad(0) = ans.eps1();
     H(0, 0) = ans.eps1eps2();
 
-    Rhd[0].setvalues(1, 0, 0, 0);
+    Rhd[0].setvalues(0, 0, 0, 0);
+    Rhd[1].setvalues(0, 0, 0, 0);
+    Rhd[2].setvalues(0, 0, 0, 0);
+    Rhd[3].setvalues(0, 0, 0, 0);
+    ch = ah.spin(Rhd * Rh) - bh;
+    ans = 0.5 * (ch * ch)[0];
+    grad(1) = ans.eps2();
+    H(0, 1) = ans.eps1eps2();
+    H(1, 0) = ans.eps1eps2();
+
+    Rhd[0].setvalues(0, 0, 0, 0);
+    Rhd[1].setvalues(0, 0, 0, 0);
+    Rhd[2].setvalues(0, 0, 0, 0);
+    Rhd[3].setvalues(0, 0, 0, 0);
+    ch = ah.spin(Rhd * Rh) - bh;
+    ans = 0.5 * (ch * ch)[0];
+    grad(2) = ans.eps2();
+    H(0, 2) = ans.eps1eps2();
+    H(2, 0) = ans.eps1eps2();
+
+    Rhd[0].setvalues(0, 0, 0, 0);
+    Rhd[1].setvalues(0, 0, 0, 0);
+    Rhd[2].setvalues(0, 0, 0, 0);
+    Rhd[3].setvalues(0, 0, 0, 0);
+    ch = ah.spin(Rhd * Rh) - bh;
+    ans = 0.5 * (ch * ch)[0];
+    grad(3) = ans.eps2();
+    H(0, 3) = ans.eps1eps2();
+    H(3, 0) = ans.eps1eps2();
+
+    Rhd[0].setvalues(0, 0, 0, 0);
     Rhd[1].setvalues(0, 1, 1, 0);
     Rhd[2].setvalues(0, 0, 0, 0);
     Rhd[3].setvalues(0, 0, 0, 0);
     ch = ah.spin(Rhd * Rh) - bh;
     ans = 0.5 * (ch * ch)[0];
-    grad(1) = ans.eps1();
-    H(0, 0) = ans.eps1eps2();
+    H(1, 1) = ans.eps1eps2();
 
+    Rhd[0].setvalues(0, 0, 0, 0);
     Rhd[1].setvalues(0, 1, 0, 0);
     Rhd[2].setvalues(0, 0, 1, 0);
     Rhd[3].setvalues(0, 0, 0, 0);
     ch = ah.spin(Rhd * Rh) - bh;
     ans = 0.5 * (ch * ch)[0];
-    H(0, 1) = ans.eps1eps2();
+    H(1, 2) = ans.eps1eps2();
+    H(2, 1) = ans.eps1eps2();
 
+    Rhd[0].setvalues(0, 0, 0, 0);
     Rhd[1].setvalues(0, 1, 0, 0);
     Rhd[2].setvalues(0, 0, 0, 0);
     Rhd[3].setvalues(0, 0, 1, 0);
     ch = ah.spin(Rhd * Rh) - bh;
     ans = 0.5 * (ch * ch)[0];
-    H(0, 2) = ans.eps1eps2();
+    H(1, 3) = ans.eps1eps2();
+    H(3, 1) = ans.eps1eps2();
 
-    Rhd[1].setvalues(0, 0, 1, 0);
-    Rhd[2].setvalues(0, 1, 0, 0);
-    Rhd[3].setvalues(0, 0, 0, 0);
-    ch = ah.spin(Rhd * Rh) - bh;
-    ans = 0.5 * (ch * ch)[0];
-    grad(2) = ans.eps1();
-    H(1, 0) = ans.eps1eps2();
-
+    Rhd[0].setvalues(0, 0, 0, 0);
     Rhd[1].setvalues(0, 0, 0, 0);
     Rhd[2].setvalues(0, 1, 1, 0);
     Rhd[3].setvalues(0, 0, 0, 0);
     ch = ah.spin(Rhd * Rh) - bh;
     ans = 0.5 * (ch * ch)[0];
-    H(1, 1) = ans.eps1eps2();
+    H(2, 2) = ans.eps1eps2();
 
+    Rhd[0].setvalues(0, 0, 0, 0);
     Rhd[1].setvalues(0, 0, 0, 0);
     Rhd[2].setvalues(0, 1, 0, 0);
     Rhd[3].setvalues(0, 0, 1, 0);
     ch = ah.spin(Rhd * Rh) - bh;
     ans = 0.5 * (ch * ch)[0];
-    H(1, 2) = ans.eps1eps2();
+    H(2, 3) = ans.eps1eps2();
+    H(3, 2) = ans.eps1eps2();
 
-    Rhd[1].setvalues(0, 0, 1, 0);
-    Rhd[2].setvalues(0, 0, 0, 0);
-    Rhd[3].setvalues(0, 1, 0, 0);
-    ch = ah.spin(Rhd * Rh) - bh;
-    ans = 0.5 * (ch * ch)[0];
-    grad(3) = ans.eps1();
-    H(2, 0) = ans.eps1eps2();
-
-    Rhd[1].setvalues(0, 0, 0, 0);
-    Rhd[2].setvalues(0, 0, 1, 0);
-    Rhd[3].setvalues(0, 1, 0, 0);
-    ch = ah.spin(Rhd * Rh) - bh;
-    ans = 0.5 * (ch * ch)[0];
-    H(2, 1) = ans.eps1eps2();
-
+    Rhd[0].setvalues(0, 0, 0, 0);
     Rhd[1].setvalues(0, 0, 0, 0);
     Rhd[2].setvalues(0, 0, 0, 0);
     Rhd[3].setvalues(0, 1, 1, 0);
     ch = ah.spin(Rhd * Rh) - bh;
     ans = 0.5 * (ch * ch)[0];
-    H(2, 2) = ans.eps1eps2();
+    H(3, 3) = ans.eps1eps2();
 
     return std::make_tuple(ans.real(), grad, H);
   });

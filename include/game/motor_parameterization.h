@@ -182,6 +182,7 @@ struct MotorFromBivectorGenerator {
 
       B = B.unit();
 
+
       Vector<T> t{delta[3], delta[4], delta[5]};
       Vector<T> tv = Op::project(t, B);
       Vector<T> tw = Op::reject(t, B);
@@ -209,13 +210,15 @@ struct MotorFromBivectorGenerator {
   }
 };
 
-struct MotorPolarDecomposition {
+struct Cayley {
   template <typename T>
   bool operator()(const T *x, const T *delta, T *x_plus_delta) const {
     using vsr::cga::Scalar;
     using vsr::cga::Motor;
     using vsr::cga::DualLine;
     using vsr::cga::DirectionTrivector;
+
+    // std::cout << "Cayley" << std::endl;
 
     T a[8];
     for (int i = 0; i < 8; ++i) {
@@ -240,7 +243,7 @@ struct MotorPolarDecomposition {
   }
 };
 
-struct Cayley {
+struct MotorPolarDecomposition{
   template <typename T>
   bool operator()(const T *x, const T *delta, T *x_plus_delta) const {
     using vsr::cga::Scalar;

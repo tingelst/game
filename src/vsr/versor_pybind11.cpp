@@ -36,6 +36,7 @@ void AddMultivectorDiff(py::module &m);
 void AddCGA(py::module &m);
 void AddEGA(py::module &m);
 void AddReciprocalMotor(py::module &m);
+  void AddE4(py::module &m);
 
 PYBIND11_PLUGIN(versor_pybind11) {
   py::module m("versor_pybind11", "versor plugin");
@@ -62,6 +63,7 @@ PYBIND11_PLUGIN(versor_pybind11) {
   AddCGA(m);
   AddEGA(m);
   AddReciprocalMotor(m);
+  AddE4(m);
 
   return m.ptr();
 }

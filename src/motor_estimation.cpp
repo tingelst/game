@@ -1,4 +1,3 @@
-//
 // Created by lars on 17.11.15.
 //
 
@@ -249,7 +248,7 @@ public:
   };
 
   struct DualPlaneInnerProductCostFunctor {
-    DualPlaneInnerProductCostFunctor(const Dll &a, const Dll &b)
+    DualPlaneInnerProductCostFunctor(const Dlp &a, const Dlp &b)
         : a_(a), b_(b) {}
 
     template <typename T>
@@ -259,6 +258,50 @@ public:
       DualPlane<T> b(b_);
       DualPlane<T> c = a.spin(M);
       residual[0] = T(1.0) - (b * ~c)[0];
+      return true;
+    }
+
+  private:
+    const Dlp a_;
+    const Dlp b_;
+  };
+
+  struct FlatPointCommutatorCostFunctor {
+    FlatPointCommutatorCostFunctor(const Pnt &a, const Pnt &b)
+      : a_(a), b_(b) {}
+
+    template <typename T>
+    auto operator()(const T *const motor, T *residual) const -> bool {
+      Motor<T> M(motor);
+      DualLine<T> a(a_);
+      DualLine<T> b(b_);
+      DualLine<T> c = a.spin(M);
+      DualLine<T> d = (c * b - b * c) * Scalar<T>{0.5};
+      for (int i = 0; i < 6; ++i) {
+        residual[i] = d[i];
+      }
+      return true;
+    }
+
+  private:
+    const Dlp a_;
+    const Dlp b_;
+  };
+
+  struct DualPlaneCommutatorCostFunctor {
+    DualPlaneCommutatorCostFunctor(const Dlp &a, const Dlp &b)
+      : a_(a), b_(b) {}
+
+    template <typename T>
+    auto operator()(const T *const motor, T *residual) const -> bool {
+      Motor<T> M(motor);
+      DualPlane<T> a(a_);
+      DualPlane<T> b(b_);
+      DualPlane<T> c = a.spin(M);
+      DualLine<T> d = (c * b - b * c) * Scalar<T>{0.5};
+      for (int i = 0; i < 6; ++i) {
+        residual[i] = d[i];
+      }
       return true;
     }
 
@@ -277,6 +320,28 @@ public:
       DualLine<T> b(b_);
       DualLine<T> c = a.spin(M);
       // residual[0] = T(1.0) - (b * ~c)[0];
+      return true;
+    }
+
+  private:
+    const Dll a_;
+    const Dll b_;
+  };
+
+  struct LineDualAngleCostFunctor {
+    LineDualAngleCostFunctor(const Dll &a, const Dll &b) : a_(a), b_(b) {}
+
+    template <typename T>
+    auto operator()(const T *const motor, T *residual) const -> bool {
+      Motor<T> M(motor);
+      DualLine<T> a(a_);
+      DualLine<T> b(b_);
+      DualLine<T> c = a.spin(M);
+      Motor<T> d = (b * c + c * b) * Scalar<T>{0.5};
+
+      residual[0] = T(1.0) - d[0];
+      residual[1] = d[7];
+
       return true;
     }
 
@@ -553,6 +618,14 @@ public:
     return true;
   }
 
+  bool AddDualPlaneCommutatorResidualBlock(const Dlp &a, const Dlp &b) {
+    ceres::CostFunction *cost_function =
+      new ceres::AutoDiffCostFunction<DualPlaneCommutatorCostFunctor, 6, 8>(
+          new DualPlaneCommutatorCostFunctor(a, b));
+    problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
+    return true;
+  }
+
   bool AddCircleCommutatorResidualBlock(const Cir &a, const Cir &b) {
     ceres::CostFunction *cost_function =
         new ceres::AutoDiffCostFunction<CircleCommutatorCostFunctor, 10, 8>(
@@ -600,7 +673,13 @@ public:
     problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
     return true;
   }
-
+  auto AddLineDualAngleResidualBlock(const Dll &a, const Dll &b) -> bool {
+    ceres::CostFunction *cost_function =
+      new ceres::AutoDiffCostFunction<LineDualAngleCostFunctor, 2, 8>(
+                                                                       new LineDualAngleCostFunctor(a, b));
+    problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
+    return true;
+  }
   auto AddLineCommutatorResidualBlock(const Dll &a, const Dll &b) -> bool {
     ceres::CostFunction *cost_function =
         new ceres::AutoDiffCostFunction<LineCommutatorCostFunctor, 6, 8>(
@@ -705,7 +784,14 @@ public:
           &motor_[0],
           new ceres::AutoDiffLocalParameterization<MotorFromBivectorGenerator,
                                                    8, 6>);
-    } else if (type == "BIVECTOR_GENERATOR_ADEPT") {
+    }
+   else if (type == "OUTER_EXPONENTIAL") {
+    problem_.SetParameterization(
+                                 &motor_[0],
+                                 new ceres::AutoDiffLocalParameterization<OuterExponential,
+                                 8, 6>);
+  }
+    else if (type == "BIVECTOR_GENERATOR_ADEPT") {
       std::cout << "game:: ADEPT Using bivector generator (Versor)."
                 << std::endl;
       problem_.SetParameterization(
@@ -758,6 +844,8 @@ PYBIND11_PLUGIN(motor_estimation) {
            &MotorEstimationSolver::AddTangentVectorPointAngleErrorResidualBlock)
       .def("add_dual_plane_angle_error_residual_block",
            &MotorEstimationSolver::AddDualPlaneAngleErrorResidualBlock)
+    .def("add_dual_plane_commutator_residual_block",
+         &MotorEstimationSolver::AddDualPlaneCommutatorResidualBlock)
       .def("add_dual_plane_difference_residual_block",
            &MotorEstimationSolver::AddDualPlaneDifferenceResidualBlock)
       .def("add_circle_difference_residual_block",
@@ -770,6 +858,8 @@ PYBIND11_PLUGIN(motor_estimation) {
            &MotorEstimationSolver::AddLineAngleDistanceResidualBlock)
       .def("add_line_angle_distance_norm_residual_block",
            &MotorEstimationSolver::AddLineAngleDistanceNormResidualBlock)
+    .def("add_line_dual_angle_residual_block",
+         &MotorEstimationSolver::AddLineDualAngleResidualBlock)
       .def("add_line_commutator_residual_block",
            &MotorEstimationSolver::AddLineCommutatorResidualBlock)
       .def("add_line_inner_product_residual_block",

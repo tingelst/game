@@ -12,7 +12,7 @@ def vector_mesh(vec, position=None, color='black', linewidth=2, arrow=False):
                 type='LinePieces')
     if arrow:
         cone = Mesh(geometry=CylinderGeometry(radiusTop=0,
-                                              radiusBottom=0.05,
+                                              radiusBottom=0.04,
                                               height=0.2,
                                               radiusSegments=20,
                                               heightSegments=1,
@@ -83,7 +83,7 @@ def line_mesh(line, arrow=True, length=100, color='gray'):
     linesgeom = PlainGeometry(vertices=[(v + d).tolist(), (v - d).tolist()],
                               colors=[color, color])
     mesh = Line(geometry=linesgeom,
-                material=LineBasicMaterial(linewidth=2,
+                material=LineBasicMaterial(linewidth=3,
                                            vertexColors='VertexColors'),
                 type='LinePieces')
     if arrow:
@@ -103,7 +103,7 @@ def line_mesh(line, arrow=True, length=100, color='gray'):
 
 def plane_mesh(plane, width=10, height=10, position=None, color='gray'):
     mesh = Mesh(geometry=PlaneGeometry(width=width, height=height),
-                material=LambertMaterial(color=color,
+                material=PhongMaterial(color=color,
                                          transparent=True,
                                          opacity=0.75))
     if type(plane) == Pln:

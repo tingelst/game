@@ -210,6 +210,34 @@ struct MotorFromBivectorGenerator {
   }
 };
 
+  struct OuterExponential {
+    template <typename T>
+    bool operator()(const T *x, const T *delta, T *x_plus_delta) const {
+      using vsr::cga::Scalar;
+      using vsr::cga::Motor;
+      using vsr::cga::DualLine;
+      using vsr::cga::DirectionTrivector;
+
+      DualLine<T> B(delta);
+      Motor<T> BB = B ^ B;
+      Scalar<T> S = BB;
+      DirectionTrivector<T> S4 = BB;
+      Scalar<T> one{1.0};
+      Scalar<T> dnorm = Scalar<T>{T(1.0) / (one + B).norm()};
+
+      Motor<T> C = (one + B + BB * Scalar<T>{0.5}) * dnorm;
+
+      // Motor<T> M = C * Motor<T>(x);
+      Motor<T> M = Motor<T>(x) * C;
+
+      for (int i = 0; i < 8; ++i) {
+        x_plus_delta[i] = M[i];
+      }
+
+      return true;
+    }
+  };
+
 struct Cayley {
   template <typename T>
   bool operator()(const T *x, const T *delta, T *x_plus_delta) const {

@@ -39,14 +39,20 @@ void AddCGA(py::module &m) {
            [](CGA &instance, Mot &arg) { new (&instance) CGA(arg); })
       .def("__init__",
            [](CGA &instance, Dll &arg) { new (&instance) CGA(arg); })
+    .def("__init__",
+         [](CGA &instance, Lin &arg) { new (&instance) CGA(arg); })
       .def("__init__",
            [](CGA &instance, Dlp &arg) { new (&instance) CGA(arg); })
+    .def("__init__",
+         [](CGA &instance, Pln &arg) { new (&instance) CGA(arg); })
       .def("__init__",
            [](CGA &instance, Cir &arg) { new (&instance) CGA(arg); })
       .def("__init__",
            [](CGA &instance, Par &arg) { new (&instance) CGA(arg); })
       .def("__init__",
            [](CGA &instance, Pnt &arg) { new (&instance) CGA(arg); })
+    .def("__init__",
+         [](CGA &instance, Sph &arg) { new (&instance) CGA(arg); })
       .def("__getitem__", &CGA::at)
       .def("__setitem__", [](CGA &arg, int idx, double val) { arg[idx] = val; })
       .def("rev", &CGA::reverse)
@@ -56,6 +62,7 @@ void AddCGA(py::module &m) {
       .def("unit", &CGA::unit)
       .def("dual", &CGA::duale)
       .def("undual", &CGA::unduale)
+      .def("conj", &CGA::conj)
       .def("comm",
            [](const CGA &lhs, const CGA &rhs) {
              return CGA(lhs * rhs - rhs * lhs) * 0.5;
@@ -64,6 +71,8 @@ void AddCGA(py::module &m) {
            [](const CGA &lhs, const CGA &rhs) {
              return CGA(lhs * rhs + rhs * lhs) * 0.5;
            })
+    .def("mot", [](const CGA &lhs){return Mot(lhs); })
+    .def("cir", [](const CGA &lhs){return Cir(lhs); })
       .def("__add__",
            [](const CGA &lhs, const CGA &rhs) { return CGA(lhs + rhs); })
       .def("__sub__",
@@ -74,6 +83,10 @@ void AddCGA(py::module &m) {
            [](const CGA &lhs, const double &rhs) { return (lhs * rhs); })
       .def("__rmul__",
            [](const CGA &lhs, const double &rhs) { return (lhs * rhs); })
+    .def("__le__",
+         [](const CGA &lhs, const CGA &rhs) { return CGA(lhs <= rhs); })
+    .def("__xor__",
+         [](const CGA &lhs, const CGA &rhs) { return CGA(lhs ^ rhs); })
       .def("spin", (CGA (CGA::*)(const CGA &) const) & CGA::spin)
       .def("__repr__",
            [](const CGA &arg) {

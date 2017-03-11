@@ -311,16 +311,13 @@ struct MotorTangentSpacePolarDecomposition {
   bool operator()(const T *x, const T *delta, T *x_plus_delta) const {
     using vsr::cga::Scalar;
     using vsr::cga::Motor;
+    using vsr::cga::DualLine;
     using vsr::cga::DirectionTrivector;
 
-    Motor<T> X{x[0],
-               x[1] + delta[0],
-               x[2] + delta[1],
-               x[3] + delta[2],
-               x[4] + delta[3],
-               x[5] + delta[4],
-               x[6] + delta[5],
-               x[7]};
+    Motor<T> X(x);
+    DualLine<T> B(delta);
+
+    X = X + B * X;
 
     T norm = X.norm();
 

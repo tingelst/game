@@ -60,8 +60,8 @@ void AddCGA(py::module &m) {
       .def("norm", &CGA::norm)
       .def("rnorm", &CGA::rnorm)
       .def("unit", &CGA::unit)
-      .def("dual", &CGA::duale)
-      .def("undual", &CGA::unduale)
+      .def("dual", &CGA::dual)
+      .def("undual", &CGA::undual)
       .def("conj", &CGA::conj)
       .def("comm",
            [](const CGA &lhs, const CGA &rhs) {
@@ -79,10 +79,6 @@ void AddCGA(py::module &m) {
            [](const CGA &lhs, const CGA &rhs) { return CGA(lhs - rhs); })
       .def("__mul__",
            [](const CGA &lhs, const CGA &rhs) { return (lhs * rhs); })
-      .def("__mul__",
-           [](const CGA &lhs, const double &rhs) { return (lhs * rhs); })
-      .def("__rmul__",
-           [](const CGA &lhs, const double &rhs) { return (lhs * rhs); })
     .def("__le__",
          [](const CGA &lhs, const CGA &rhs) { return CGA(lhs <= rhs); })
     .def("__xor__",

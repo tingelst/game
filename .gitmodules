@@ -2,12 +2,6 @@
 	path = third_party/Adept
         url = https://github.com/tingelst/Adept.git
 	branch = jacobian-row-major-output
-[submodule "third_party/pymath3d"]
-	path = third_party/pymath3d
-	url = http://git.automatics.dyndns.dk/pymath3d.git
-[submodule "third_party/vahlen"]
-	path = third_party/vahlen
-	url = https://github.com/tingelst/vahlen.git
 [submodule "third_party/benchmark"]
 	path = third_party/benchmark
 	url = https://github.com/google/benchmark.git

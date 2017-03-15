@@ -227,8 +227,7 @@ struct MotorFromBivectorGenerator {
 
       Motor<T> C = (one + B + BB * Scalar<T>{0.5}) * dnorm;
 
-      // Motor<T> M = C * Motor<T>(x);
-      Motor<T> M = Motor<T>(x) * C;
+      Motor<T> M = C *  Motor<T>(x);
 
       for (int i = 0; i < 8; ++i) {
         x_plus_delta[i] = M[i];
@@ -258,10 +257,11 @@ struct Cayley {
     Scalar<T> S = BB;
     DirectionTrivector<T> S4 = BB;
     Scalar<T> one{1.0};
+    Scalar<T> half{0.5};
 
     Motor<T> C = (one + B + B + BB) * (one - S + S4) / ((one - S) * (one - S));
 
-    Motor<T> M = C * Motor<T>(x);
+    Motor<T> M = C * Motor<T>(x) * half;
 
     for (int i = 0; i < 8; ++i) {
       x_plus_delta[i] = M[i];
@@ -330,6 +330,7 @@ struct MotorTangentSpacePolarDecomposition {
         Scalar<T>{T(1.0) / norm} *
         (Scalar<T>{T(1.0)} + DirectionTrivector<T>{-(s4 / (T(2.0) * s0))});
     Motor<T> M = X * Sinv;
+
 
     for (int i = 0; i < 8; ++i) {
       x_plus_delta[i] = M[i];

@@ -1,5 +1,6 @@
-#include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
+#include <pybind11/eigen.h>
+#include <pybind11/numpy.h>
 
 #include "ceres/autodiff_cost_function.h"
 #include "ceres/autodiff_local_parameterization.h"
@@ -151,7 +152,7 @@ py::array_t<ScalarType> Matrix() {
   return py::array(py::buffer_info(
       nullptr, /* Pointer to data (nullptr -> ask NumPy to allocate!) */
       sizeof(ScalarType),                         /* Size of one item */
-      py::format_descriptor<ScalarType>::value(), /* Buffer format */
+      py::format_descriptor<ScalarType>::format(), /* Buffer format */
       2,                                          /* How many dimensions? */
       {Rows, Cols}, /* Number of elements for each dimension */
       {sizeof(double) * Rows, sizeof(double)} /* Strides for each dimension */
@@ -165,7 +166,7 @@ py::array_t<double> AnalyticDiffRotorCost(const Rot &rot, const Vec &a,
   //     nullptr,        /* Pointer to data (nullptr -> ask NumPy to allocate!)
   //     */
   //     sizeof(double), /* Size of one item */
-  //     py::format_descriptor<double>::value(), /* Buffer format */
+  //     py::format_descriptor<double>::format(), /* Buffer format */
   //     2,                                      /* How many dimensions? */
   //     {3, 4}, /* Number of elements for each dimension */
   //     {sizeof(double) * 3, sizeof(double)} /* Strides for each dimension */
@@ -201,7 +202,7 @@ py::list DiffRotorCost(const Rot &rot, const Vec &a, const Vec &b) {
   auto result = py::array(py::buffer_info(
       nullptr,        /* Pointer to data (nullptr -> ask NumPy to allocate!) */
       sizeof(double), /* Size of one item */
-      py::format_descriptor<double>::value(), /* Buffer format */
+      py::format_descriptor<double>::format(), /* Buffer format */
       2,                                      /* How many dimensions? */
       {3, 4}, /* Number of elements for each dimension */
       {sizeof(double) * 3, sizeof(double)} /* Strides for each dimension */
@@ -212,7 +213,7 @@ py::list DiffRotorCost(const Rot &rot, const Vec &a, const Vec &b) {
   auto np_residual = py::array(py::buffer_info(
       nullptr,        /* Pointer to data (nullptr -> ask NumPy to allocate!) */
       sizeof(double), /* Size of one item */
-      py::format_descriptor<double>::value(), /* Buffer format */
+      py::format_descriptor<double>::format(), /* Buffer format */
       1,                                      /* How many dimensions? */
       {3},             /* Number of elements for each dimension */
       {sizeof(double)} /* Strides for each dimension */
@@ -239,7 +240,7 @@ py::array_t<double> DiffRotorLocalParameterization(const Rot &rot) {
   auto result = py::array(py::buffer_info(
       nullptr,        /* Pointer to data (nullptr -> ask NumPy to allocate!) */
       sizeof(double), /* Size of one item */
-      py::format_descriptor<double>::value(), /* Buffer format */
+      py::format_descriptor<double>::format(), /* Buffer format */
       2,                                      /* How many dimensions? */
       {4, 3}, /* Number of elements for each dimension */
       {sizeof(double) * 4, sizeof(double)} /* Strides for each dimension */
@@ -258,7 +259,7 @@ py::array_t<double> DiffCostLinesComm(const Mot &mot, const Dll &a,
   auto result = py::array(py::buffer_info(
       nullptr,        /* Pointer to data (nullptr -> ask NumPy to allocate!) */
       sizeof(double), /* Size of one item */
-      py::format_descriptor<double>::value(), /* Buffer format */
+      py::format_descriptor<double>::format(), /* Buffer format */
       2,                                      /* How many dimensions? */
       {6, 8},                 /* Number of elements for each dimension */
       {sizeof(double) * 6, 8} /* Strides for each dimension */
@@ -281,7 +282,7 @@ py::array_t<double> DiffCostLines(const Mot &mot, const Dll &a, const Dll &b) {
   auto result = py::array(py::buffer_info(
       nullptr,        /* Pointer to data (nullptr -> ask NumPy to allocate!) */
       sizeof(double), /* Size of one item */
-      py::format_descriptor<double>::value(), /* Buffer format */
+      py::format_descriptor<double>::format(), /* Buffer format */
       2,                                      /* How many dimensions? */
       {6, 8},                 /* Number of elements for each dimension */
       {sizeof(double) * 6, 8} /* Strides for each dimension */
@@ -305,7 +306,7 @@ py::array_t<double> DiffCost(const Mot &mot, const Pnt &a, const Pnt &b) {
   auto result = py::array(py::buffer_info(
       nullptr,        /* Pointer to data (nullptr -> ask NumPy to allocate!) */
       sizeof(double), /* Size of one item */
-      py::format_descriptor<double>::value(), /* Buffer format */
+      py::format_descriptor<double>::format(), /* Buffer format */
       2,                                      /* How many dimensions? */
       {3, 8},                 /* Number of elements for each dimension */
       {sizeof(double) * 3, 8} /* Strides for each dimension */
@@ -352,7 +353,7 @@ py::array_t<double> DiffPoint(const Mot &mot, const Pnt &p) {
   auto result = py::array(py::buffer_info(
       nullptr,        /* Pointer to data (nullptr -> ask NumPy to allocate!) */
       sizeof(double), /* Size of one item */
-      py::format_descriptor<double>::value(), /* Buffer format */
+      py::format_descriptor<double>::format(), /* Buffer format */
       2,                                      /* How many dimensions? */
       {5, 8},                 /* Number of elements for each dimension */
       {sizeof(double) * 5, 8} /* Strides for each dimension */
@@ -391,7 +392,7 @@ py::array_t<double> DiffOuterProd(const Vec &a, const Vec &b, const Rot &r) {
   auto result = py::array(py::buffer_info(
       nullptr,        /* Pointer to data (nullptr -> ask NumPy to allocate!) */
       sizeof(double), /* Size of one item */
-      py::format_descriptor<double>::value(), /* Buffer format */
+      py::format_descriptor<double>::format(), /* Buffer format */
       2,                                      /* How many dimensions? */
       {3, 4}, /* Number of elements for each dimension */
       {sizeof(double) * 3, sizeof(double)} /* Strides for each dimension */
@@ -409,44 +410,38 @@ py::array_t<double> DiffOuterProd(const Vec &a, const Vec &b, const Rot &r) {
   return result;
 }
 
-py::array_t<double> PolarJacobian(const Mot &mot1, const Mot &mot2) {
-  const int kGlobalSize = 8;
-  const int kLocalSize = 8;
+using Mat86 = Eigen::Matrix<double, 8, 6, Eigen::RowMajor>;
 
-  auto result = py::array(py::buffer_info(
-      nullptr,        /* Pointer to data (nullptr -> ask NumPy to allocate!) */
-      sizeof(double), /* Size of one item */
-      py::format_descriptor<double>::value(), /* Buffer format */
-      2,                                      /* How many dimensions? */
-      {kGlobalSize, kLocalSize}, /* Number of elements for each dimension */
-      {sizeof(double) * kGlobalSize, kLocalSize}
-      /* Strides for each dimension */
-      ));
-
-  auto buf = result.request();
-
-  double zero_delta[kLocalSize] = {0.0, 0.0, 0.0, 0.0, 0.0};
-  const double *parameters[2] = {mot1.begin(), mot2.begin()};
-  double *jacobian_array[2] = {NULL, static_cast<double *>(buf.ptr)};
-
-  double x_plus_delta[kGlobalSize] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-  // Autodiff jacobian at delta_x = 0.
-  ceres::internal::AutoDiff<
-      MotorPolarDecomposition, double, kGlobalSize,
-      kLocalSize>::Differentiate(MotorPolarDecomposition(), parameters,
-                                 kGlobalSize, x_plus_delta, jacobian_array);
-
-  return result;
+Mat86 PolarJacobian(const Mot &mot) {
+  Mat86 J = Mat86::Zero();
+  ceres::AutoDiffLocalParameterization<MotorTangentSpacePolarDecomposition, 8, 6>(new MotorTangentSpacePolarDecomposition())
+    .ComputeJacobian(mot.begin(), J.data());
+  return J;
 }
 
-py::array_t<double> ExpJacobian(const Mot &mot, const Dll &dll) {
+Mat86 ExpJacobian(const Mot &mot) {
+  Mat86 J = Mat86::Zero();
+  ceres::AutoDiffLocalParameterization<MotorFromBivectorGenerator, 8, 6>(new MotorFromBivectorGenerator())
+    .ComputeJacobian(mot.begin(), J.data());
+  return J;
+}
+
+template <typename T>
+Mat86 DiffLocalParam(const Mot &mot) {
+  Mat86 J = Mat86::Zero();
+  ceres::AutoDiffLocalParameterization<T, 8, 6>(new T())
+    .ComputeJacobian(mot.begin(), J.data());
+  return J;
+}
+
+py::array_t<double> OuterExpJacobian(const Mot &mot, const Dll &dll) {
   const int kGlobalSize = 8;
   const int kLocalSize = 6;
 
   auto result = py::array(py::buffer_info(
       nullptr,        /* Pointer to data (nullptr -> ask NumPy to allocate!) */
       sizeof(double), /* Size of one item */
-      py::format_descriptor<double>::value(), /* Buffer format */
+      py::format_descriptor<double>::format(), /* Buffer format */
       2,                                      /* How many dimensions? */
       {kGlobalSize, kLocalSize}, /* Number of elements for each dimension */
       {sizeof(double) * kGlobalSize, kLocalSize}
@@ -462,8 +457,8 @@ py::array_t<double> ExpJacobian(const Mot &mot, const Dll &dll) {
   double x_plus_delta[kGlobalSize] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
   // Autodiff jacobian at delta_x = 0.
   ceres::internal::AutoDiff<
-      MotorFromBivectorGenerator, double, kGlobalSize,
-      kLocalSize>::Differentiate(MotorFromBivectorGenerator(), parameters,
+      OuterExponential, double, kGlobalSize,
+      kLocalSize>::Differentiate(OuterExponential(), parameters,
                                  kGlobalSize, x_plus_delta, jacobian_array);
 
   return result;
@@ -471,16 +466,19 @@ py::array_t<double> ExpJacobian(const Mot &mot, const Dll &dll) {
 
 PYBIND11_PLUGIN(motor_jacobian) {
   py::module m("motor_jacobian", "motor_jacobian");
-  m.def("jacobian_exp", &ExpJacobian)
-      .def("jacobian_polar", &PolarJacobian)
-      .def("diff_point", &DiffPoint)
-      .def("diff_cost", &DiffCost)
-      .def("diff_cost_lines", &DiffCostLines)
-      .def("diff_cost_lines_comm", &DiffCostLinesComm)
-      .def("diff_rotor_cost", &DiffRotorCost)
-      .def("analytic_diff_rotor_cost", &AnalyticDiffRotorCost)
-      .def("rotor_local_parameterization", &DiffRotorLocalParameterization)
-      .def("outer_product", &DiffOuterProd);
+  m.def("outer_jacobian_exp", &OuterExpJacobian)
+    .def("jacobian_exp", &ExpJacobian)
+    .def("jacobian_polar", &PolarJacobian)
+    .def("jacobian_cayley", &DiffLocalParam<Cayley>)
+    .def("jacobian_oexp", &DiffLocalParam<OuterExponential>)
+    .def("diff_point", &DiffPoint)
+    .def("diff_cost", &DiffCost)
+    .def("diff_cost_lines", &DiffCostLines)
+    .def("diff_cost_lines_comm", &DiffCostLinesComm)
+    .def("diff_rotor_cost", &DiffRotorCost)
+    .def("analytic_diff_rotor_cost", &AnalyticDiffRotorCost)
+    .def("rotor_local_parameterization", &DiffRotorLocalParameterization)
+    .def("outer_product", &DiffOuterProd);
 
   return m.ptr();
 }

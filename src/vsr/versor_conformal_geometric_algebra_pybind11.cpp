@@ -72,11 +72,14 @@ void AddCGA(py::module &m) {
              return CGA(lhs * rhs + rhs * lhs) * 0.5;
            })
     .def("mot", [](const CGA &lhs){return Mot(lhs); })
+    .def("pnt", [](const CGA &lhs){return Pnt(lhs); })
     .def("cir", [](const CGA &lhs){return Cir(lhs); })
       .def("__add__",
            [](const CGA &lhs, const CGA &rhs) { return CGA(lhs + rhs); })
       .def("__sub__",
            [](const CGA &lhs, const CGA &rhs) { return CGA(lhs - rhs); })
+    .def("__mul__",
+         [](const CGA &lhs, const double &rhs) { return (lhs * rhs); })
       .def("__mul__",
            [](const CGA &lhs, const CGA &rhs) { return (lhs * rhs); })
     .def("__le__",

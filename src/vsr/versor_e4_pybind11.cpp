@@ -46,11 +46,15 @@ void AddE4(py::module &m) {
       .def("__mul__",
            [](const E4 &lhs, double &rhs) { return E4(lhs * rhs); })
       .def("__rmul__",
-           [](const E4 &lhs, double &rhs) { return E4(lhs * rhs); })
+           [](const double &lhs, E4 &rhs) { return E4(rhs * lhs); })
       .def("__le__",
            [](const E4 &lhs, const E4 &rhs) { return E4(lhs <= rhs); })
       .def("__xor__",
            [](const E4 &lhs, const E4 &rhs) { return E4(lhs ^ rhs); })
+    .def("comm",
+         [](const E4 &lhs, const E4 &rhs) { return E4(lhs % rhs); })
+    .def("acomm",
+         [](const E4 &lhs, const E4 &rhs) { return E4(lhs * rhs - rhs * lhs) * 0.5; })
       .def("spin", (E4 (E4::*)(const E4 &) const) & E4::spin)
       .def("__repr__",
            [](const E4 &arg) {

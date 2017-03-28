@@ -28,7 +28,7 @@ py::array_t<ScalarType> Matrix() {
   return py::array(py::buffer_info(
       nullptr, /* Pointer to data (nullptr -> ask NumPy to allocate!) */
       sizeof(ScalarType),                         /* Size of one item */
-      py::format_descriptor<ScalarType>::value(), /* Buffer format */
+      py::format_descriptor<ScalarType>::format(), /* Buffer format */
       2,                                          /* How many dimensions? */
       {Rows, Cols}, /* Number of elements for each dimension */
       {sizeof(ScalarType) * Rows, sizeof(ScalarType)}

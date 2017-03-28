@@ -16,6 +16,7 @@
 
 namespace py = pybind11;
 
+using vsr::nga::Flat;
 using vsr::cga::Scalar;
 using vsr::cga::Vector;
 using vsr::cga::Bivector;
@@ -299,9 +300,19 @@ public:
       DualPlane<T> b(b_);
       DualPlane<T> c = a.spin(M);
       DualLine<T> d = (c * b - b * c) * Scalar<T>{0.5};
+
+      Point<T> p = 
+        Flat::location(d, Vector<T>{T(0.0),T(0.0), T(0.0)}.null(), true) * Scalar<T>{T(0.5)};
+      Motor<T> Tr{T(1.0), T(0.0), T(0.0), T(0.0), p[0], p[1], p[2], T(0.0)};
+      DualLine<T> dt = d.spin(~Tr);
+
       for (int i = 0; i < 6; ++i) {
-        residual[i] = d[i];
+        residual[i] = dt[i];
       }
+
+      // for (int i = 0; i < 6; ++i) {
+      //   residual[i] = d[i];
+      // }
       return true;
     }
 
@@ -319,7 +330,7 @@ public:
       DualLine<T> a(a_);
       DualLine<T> b(b_);
       DualLine<T> c = a.spin(M);
-      // residual[0] = T(1.0) - (b * ~c)[0];
+      residual[0] = T(1.0) - (b * ~c)[0];
       return true;
     }
 
@@ -336,11 +347,74 @@ public:
       Motor<T> M(motor);
       DualLine<T> a(a_);
       DualLine<T> b(b_);
-      DualLine<T> c = a.spin(M);
+      DualLine<T> c = ~a.spin(M);
+      Motor<T> d = b * c;
+
+      residual[0] = d[0];
+      residual[1] = d[7];
+      // residual[2] = T(1.0);
+
+      return true;
+    }
+
+  private:
+    const Dll a_;
+    const Dll b_;
+  };
+
+  struct LineAntiCommutatorCostFunctor {
+    LineAntiCommutatorCostFunctor(const Dll &a, const Dll &b) : a_(a), b_(b) {}
+
+    template <typename T>
+    auto operator()(const T *const motor, T *residual) const -> bool {
+      Motor<T> M(motor);
+      DualLine<T> a(a_);
+      DualLine<T> b(b_);
+      DualLine<T> c = ~a.spin(M);
       Motor<T> d = (b * c + c * b) * Scalar<T>{0.5};
 
       residual[0] = T(1.0) - d[0];
       residual[1] = d[7];
+
+      return true;
+    }
+
+  private:
+    const Dll a_;
+    const Dll b_;
+  };
+
+  struct LineProjectedCommutatorCostFunctor {
+    LineProjectedCommutatorCostFunctor(const Dll &a, const Dll &b) : a_(a), b_(b) {}
+
+    template <typename T>
+    auto operator()(const T *const motor, T *residual) const -> bool {
+      Motor<T> M(motor);
+      DualLine<T> a(a_);
+      DualLine<T> b(b_);
+      DualLine<T> c = a.spin(M);
+      DualLine<T> d = b * ~c;
+
+      Bivector<T> A{d[0], d[1], d[2]};
+      Vector<T> f{d[3], d[4], d[5]};
+      Vector<T> b_d = Op::reject(f, A.unit());
+      // Vector<T> h = Op::project(f, A.unit()) *  Scalar<T>{T(1.5) / A.norm()};
+
+      Point<T> p = 
+        Flat::location(d, Vector<T>{T(0.0),T(0.0), T(0.0)}.null(), true) * Scalar<T>{T(0.5)};
+      Motor<T> Tr{T(1.0), T(0.0), T(0.0), T(0.0), p[0], p[1], p[2], T(0.0)};
+      DualLine<T> dt = d.spin(~Tr);
+
+      for (int i = 0; i < 6; ++i) {
+        residual[i] = dt[i];
+      }
+
+      // residual[0] = d[0];
+      // residual[1] = d[1];
+      // residual[2] = d[2];
+      // residual[3] = b_d[0];
+      // residual[4] = b_d[1];
+      // residual[5] = b_d[2];
 
       return true;
     }
@@ -358,12 +432,13 @@ public:
       Motor<T> M(motor);
       DualLine<T> a(a_);
       DualLine<T> b(b_);
-      DualLine<T> c = a.spin(M);
+      DualLine<T> c = ~a.spin(M);
       DualLine<T> d = (b * c - c * b) * Scalar<T>{0.5};
 
       for (int i = 0; i < 6; ++i) {
         residual[i] = d[i];
       }
+
       return true;
     }
 
@@ -680,6 +755,22 @@ public:
     problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
     return true;
   }
+  auto AddLineAntiCommutatorResidualBlock(const Dll &a, const Dll &b) -> bool {
+    ceres::CostFunction *cost_function =
+      new ceres::AutoDiffCostFunction<LineAntiCommutatorCostFunctor, 2, 8>(
+                                                                       new LineAntiCommutatorCostFunctor(a, b));
+    problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
+    return true;
+  }
+
+  auto AddLineProjectedCommutatorResidualBlock(const Dll &a, const Dll &b) -> bool {
+    ceres::CostFunction *cost_function =
+      new ceres::AutoDiffCostFunction<LineProjectedCommutatorCostFunctor, 6, 8>(
+                                                                       new LineProjectedCommutatorCostFunctor(a, b));
+    problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
+    return true;
+  }
+
   auto AddLineCommutatorResidualBlock(const Dll &a, const Dll &b) -> bool {
     ceres::CostFunction *cost_function =
         new ceres::AutoDiffCostFunction<LineCommutatorCostFunctor, 6, 8>(
@@ -860,6 +951,10 @@ PYBIND11_PLUGIN(motor_estimation) {
            &MotorEstimationSolver::AddLineAngleDistanceNormResidualBlock)
     .def("add_line_dual_angle_residual_block",
          &MotorEstimationSolver::AddLineDualAngleResidualBlock)
+    .def("add_line_anticommutator_residual_block",
+         &MotorEstimationSolver::AddLineAntiCommutatorResidualBlock)
+    .def("add_line_projected_commutator_residual_block",
+         &MotorEstimationSolver::AddLineProjectedCommutatorResidualBlock)
       .def("add_line_commutator_residual_block",
            &MotorEstimationSolver::AddLineCommutatorResidualBlock)
       .def("add_line_inner_product_residual_block",

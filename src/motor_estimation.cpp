@@ -299,20 +299,30 @@ public:
       DualPlane<T> a(a_);
       DualPlane<T> b(b_);
       DualPlane<T> c = a.spin(M);
-      DualLine<T> d = (c * b - b * c) * Scalar<T>{0.5};
+      DualLine<T> d = c * ~b;
 
-      Point<T> p = 
-        Flat::location(d, Vector<T>{T(0.0),T(0.0), T(0.0)}.null(), true) * Scalar<T>{T(0.5)};
-      Motor<T> Tr{T(1.0), T(0.0), T(0.0), T(0.0), p[0], p[1], p[2], T(0.0)};
-      DualLine<T> dt = d.spin(~Tr);
+      residual[0] = d[0];
+      residual[1] = d[1];
+      residual[2] = d[2];
 
-      for (int i = 0; i < 6; ++i) {
-        residual[i] = dt[i];
-      }
+      // Bivector<T> A{d[0], d[1], d[2]};
+      // if( A.norm() > T(0.00000001) ) {
+      //   Vector<T> f{d[3], d[4], d[5]};
+      //   Vector<T> b_d = Op::reject(f, A.unit());
+      //   residual[3] = b_d[0];
+      //   residual[4] = b_d[1];
+      //   residual[5] = b_d[2];
+      // }
+      // else {
+        residual[3] = d[3];
+        residual[4] = d[4];
+        residual[5] = d[5];
+      // }
 
       // for (int i = 0; i < 6; ++i) {
       //   residual[i] = d[i];
       // }
+
       return true;
     }
 
@@ -393,28 +403,40 @@ public:
       DualLine<T> a(a_);
       DualLine<T> b(b_);
       DualLine<T> c = a.spin(M);
-      DualLine<T> d = b * ~c;
+      DualLine<T> d = c * ~b;
+
+      // Point<T> p = 
+      //   Flat::location(d, Vector<T>{T(0.0),T(0.0), T(0.0)}.null(), true) * Scalar<T>{T(0.5)};
+      // p = p.unit();
+      // Motor<T> Tr{T(1.0), T(0.0), T(0.0), T(0.0), -p[0], -p[1], -p[2], T(0.0)};
+      // DualLine<T> dt = d.spin(~Tr);
+
+      residual[0] = d[0];
+      residual[1] = d[1];
+      residual[2] = d[2];
 
       Bivector<T> A{d[0], d[1], d[2]};
-      Vector<T> f{d[3], d[4], d[5]};
-      Vector<T> b_d = Op::reject(f, A.unit());
-      // Vector<T> h = Op::project(f, A.unit()) *  Scalar<T>{T(1.5) / A.norm()};
-
-      Point<T> p = 
-        Flat::location(d, Vector<T>{T(0.0),T(0.0), T(0.0)}.null(), true) * Scalar<T>{T(0.5)};
-      Motor<T> Tr{T(1.0), T(0.0), T(0.0), T(0.0), p[0], p[1], p[2], T(0.0)};
-      DualLine<T> dt = d.spin(~Tr);
-
-      for (int i = 0; i < 6; ++i) {
-        residual[i] = dt[i];
+      if( A.norm() > T(0.00000001) ) {
+          Vector<T> f{d[3], d[4], d[5]};
+          Vector<T> b_d = Op::reject(f, A.unit());
+          residual[3] = b_d[0];
+          residual[4] = b_d[1];
+          residual[5] = b_d[2];
+      }
+      else {
+        std::cout << "Parallel!" << std::endl;
+        residual[3] = d[3];
+        residual[4] = d[4];
+        residual[5] = d[5];
       }
 
-      // residual[0] = d[0];
-      // residual[1] = d[1];
-      // residual[2] = d[2];
-      // residual[3] = b_d[0];
-      // residual[4] = b_d[1];
-      // residual[5] = b_d[2];
+        // residual[3] = d[3];
+        // residual[4] = d[4];
+        // residual[5] = d[5];
+
+      // for (int i = 0; i < 6; ++i) {
+      //   residual[i] = dt[i];
+      // }
 
       return true;
     }
@@ -432,8 +454,10 @@ public:
       Motor<T> M(motor);
       DualLine<T> a(a_);
       DualLine<T> b(b_);
-      DualLine<T> c = ~a.spin(M);
-      DualLine<T> d = (b * c - c * b) * Scalar<T>{0.5};
+      DualLine<T> c = a.spin(M);
+      // DualLine<T> d = (b * c - c * b) * Scalar<T>{0.5};
+
+      DualLine<T> d = c * ~b;
 
       for (int i = 0; i < 6; ++i) {
         residual[i] = d[i];
@@ -545,10 +569,38 @@ public:
       DualLine<T> a(a_);
       DualLine<T> b(b_);
       DualLine<T> c = a.spin(M);
+      DualLine<T> d = c - b;
 
-      for (int i = 0; i < b.Num; ++i) {
-        residual[i] = c[i] - b[i];
+      residual[0] = d[0];
+      residual[1] = d[1];
+      residual[2] = d[2];
+
+      Bivector<T> A{d[0], d[1], d[2]};
+      if( A.norm() > T(0.00000001) ) {
+        Vector<T> f{d[3], d[4], d[5]};
+        Vector<T> b_d = Op::reject(f, A.unit());
+        residual[3] = b_d[0];
+        residual[4] = b_d[1];
+        residual[5] = b_d[2];
       }
+      else {
+        std::cout << "Parallel!" << std::endl;
+        residual[3] = d[3];
+        residual[4] = d[4];
+        residual[5] = d[5];
+      }
+
+      // Point<T> p = 
+      //   Flat::location(d, Vector<T>{T(0.0),T(0.0), T(0.0)}.null(), true) * Scalar<T>{T(0.5)};
+      // Motor<T> Tr{T(1.0), T(0.0), T(0.0), T(0.0), -p[0], -p[1], -p[2], T(0.0)};
+
+      // DualLine<T> dt = d.spin(~Tr);
+
+      // for (int i = 0; i < b.Num; ++i) {
+      //   // residual[i] = c[i] - b[i];
+      //   // residual[i] = dt[i];
+      //   residual[i] = d[i];
+      // }
 
       return true;
     }
@@ -897,9 +949,10 @@ public:
   class UpdateMotorEachIterationCallback : public ceres::IterationCallback {
   public:
     UpdateMotorEachIterationCallback(const Mot *motor, std::vector<Mot> *list)
-        : motor_(motor), list_(list) {}
+      : motor_(motor), list_(list), iteration_k(1) {}
     virtual ceres::CallbackReturnType
     operator()(const ceres::IterationSummary &summary) {
+      std::cout << "Iteration " << iteration_k++ << std::endl;
       list_->push_back(Mot(*motor_));
       return ceres::SOLVER_CONTINUE;
     }
@@ -907,6 +960,7 @@ public:
   private:
     std::vector<Mot> *list_;
     const Mot *motor_;
+    int iteration_k;
   };
 
   auto Solve() -> std::tuple<Mot, py::dict, std::vector<Mot>> {

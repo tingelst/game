@@ -35,6 +35,10 @@ void AddDualPlane(py::module &m) {
            })
       .def("vec", [](const Dlp &arg) { return Vec(arg[0], arg[1], arg[2]); })
       .def("spin", (Dlp (Dlp::*)(const Mot &) const) & Dlp::spin)
+    .def("comm",
+         [](const Dlp &lhs, const Dlp &rhs) {
+           return Dll(lhs * rhs);
+         })
       .def("__mul__",
            [](const Dlp &lhs, const Dlp &rhs) { return Mot(lhs * rhs); })
       .def("__sub__",

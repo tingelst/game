@@ -77,6 +77,17 @@ void AddDualLine(py::module &m) {
       .def("spin", (Dll(Dll::*)(const Mot &) const) & Dll::spin)
       .def("exp", [](const Dll &arg) { return Gen::motor(arg); })
       .def("exp2", [](const Dll &arg) { return exp<double>(arg); })
+    .def("cay", [](const Dll &arg) {
+        Sca one{1.0};
+        Sca two{2.0};
+        Sca half{0.5};
+        Mot eps{0.0,0.0,0.0,0.0,0.0,0.0,0.0,-1.0};
+        Mot Bp = Mot{0.0, arg[5], -arg[1], arg[0],0.0,0.0,0.0,0.0};
+        Mot oneplusB = Mot{1.0, arg[0], arg[1], arg[2],0.0,0.0,0.0,0.0};
+        Mot oneminusB = Mot{1.0, -arg[0], -arg[1], -arg[2],0.0,0.0,0.0,0.0};
+        Mot C = (oneplusB * !oneminusB) + (two * eps * !oneminusB) * (Bp * !oneminusB);
+        return C;
+      })
       .def("loc",
            [](const Dll &arg, const Pnt &arg2) {
              return Flat::location(arg, arg2, true);

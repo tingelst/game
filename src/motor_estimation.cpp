@@ -122,7 +122,7 @@ public:
       Origin<T> no{T(1.0)};
       Infinity<T> ni{T(1.0)};
 
-      Motor<T> X = exp(Scalar<T>{0.5} * log(Motor<T>(c / b)));
+      Motor<T> X = exp(Scalar<T>{1.0} * log(Motor<T>(c / b)));
       Rotor<T> R{X[0], X[1], X[2], X[3]};
       Vector<T> t = Scalar<T>{-2.0} * (no <= X) / R;
 
@@ -412,22 +412,21 @@ public:
       // T(0.0)};
       // DualLine<T> dt = d.spin(~Tr);
 
-      residual[0] = d[0];
-      residual[1] = d[1];
-      residual[2] = d[2];
+      // residual[0] = d[0];
+      // residual[1] = d[1];
+      // residual[2] = d[2];
 
       Bivector<T> A{d[0], d[1], d[2]};
       if (A.norm() > T(0.00000001)) {
         Vector<T> f{d[3], d[4], d[5]};
         Vector<T> b_d = Op::reject(f, A.unit());
-        residual[3] = b_d[0];
-        residual[4] = b_d[1];
-        residual[5] = b_d[2];
+        residual[0] = b_d[0];
+        residual[1] = b_d[1];
+        residual[2] = b_d[2];
       } else {
-        std::cout << "Parallel!" << std::endl;
-        residual[3] = d[3];
-        residual[4] = d[4];
-        residual[5] = d[5];
+        residual[0] = d[3];
+        residual[1] = d[4];
+        residual[2] = d[5];
       }
 
       // residual[3] = d[3];
@@ -528,13 +527,15 @@ public:
       Infinity<T> ni{T(1.0)};
 
       // Motor<T> X = Scalar<T>{0.5} * (c / b);
-      Motor<T> X = exp(Scalar<T>{0.5} * log(c / b));
+      // Motor<T> X = exp(Scalar<T>{1.0} * log(c / b));
+
+      Motor<T> X = c * ~b;
       Rotor<T> R{X[0], X[1], X[2], X[3]};
       Vector<T> t = Scalar<T>{-2.0} * (no <= X) / R;
 
+      Bivector<T> B{R[1], R[2], R[3]};
       T scale{T(1.0)};
       if (abs(T(1.0) - X[0]) > T(0.0)) {
-        Bivector<T> B{R[1], R[2], R[3]};
         B = B.unit();
         Vector<T> w = Op::reject(t, B);
         residual[0] = w[0];
@@ -596,22 +597,21 @@ public:
       DualLine<T> c = a.spin(M);
       DualLine<T> d = c - b;
 
-      residual[0] = d[0];
-      residual[1] = d[1];
-      residual[2] = d[2];
+      // residual[0] = d[0];
+      // residual[1] = d[1];
+      // residual[2] = d[2];
 
       Bivector<T> A{d[0], d[1], d[2]};
       if (A.norm() > T(0.00000001)) {
         Vector<T> f{d[3], d[4], d[5]};
         Vector<T> b_d = Op::reject(f, A.unit());
-        residual[3] = b_d[0];
-        residual[4] = b_d[1];
-        residual[5] = b_d[2];
+        residual[0] = b_d[0];
+        residual[1] = b_d[1];
+        residual[2] = b_d[2];
       } else {
-        std::cout << "Parallel!" << std::endl;
-        residual[3] = d[3];
-        residual[4] = d[4];
-        residual[5] = d[5];
+        residual[0] = d[3];
+        residual[1] = d[4];
+        residual[2] = d[5];
       }
 
       // Point<T> p =
@@ -844,7 +844,7 @@ public:
   auto AddLineProjectedCommutatorResidualBlock(const Dll &a, const Dll &b)
       -> bool {
     ceres::CostFunction *cost_function =
-        new ceres::AutoDiffCostFunction<LineProjectedCommutatorCostFunctor, 6,
+        new ceres::AutoDiffCostFunction<LineProjectedCommutatorCostFunctor, 3,
                                         8>(
             new LineProjectedCommutatorCostFunctor(a, b));
     problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);

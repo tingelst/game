@@ -61,6 +61,7 @@ add_library(adept SHARED
 #   )
 
 
+
 add_library(cylinder_estimation SHARED 
   src/cylinder_estimation.cpp
   )
@@ -77,9 +78,11 @@ add_library(motor_estimation SHARED
 target_link_libraries(motor_estimation
   adept
   ${PYTHON_LIBRARIES}
-  ${CERES_LIBRARIES})
+  ${CERES_LIBRARIES}
+  )
 set_target_properties(motor_estimation PROPERTIES PREFIX "")
 set_target_properties(motor_estimation PROPERTIES SUFFIX ".so")
+
 
 add_library(motor_jacobian SHARED
   src/motor_local_parameterization_jacobian_py.cpp

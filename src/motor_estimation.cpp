@@ -41,6 +41,7 @@ using vsr::cga::Mot;
 using vsr::cga::Tnv;
 using vsr::nga::Op;
 
+
 namespace game {
 
 class MotorEstimationSolver {

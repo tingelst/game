@@ -127,23 +127,23 @@ public:
       Rotor<T> R{X[0], X[1], X[2], X[3]};
       Vector<T> t = Scalar<T>{-2.0} * (no <= X) / R;
 
-      // T scale{T(1.0)};
-      // if (abs(T(1.0) - X[0]) > T(0.0)) {
-      //   Bivector<T> B{R[1], R[2], R[3]};
-      //   B = B.unit();
-      //   Vector<T> v = Op::project(t, B);
-      //   residual[0] = v[0];
-      //   residual[1] = v[1];
-      //   residual[2] = v[2];
-      // } else {
-      //   residual[0] = t[0];
-      //   residual[1] = t[1];
-      //   residual[2] = t[2];
-      // }
+      T scale{T(1.0)};
+      if (abs(T(1.0) - X[0]) > T(0.0)) {
+        Bivector<T> B{R[1], R[2], R[3]};
+        B = B.unit();
+        Vector<T> v = Op::project(t, B);
+        residual[0] = v[0];
+        residual[1] = v[1];
+        residual[2] = v[2];
+      } else {
+        residual[0] = t[0];
+        residual[1] = t[1];
+        residual[2] = t[2];
+      }
 
-      residual[0] = t[0];
-      residual[1] = t[1];
-      residual[2] = t[2];
+      // residual[0] = t[0];
+      // residual[1] = t[1];
+      // residual[2] = t[2];
       residual[3] = T(1.0) - X[0]; // 1 - cos(theta)
 
       // residual[0] = X[0];
@@ -528,9 +528,9 @@ public:
       Infinity<T> ni{T(1.0)};
 
       // Motor<T> X = Scalar<T>{0.5} * (c / b);
-      // Motor<T> X = exp(Scalar<T>{1.0} * log(c / b));
+      Motor<T> X = exp(Scalar<T>{0.5} * log(c / b));
 
-      Motor<T> X = c * ~b;
+      // Motor<T> X = c * ~b;
       Rotor<T> R{X[0], X[1], X[2], X[3]};
       Vector<T> t = Scalar<T>{-2.0} * (no <= X) / R;
 

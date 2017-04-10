@@ -68,8 +68,8 @@ def sphere_mesh(sph, color='violet'):
     return mesh
 
 
-def point_mesh(pnt, color='gray'):
-    mesh = Mesh(geometry=SphereGeometry(radius=0.05,
+def point_mesh(pnt, radius=0.05, color='gray'):
+    mesh = Mesh(geometry=SphereGeometry(radius=radius,
                                         widthSegments=32,
                                         heightSegments=32),
                 material=LambertMaterial(color=color))

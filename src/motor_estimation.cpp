@@ -379,11 +379,11 @@ public:
       Motor<T> M(motor);
       DualLine<T> a(a_);
       DualLine<T> b(b_);
-      DualLine<T> c = ~a.spin(M);
-      Motor<T> d = (b * c + c * b) * Scalar<T>{0.5};
+      DualLine<T> c = a.spin(M);
+      DualLine<T> d = c * ~b;
 
-      residual[0] = T(1.0) - d[0];
-      residual[1] = d[7];
+      // residual[0] = T(1.0) - d[0];
+      residual[0] = d[7];
 
       return true;
     }
@@ -412,31 +412,29 @@ public:
       // Motor<T> Tr{T(1.0), T(0.0), T(0.0), T(0.0), -p[0], -p[1], -p[2],
       // T(0.0)};
       // DualLine<T> dt = d.spin(~Tr);
+      Origin<T> no{T(1.0)};
+      Infinity<T> ni{T(1.0)};
+      Motor<T> X = exp(Scalar<T>{0.5} * log(c / b));
+      Rotor<T> R{X[0], X[1], X[2], X[3]};
+      Vector<T> t = Scalar<T>{-2.0} * (no <= X) / R;
 
-      // residual[0] = d[0];
-      // residual[1] = d[1];
-      // residual[2] = d[2];
+      residual[0] = d[0];
+      residual[1] = d[1];
+      residual[2] = d[2];
 
       Bivector<T> A{d[0], d[1], d[2]};
       if (A.norm() > T(0.00000001)) {
         Vector<T> f{d[3], d[4], d[5]};
         Vector<T> b_d = Op::reject(f, A.unit());
-        residual[0] = b_d[0];
-        residual[1] = b_d[1];
-        residual[2] = b_d[2];
+        residual[3] = b_d[0];
+        residual[4] = b_d[1];
+        residual[5] = b_d[2];
       } else {
-        residual[0] = d[3];
-        residual[1] = d[4];
-        residual[2] = d[5];
+        residual[3] = d[3];
+        residual[4] = d[4];
+        residual[5] = d[5];
       }
 
-      // residual[3] = d[3];
-      // residual[4] = d[4];
-      // residual[5] = d[5];
-
-      // for (int i = 0; i < 6; ++i) {
-      //   residual[i] = dt[i];
-      // }
 
       return true;
     }
@@ -523,22 +521,26 @@ public:
       DualLine<T> a(a_);
       DualLine<T> b(b_);
       DualLine<T> c = a.spin(M);
+      DualLine<T> d = c - b;
+
 
       Origin<T> no{T(1.0)};
       Infinity<T> ni{T(1.0)};
 
-      // Motor<T> X = Scalar<T>{0.5} * (c / b);
-      Motor<T> X = exp(Scalar<T>{0.5} * log(c / b));
+      Motor<T> X = (c * ~b);
 
-      // Motor<T> X = c * ~b;
+      Bivector<T> A{X[1], X[2], X[3]};
+      T theta = atan2(A.norm(), X[0]);
+      T sinthetahalf = sin(theta / T(2.0));
+
+      A = A.unit();
+
       Rotor<T> R{X[0], X[1], X[2], X[3]};
-      Vector<T> t = Scalar<T>{-2.0} * (no <= X) / R;
+      Vector<T> t = Scalar<T>{-1.0} * (no <= X) / R;
 
-      Bivector<T> B{R[1], R[2], R[3]};
       T scale{T(1.0)};
-      if (abs(T(1.0) - X[0]) > T(0.0)) {
-        B = B.unit();
-        Vector<T> w = Op::reject(t, B);
+      if (theta > T(1e-6)) {
+        Vector<T> w = Op::reject(t, A);
         residual[0] = w[0];
         residual[1] = w[1];
         residual[2] = w[2];
@@ -548,11 +550,12 @@ public:
         residual[2] = t[2];
       }
 
-      residual[3] = T(1.0) - X[0]; // 1 - cos(theta)
+      // residual[3] = sinthetahalf;
+      // residual[3] = theta * scale;
 
-      // Bivector<T> biv{R[1], R[2], R[3]};
-      // T theta = atan2(R[0], biv.norm());
-      // residual[3] = T(0.5) * theta;
+      residual[3] = d[0];
+      residual[4] = d[1];
+      residual[5] = d[2];
 
       return true;
     }
@@ -575,9 +578,9 @@ public:
       residual[0] = d[0];
       residual[1] = d[1];
       residual[2] = d[2];
-      residual[3] = d[3];
-      residual[4] = d[4];
-      residual[5] = d[5];
+      // residual[3] = d[3];
+      // residual[4] = d[4];
+      // residual[5] = d[5];
       return true;
     }
 
@@ -598,12 +601,12 @@ public:
       DualLine<T> c = a.spin(M);
       DualLine<T> d = c - b;
 
-      // residual[0] = d[0];
-      // residual[1] = d[1];
-      // residual[2] = d[2];
+      residual[3] = d[0];
+      residual[4] = d[1];
+      residual[5] = d[2];
 
       Bivector<T> A{d[0], d[1], d[2]};
-      if (A.norm() > T(0.00000001)) {
+      if (A.norm() > T(0.0)) {
         Vector<T> f{d[3], d[4], d[5]};
         Vector<T> b_d = Op::reject(f, A.unit());
         residual[0] = b_d[0];
@@ -836,7 +839,7 @@ public:
   }
   auto AddLineAntiCommutatorResidualBlock(const Dll &a, const Dll &b) -> bool {
     ceres::CostFunction *cost_function =
-        new ceres::AutoDiffCostFunction<LineAntiCommutatorCostFunctor, 2, 8>(
+        new ceres::AutoDiffCostFunction<LineAntiCommutatorCostFunctor, 1, 8>(
             new LineAntiCommutatorCostFunctor(a, b));
     problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
     return true;
@@ -845,7 +848,7 @@ public:
   auto AddLineProjectedCommutatorResidualBlock(const Dll &a, const Dll &b)
       -> bool {
     ceres::CostFunction *cost_function =
-        new ceres::AutoDiffCostFunction<LineProjectedCommutatorCostFunctor, 3,
+      new ceres::AutoDiffCostFunction<LineProjectedCommutatorCostFunctor, 6,
                                         8>(
             new LineProjectedCommutatorCostFunctor(a, b));
     problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
@@ -871,7 +874,7 @@ public:
   }
   auto AddLineCorrespondencesResidualBlock(const Dll &a, const Dll &b) -> bool {
     ceres::CostFunction *cost_function =
-        new ceres::AutoDiffCostFunction<LineCorrespondencesCostFunctor, 6, 8>(
+        new ceres::AutoDiffCostFunction<LineCorrespondencesCostFunctor, 3, 8>(
             new LineCorrespondencesCostFunctor(a, b));
     problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
     return true;
@@ -879,7 +882,7 @@ public:
 
   auto AddLineAngleDistanceResidualBlock(const Dll &a, const Dll &b) -> bool {
     ceres::CostFunction *cost_function =
-        new ceres::AutoDiffCostFunction<LineAngleDistanceCostFunctor, 4, 8>(
+        new ceres::AutoDiffCostFunction<LineAngleDistanceCostFunctor, 6, 8>(
             new LineAngleDistanceCostFunctor(a, b));
     problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
     return true;

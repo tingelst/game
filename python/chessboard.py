@@ -8,7 +8,7 @@ pattern_points = numpy.zeros( (numpy.prod(pattern_size), 3), numpy.float32 )
 pattern_points[:,:2] = numpy.indices(pattern_size).T.reshape(-1, 2)
 pattern_points *= square_size
 
-def find_corners(image, pattern_size):
+def find_corners(image):
     found, corners = cv2.findChessboardCorners(image, pattern_size)
     term = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_COUNT, 30, 0.1)
     if found:
@@ -29,7 +29,7 @@ def calibrate_lens(image_list):
     h,w = 0, 0
     for img in image_list:
         h, w = img.shape[:2]
-        found,corners = find_corners(img, pattern_size)
+        found,corners = find_corners(img)
         if not found:
             raise Exception("chessboard calibrate_lens Failed to find corners in img")
         img_points.append(corners.reshape(-1, 2))

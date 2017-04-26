@@ -578,9 +578,9 @@ public:
       residual[0] = d[0];
       residual[1] = d[1];
       residual[2] = d[2];
-      // residual[3] = d[3];
-      // residual[4] = d[4];
-      // residual[5] = d[5];
+      residual[3] = d[3];
+      residual[4] = d[4];
+      residual[5] = d[5];
       return true;
     }
 
@@ -874,7 +874,7 @@ public:
   }
   auto AddLineCorrespondencesResidualBlock(const Dll &a, const Dll &b) -> bool {
     ceres::CostFunction *cost_function =
-        new ceres::AutoDiffCostFunction<LineCorrespondencesCostFunctor, 3, 8>(
+        new ceres::AutoDiffCostFunction<LineCorrespondencesCostFunctor, 6, 8>(
             new LineCorrespondencesCostFunctor(a, b));
     problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
     return true;

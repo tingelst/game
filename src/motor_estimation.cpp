@@ -533,6 +533,8 @@ public:
       T theta = atan2(A.norm(), X[0]);
       T sinthetahalf = sin(theta / T(2.0));
 
+      theta = acos(X[0]);
+
       A = A.unit();
 
       Rotor<T> R{X[0], X[1], X[2], X[3]};
@@ -551,11 +553,11 @@ public:
       }
 
       // residual[3] = sinthetahalf;
-      // residual[3] = theta * scale;
+      residual[3] = theta;
 
-      residual[3] = d[0];
-      residual[4] = d[1];
-      residual[5] = d[2];
+      // residual[3] = d[0];
+      // residual[4] = d[1];
+      // residual[5] = d[2];
 
       return true;
     }
@@ -882,7 +884,7 @@ public:
 
   auto AddLineAngleDistanceResidualBlock(const Dll &a, const Dll &b) -> bool {
     ceres::CostFunction *cost_function =
-        new ceres::AutoDiffCostFunction<LineAngleDistanceCostFunctor, 6, 8>(
+        new ceres::AutoDiffCostFunction<LineAngleDistanceCostFunctor, 4, 8>(
             new LineAngleDistanceCostFunctor(a, b));
     problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
     return true;

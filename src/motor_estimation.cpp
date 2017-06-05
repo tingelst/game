@@ -523,41 +523,27 @@ public:
       DualLine<T> c = a.spin(M);
       DualLine<T> d = c - b;
 
+      residual[0] = d[0];
+      residual[1] = d[1];
+      residual[2] = d[2];
 
-      Origin<T> no{T(1.0)};
-      Infinity<T> ni{T(1.0)};
+      // Origin<T> no{T(1.0)};
+      // Infinity<T> ni{T(1.0)};
+      // Motor<T> X = (c * ~b);
+      // Bivector<T> A{X[1], X[2], X[3]};
+      // Rotor<T> R{X[0], X[1], X[2], X[3]};
+      // Vector<T> t = Scalar<T>{1.0} * (no <= X) / R;
 
-      Motor<T> X = (c * ~b);
-
-      Bivector<T> A{X[1], X[2], X[3]};
-      T theta = atan2(A.norm(), X[0]);
-      T sinthetahalf = sin(theta / T(2.0));
-
-      theta = acos(X[0]);
-
-      A = A.unit();
-
-      Rotor<T> R{X[0], X[1], X[2], X[3]};
-      Vector<T> t = Scalar<T>{-1.0} * (no <= X) / R;
-
-      T scale{T(1.0)};
-      if (theta > T(1e-6)) {
-        Vector<T> w = Op::reject(t, A);
-        residual[0] = w[0];
-        residual[1] = w[1];
-        residual[2] = w[2];
-      } else {
-        residual[0] = t[0];
-        residual[1] = t[1];
-        residual[2] = t[2];
-      }
-
-      // residual[3] = sinthetahalf;
-      residual[3] = theta;
-
-      // residual[3] = d[0];
-      // residual[4] = d[1];
-      // residual[5] = d[2];
+      // if (A.norm() > T(1e-6)) {
+        // Vector<T> w = Op::reject(t, A.unit());
+        // residual[3] = w[0];
+        // residual[4] = w[1];
+        // residual[5] = w[2];
+      // } else {
+      //   residual[3] = t[0];
+      //   residual[4] = t[1];
+      //   residual[5] = t[2];
+      // }
 
       return true;
     }
@@ -884,7 +870,7 @@ public:
 
   auto AddLineAngleDistanceResidualBlock(const Dll &a, const Dll &b) -> bool {
     ceres::CostFunction *cost_function =
-        new ceres::AutoDiffCostFunction<LineAngleDistanceCostFunctor, 4, 8>(
+        new ceres::AutoDiffCostFunction<LineAngleDistanceCostFunctor, 3, 8>(
             new LineAngleDistanceCostFunctor(a, b));
     problem_.AddResidualBlock(cost_function, NULL, &motor_[0]);
     return true;

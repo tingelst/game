@@ -85,9 +85,16 @@ def CayleyLi(B):
     return Rp * Rp * Rn * Rden.inv()
 
 def retr(B, M):
-    print('retr')
+    # print('retr')
     return (B * M + M).retract()
 
+
+
+def test(a,b):
+    g = (vsr.CGA(vsr.Mot(0,1,0,0,0,0,0,0)).comm(vsr.CGA(a)) * vsr.CGA(b) * 2.0)[0]
+    h = (a[1]* b[0] - a[0] * b[1]) * 2
+    print(h)
+    print(g)
 
 def update(points, mot):
 
@@ -102,16 +109,23 @@ def update(points, mot):
 
     g0 = 0
     for A, B, _ in points:
+        MAM = A.spin(mot)
+        g[0] += (MAM[1] * B[0] - MAM[0] * B[1]) * 2
+        g[1] += (MAM[2] * B[0] - MAM[0] * B[2]) * 2
+        g[2] += (MAM[2] * B[1] - MAM[1] * B[2]) * 2
+        g[3] += (MAM[0] - B[0]) * 2
+        g[4] += (MAM[1] - B[1]) * 2
+        g[5] += (MAM[2] - B[2]) * 2
 
-        g[0] += (vsr.CGA(vsr.Mot(0,1,0,0,0,0,0,0)).comm(vsr.CGA(A.spin(mot))) * vsr.CGA(B) * 2.0)[0]
-        g[1] += (vsr.CGA(vsr.Mot(0,0,1,0,0,0,0,0)).comm(vsr.CGA(A.spin(mot))) * vsr.CGA(B) * 2.0)[0]
-        g[2] += (vsr.CGA(vsr.Mot(0,0,0,1,0,0,0,0)).comm(vsr.CGA(A.spin(mot))) * vsr.CGA(B) * 2.0)[0]
-        g[3] += (vsr.CGA(vsr.Mot(0,0,0,0,1,0,0,0)).comm(vsr.CGA(A.spin(mot))) * vsr.CGA(B) * 2.0)[0]
-        g[4] += (vsr.CGA(vsr.Mot(0,0,0,0,0,1,0,0)).comm(vsr.CGA(A.spin(mot))) * vsr.CGA(B) * 2.0)[0]
-        g[5] += (vsr.CGA(vsr.Mot(0,0,0,0,0,0,1,0)).comm(vsr.CGA(A.spin(mot))) * vsr.CGA(B) * 2.0)[0]
+        # g[0] += (vsr.CGA(vsr.Mot(0,1,0,0,0,0,0,0)).comm(vsr.CGA(A.spin(mot))) * vsr.CGA(B) * 2.0)[0]
+        # g[1] += (vsr.CGA(vsr.Mot(0,0,1,0,0,0,0,0)).comm(vsr.CGA(A.spin(mot))) * vsr.CGA(B) * 2.0)[0]
+        # g[2] += (vsr.CGA(vsr.Mot(0,0,0,1,0,0,0,0)).comm(vsr.CGA(A.spin(mot))) * vsr.CGA(B) * 2.0)[0]
+        # g[3] += (vsr.CGA(vsr.Mot(0,0,0,0,1,0,0,0)).comm(vsr.CGA(A.spin(mot))) * vsr.CGA(B) * 2.0)[0]
+        # g[4] += (vsr.CGA(vsr.Mot(0,0,0,0,0,1,0,0)).comm(vsr.CGA(A.spin(mot))) * vsr.CGA(B) * 2.0)[0]
+        # g[5] += (vsr.CGA(vsr.Mot(0,0,0,0,0,0,1,0)).comm(vsr.CGA(A.spin(mot))) * vsr.CGA(B) * 2.0)[0]
 
-
-        H[0,0] += (vsr.CGA(vsr.Mot(0,1,0,0,0,0,0,0)).comm((vsr.CGA(vsr.Mot(0,1,0,0,0,0,0,0)).comm(vsr.CGA(A.spin(mot))))) * vsr.CGA(B) * 4.0)[0]
+        H[0,0] += (MAM[0] * B[0] - MAM[1] * B[1] ) * 4.0
+        # H[0,0] += (vsr.CGA(vsr.Mot(0,1,0,0,0,0,0,0)).comm((vsr.CGA(vsr.Mot(0,1,0,0,0,0,0,0)).comm(vsr.CGA(A.spin(mot))))) * vsr.CGA(B) * 4.0)[0]
         H[0,1] += (vsr.CGA(vsr.Mot(0,1,0,0,0,0,0,0)).comm((vsr.CGA(vsr.Mot(0,0,1,0,0,0,0,0)).comm(vsr.CGA(A.spin(mot))))) * vsr.CGA(B) * 4.0)[0]
         H[0,2] += (vsr.CGA(vsr.Mot(0,1,0,0,0,0,0,0)).comm((vsr.CGA(vsr.Mot(0,0,0,1,0,0,0,0)).comm(vsr.CGA(A.spin(mot))))) * vsr.CGA(B) * 4.0)[0]
         H[0,3] += (vsr.CGA(vsr.Mot(0,1,0,0,0,0,0,0)).comm((vsr.CGA(vsr.Mot(0,0,0,0,1,0,0,0)).comm(vsr.CGA(A.spin(mot))))) * vsr.CGA(B) * 4.0)[0]
@@ -148,9 +162,7 @@ def update(points, mot):
         H[5,4] = H[4,5]
         H[5,5] += (vsr.CGA(vsr.Mot(0,0,0,0,0,0,1,0)).comm((vsr.CGA(vsr.Mot(0,0,0,0,0,0,1,0)).comm(vsr.CGA(A.spin(mot))))) * vsr.CGA(B) * 4.0)[0]
 
-    print(g[0])
-    print(g0)
-    # print(H)
+
 
 
     B = np.dot(np.linalg.pinv(H), -g)
@@ -213,3 +225,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    # test(vsr.Vec(1,2,3).null(), vsr.Vec(4,5,6).null())

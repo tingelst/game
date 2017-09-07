@@ -1,0 +1,13 @@
+//#pragma output mot 1.0 e2^e3 e1^e3 e1^e2 e1^einf e2^einf e3^einf e1^e2^e3^einf
+
+B1 = b1 * e2 ^ e3 + b2 * e3 ^ e1 + b3 * e1 ^ e2;
+B2 = b4 * e2 ^ e3 + b5 * e3 ^ e1 + b6 * e1 ^ e2;
+
+Rp = 1 + B1;
+Rn = 1 - B1;
+RnInv = (~Rn) / (Rn * ~Rn);
+
+eps = - e1^e2^e3^einf;
+
+?mot = Rp * RnInv + eps * RnInv * B2 * RnInv
+

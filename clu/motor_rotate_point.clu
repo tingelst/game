@@ -1,3 +1,14 @@
-M = m1 + m2 * e1 * e2 + m3 * e1 * e3 + m4 * e2 * e3 + m5 * e1 * einf + m6 * e2 * einf + m7 * e3 * einf + m8 * e1 * e2 * e3 * einf;
-p = p1 * e1 + p2 * e2 + p3 * e3 + p4 * e0 + p5 * einf;
-?q = M * p * ~M;
+//#pragma output e1_ e1 e2 e3 e0 einf
+//#pragma output e2_ e1 e2 e3 e0 einf
+//#pragma output e3_ e1 e2 e3 e0 einf
+//#pragma output einf_ e1 e2 e3 e0 einf
+//#pragma output e0_ e1 e2 e3 e0 einf
+
+M = m1 + m2 * e1 ^ e2 + m3 * e1 ^ e3 + m4 * e2 ^ e3 + m5 * e1 ^ einf + m6 * e2 ^ einf + m7 * e3 ^ einf + m8 * e1 ^ e2 ^ e3 ^ einf;
+
+
+?e1_ = M * e2 * ~M;
+?e2_ = M * e2 * ~M;
+?e3_ = M * e2 * ~M;
+?einf_ = M * einf * ~M;
+?e0_ = M * e0 * ~M;

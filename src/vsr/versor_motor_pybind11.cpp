@@ -27,10 +27,21 @@ template <typename T> DualLine<T> log(const Motor<T> &m) {
   }
 }
 
+using CGA = vsr::Multivector<
+    vsr::algebra<vsr::metric<4, 1, true>, double>,
+    vsr::Basis<(short)0, (short)1, (short)2, (short)4, (short)8, (short)16,
+               (short)3, (short)5, (short)6, (short)9, (short)10, (short)12,
+               (short)17, (short)18, (short)20, (short)24, (short)7, (short)11,
+               (short)13, (short)14, (short)19, (short)21, (short)22, (short)25,
+               (short)26, (short)28, (short)15, (short)23, (short)27, (short)29,
+               (short)30, (short)31>>;
+
 void AddMotor(py::module &m) {
   py::class_<Mot>(m, "Mot")
       .def(py::init<double, double, double, double, double, double, double,
                     double>())
+      .def("__init__",
+           [](Mot &instance, CGA &arg) { new (&instance) Mot(arg); })
       .def("__getitem__", &Mot::at)
       .def("__setitem__", [](Mot &arg, int idx, double val) { arg[idx] = val; })
       .def("rev", &Mot::reverse)
@@ -88,7 +99,8 @@ void AddMotor(py::module &m) {
       .def("__mul__", [](const Mot &lhs, const Mot &rhs) { return lhs * rhs; })
       .def("__mul__", [](const Mot &lhs, const Dll &rhs) { return lhs * rhs; })
       .def("__mul__", [](const Mot &lhs, const Trs &rhs) { return lhs * rhs; })
-    .def("__xor__", [](const Mot &lhs, const Dll &rhs) { return Mot(lhs ^ rhs); })
+      .def("__xor__",
+           [](const Mot &lhs, const Dll &rhs) { return Mot(lhs ^ rhs); })
       .def("__le__",
            [](const Mot &lhs, const Mot &rhs) { return (lhs <= rhs)[0]; })
       .def("__repr__",

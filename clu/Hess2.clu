@@ -1,0 +1,26 @@
+
+
+
+M = m1 + m2 * e1 ^ e2 + m3 * e1 ^ e3 + m4 * e2 ^ e3 + m5 * e1 ^ einf + m6 * e2 ^ einf + m7 * e3 ^ einf + m8 * e1 ^ e2 ^ e3 ^ einf;
+A =  a0 * e1 + a1 * e2 + a2 * e3 + e0 + a4 * einf;
+A_ = M * A * ~M;
+
+B_ = b0 * e1 + b1 * e2 + b2 * e3 + e0 + b4 * einf;
+
+Ej = e2 * e3;
+Ei = e3 * einf;
+
+E12 = e1 ^ e2;
+E13 = e1 ^ e3;
+E23 = e2 ^ e3;
+E1i = e1 ^ einf;
+E2i = e2 ^ einf;
+E3i = e3 ^ einf;
+
+
+?o00 = (E12 * (E12 * A - A * E12) - (E12 * A - A * E12) * E12) *  B_;
+//o01 = (E13 * (E12 * A - A * E12) - (E12 * A - A * E12) * E13) * B_;
+//o02 = (E23 * (E12 * A - A * E12) - (E12 * A - A * E12) * E23) * B_;
+//o11 = (E13 * (E13 * A - A * E13) - (E13 * A - A * E13) * E13) * B_;
+//o12 = (E23 * (E13 * A - A * E13) - (E13 * A - A * E13) * E23) * B_;
+//o22 = (E23 * (E23 * A - A * E23) - (E23 * A - A * E23) * E23) * B_;

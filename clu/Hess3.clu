@@ -1,0 +1,72 @@
+//#pragma output o00 1.0
+//#pragma output o01 1.0
+//#pragma output o02 1.0
+//#pragma output o03 1.0
+//#pragma output o04 1.0
+//#pragma output o05 1.0
+
+//#pragma output o11 1.0
+//#pragma output o12 1.0
+//#pragma output o13 1.0
+//#pragma output o14 1.0
+//#pragma output o15 1.0
+
+//#pragma output o22 1.0
+//#pragma output o23 1.0
+//#pragma output o24 1.0
+//#pragma output o25 1.0
+
+//#pragma output o33 1.0
+//#pragma output o34 1.0
+//#pragma output o35 1.0
+
+//#pragma output o44 1.0
+//#pragma output o45 1.0
+
+//#pragma output o55 1.0
+
+
+
+
+M = m1 + m2 * e1 ^ e2 + m3 * e1 ^ e3 + m4 * e2 ^ e3 + m5 * e1 ^ einf + m6 * e2 ^ einf + m7 * e3 ^ einf + m8 * e1 ^ e2 ^ e3 ^ einf;
+A =  a0 * e1 + a1 * e2 + a2 * e3 + e0 + a4 * einf;
+A_ = M * A * ~M;
+
+B_ = b0 * e1 + b1 * e2 + b2 * e3 + e0 + b4 * einf;
+
+
+E12 = e1 ^ e2;
+E13 = e1 ^ e3;
+E23 = e2 ^ e3;
+E1i = e1 ^ einf;
+E2i = e2 ^ einf;
+E3i = e3 ^ einf;
+
+
+
+?o00 = -2.0 * (E12 * E12 * A + E12 * A * ~E12) * B_;
+?o01 = ((-2.0 * ((E12 + E13) * (E12+E13) * A + (E12+E13) * A * ~(E12+E13)) * B_) - (-2.0 * ((E12 - E13) * (E12-E13) * A + (E12-E13) * A * ~(E12-E13)) * B_))*0.25   ;
+?o02 = ((-2.0 * ((E12 + E23) * (E12+E23) * A + (E12+E23) * A * ~(E12+E23)) * B_) - (-2.0 * ((E12 - E23) * (E12-E23) * A + (E12-E23) * A * ~(E12-E23)) * B_))*0.25   ;
+?o03 = ((-2.0 * ((E12 + E1i) * (E12+E1i) * A + (E12+E1i) * A * ~(E12+E1i)) * B_) - (-2.0 * ((E12 - E1i) * (E12-E1i) * A + (E12-E1i) * A * ~(E12-E1i)) * B_))*0.25   ;
+?o04 = ((-2.0 * ((E12 + E2i) * (E12+E2i) * A + (E12+E2i) * A * ~(E12+E2i)) * B_) - (-2.0 * ((E12 - E2i) * (E12-E2i) * A + (E12-E2i) * A * ~(E12-E2i)) * B_))*0.25   ;
+?o05 = ((-2.0 * ((E12 + E3i) * (E12+E3i) * A + (E12+E3i) * A * ~(E12+E3i)) * B_) - (-2.0 * ((E12 - E3i) * (E12-E3i) * A + (E12-E3i) * A * ~(E12-E3i)) * B_))*0.25   ;
+
+?o11 = -2.0 * (E13 * E13 * A + E13 * A * ~E13) * B_;
+?o12 = ((-2.0 * ((E13 + E23) * (E13+E23) * A + (E13+E23) * A * ~(E13+E23)) * B_) - (-2.0 * ((E13 - E23) * (E13-E23) * A + (E13-E23) * A * ~(E13-E23)) * B_))*0.25   ;
+?o13 = ((-2.0 * ((E13 + E1i) * (E13+E1i) * A + (E13+E1i) * A * ~(E13+E1i)) * B_) - (-2.0 * ((E13 - E1i) * (E13-E1i) * A + (E13-E1i) * A * ~(E13-E1i)) * B_))*0.25   ;
+?o14 = ((-2.0 * ((E13 + E2i) * (E13+E2i) * A + (E13+E2i) * A * ~(E13+E2i)) * B_) - (-2.0 * ((E13 - E2i) * (E13-E2i) * A + (E13-E2i) * A * ~(E13-E2i)) * B_))*0.25   ;
+?o15 = ((-2.0 * ((E13 + E3i) * (E13+E3i) * A + (E13+E3i) * A * ~(E13+E3i)) * B_) - (-2.0 * ((E13 - E3i) * (E13-E3i) * A + (E13-E3i) * A * ~(E13-E3i)) * B_))*0.25   ;
+
+?o22 = -2.0 * (E23 * E23 * A + E23 * A * ~E23) * B_;
+?o23 = ((-2.0 * ((E23 + E1i) * (E23+E1i) * A + (E23+E1i) * A * ~(E23+E1i)) * B_) - (-2.0 * ((E23 - E1i) * (E23-E1i) * A + (E23-E1i) * A * ~(E23-E1i)) * B_))*0.25   ;
+?o24 = ((-2.0 * ((E23 + E2i) * (E23+E2i) * A + (E23+E2i) * A * ~(E23+E2i)) * B_) - (-2.0 * ((E23 - E2i) * (E23-E2i) * A + (E23-E2i) * A * ~(E23-E2i)) * B_))*0.25   ;
+?o25 = ((-2.0 * ((E23 + E3i) * (E23+E3i) * A + (E23+E3i) * A * ~(E23+E3i)) * B_) - (-2.0 * ((E23 - E3i) * (E23-E3i) * A + (E23-E3i) * A * ~(E23-E3i)) * B_))*0.25   ;
+
+?o33 = -2.0 * (E1i * E1i * A + E1i * A * ~E1i) * B_;
+?o34 = ((-2.0 * ((E1i + E2i) * (E1i+E2i) * A + (E1i+E2i) * A * ~(E1i+E2i)) * B_) - (-2.0 * ((E1i - E2i) * (E1i-E2i) * A + (E1i-E2i) * A * ~(E1i-E2i)) * B_))*0.25   ;
+?o35 = ((-2.0 * ((E1i + E3i) * (E1i+E3i) * A + (E1i+E3i) * A * ~(E1i+E3i)) * B_) - (-2.0 * ((E1i - E3i) * (E1i-E3i) * A + (E1i-E3i) * A * ~(E1i-E3i)) * B_))*0.25   ;
+
+?o44 = -2.0 * (E2i * E2i * A + E2i * A * ~E2i) * B_;
+?o45 = ((-2.0 * ((E2i + E3i) * (E2i+E3i) * A + (E2i+E3i) * A * ~(E2i+E3i)) * B_) - (-2.0 * ((E2i - E3i) * (E2i-E3i) * A + (E2i-E3i) * A * ~(E2i-E3i)) * B_))*0.25   ;
+
+?o55 = -2.0 * (E3i * E3i * A + E3i * A * ~E3i) * B_;

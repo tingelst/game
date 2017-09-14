@@ -166,6 +166,10 @@ target_link_libraries(versor_pybind11 ${PYTHON_LIBRARIES})
 set_target_properties(versor_pybind11 PROPERTIES PREFIX "")
 set_target_properties(versor_pybind11 PROPERTIES SUFFIX ".so")
 
+add_library(linear_solver SHARED src/linear_solver.cpp)
+target_link_libraries(linear_solver ${PYTHON_LIBRARIES})
+set_target_properties(linear_solver PROPERTIES PREFIX "")
+set_target_properties(linear_solver PROPERTIES SUFFIX ".so")
 
 if (BUILD_TESTING)
   message("-- Build the tests.")

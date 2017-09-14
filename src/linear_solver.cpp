@@ -1,4 +1,5 @@
 #include <Eigen/Dense>
+#include <unsupported/Eigen/MatrixFunctions>
 #include <pybind11/eigen.h>
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
@@ -13,6 +14,23 @@ PYBIND11_PLUGIN(linear_solver) {
           Eigen::MatrixXd solution = H.fullPivHouseholderQr().solve(g);
           return solution;
         });
+  m.def("solve",
+        [](Eigen::Ref<Eigen::MatrixXd> H, Eigen::Ref<Eigen::MatrixXd> g) {
+          Eigen::MatrixXd solution = H.fullPivHouseholderQr().solve(g);
+          return solution;
+        });
+
+  m.def("expm", [](Eigen::Ref<Eigen::MatrixXd> A) {
+    Eigen::MatrixXd solution = A.exp();
+    return solution;
+
+  });
+
+  m.def("logm", [](Eigen::Ref<Eigen::MatrixXd> A) {
+      Eigen::MatrixXd solution = A.log();
+      return solution;
+
+    });
 
   return m.ptr();
 }

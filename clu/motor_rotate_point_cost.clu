@@ -1,6 +1,6 @@
+//#pragma output cost 1.0
 M = m1 + m2 * e1 * e2 + m3 * e1 * e3 + m4 * e2 * e3 + m5 * e1 * einf + m6 * e2 * einf + m7 * e3 * einf + m8 * e1 * e2 * e3 * einf;
-
 a = a1 * e1 + a2 * e2 + a3 * e3 + a4 * e0 + a5 * einf;
 b = b1 * e1 + b2 * e2 + b3 * e3 + b4 * e0 + b5 * einf;
 
-? c= (M * a * ~M) - b;
+?cost = (M * a * ~M) * b * -2.0;
